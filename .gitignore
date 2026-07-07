@@ -1,0 +1,12 @@
+.DS_Store
+DerivedData/
+build/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+xcuserdata/
+!planora.xcodeproj/xcuserdata/zhangchengze.xcuserdatad/xcschemes/xcschememanagement.plist
