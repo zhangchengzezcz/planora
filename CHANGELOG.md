@@ -1,5 +1,53 @@
 # Changelog / 更新说明
 
+## 1.2 - 2026-07-08
+
+### 中文
+
+Planora 1.2 将 App 从视觉原型推进为可用的学术任务规划基础版本。本版本保留现有 SwiftUI 和系统 TabView 设计，并加入 SwiftData 驱动的真实任务创建与首页展示。
+
+#### 新增
+
+- 新增 SwiftData `PlanoraTask` 持久化模型。
+- 新增任务类型：Assignment、IA、EE、TOK、CAS、Exam、Event、Custom。
+- 新增加号 tab 的 `Create New` 入口，支持选择任务类型。
+- 新增任务创建表单，包含标题、科目、Deadline、进度、备注和保存。
+- 创建表单会根据任务类型和用户当前科目预设标题、Deadline、进度类型和阶段。
+- 新增 Deadline / No deadline 两种任务模式。
+- 新增百分比进度和阶段式进度两种 Progress State。
+- 首页改为从 SwiftData 读取真实任务，保存后自动显示到 Home。
+- 新增无任务空状态，不再展示静态假任务。
+- 无任务时隐藏 Learning Progress 和 Calendar Preview，避免显示假数据。
+
+#### 改进
+
+- Upcoming Tasks 区分 Deadline 与 Progress / Stage。
+- Learning Progress 区分 Subject Progress 与 Task Completion，并只从真实任务聚合。
+- Calendar Preview 改为根据真实任务 deadline 生成事件预览。
+
+### English
+
+Planora 1.2 turns the app from a visual prototype into a functional academic task-planning foundation. It preserves the existing SwiftUI and system TabView design while adding real SwiftData-backed task creation and dashboard rendering.
+
+#### Added
+
+- Added the SwiftData `PlanoraTask` persistence model.
+- Added task types: Assignment, IA, EE, TOK, CAS, Exam, Event, Custom.
+- Added the `Create New` flow from the prominent plus tab.
+- Added a task creation form with title, subject, deadline, progress, notes, and save.
+- Creation forms now use task-type and selected-subject defaults for title, deadline, progress type, and stages.
+- Added deadline and no-deadline task modes.
+- Added percentage and stage-based progress states.
+- Updated Home to read real SwiftData tasks and refresh after saving.
+- Added an empty task state instead of static fake tasks.
+- Hid Learning Progress and Calendar Preview when there are no tasks, avoiding fake data.
+
+#### Improved
+
+- Upcoming Tasks now separates Deadline from Progress / Stage.
+- Learning Progress now separates Subject Progress from Task Completion and is aggregated from real tasks only.
+- Calendar Preview now derives events from real task deadlines.
+
 ## 1.1.1 - 2026-07-08
 
 ### 中文

@@ -27,6 +27,8 @@
 		A00000000000000000000018 /* PlanoraStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000018 /* PlanoraStorage.swift */; };
 		A00000000000000000000019 /* PlanoraStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000019 /* PlanoraStore.swift */; };
 		A00000000000000000000020 /* PlanoraTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000020 /* PlanoraTheme.swift */; };
+		A00000000000000000000021 /* PlanoraTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000021 /* PlanoraTask.swift */; };
+		A00000000000000000000022 /* CreateTaskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000022 /* CreateTaskView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +52,8 @@
 		B00000000000000000000018 /* PlanoraStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraStorage.swift; sourceTree = "<group>"; };
 		B00000000000000000000019 /* PlanoraStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraStore.swift; sourceTree = "<group>"; };
 		B00000000000000000000020 /* PlanoraTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraTheme.swift; sourceTree = "<group>"; };
+		B00000000000000000000021 /* PlanoraTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraTask.swift; sourceTree = "<group>"; };
+		B00000000000000000000022 /* CreateTaskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTaskView.swift; sourceTree = "<group>"; };
 		000000000000000000000120 /* planora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = planora.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -66,6 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				C00000000000000000000001 /* Components */,
+				C00000000000000000000008 /* Create */,
 				C00000000000000000000002 /* Dashboard */,
 				C00000000000000000000003 /* Models */,
 				C00000000000000000000004 /* Onboarding */,
@@ -119,9 +124,18 @@
 			isa = PBXGroup;
 			children = (
 				B00000000000000000000009 /* PlanoraModels.swift */,
+				B00000000000000000000021 /* PlanoraTask.swift */,
 				B00000000000000000000010 /* SubjectLibrary.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000008 /* Create */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000022 /* CreateTaskView.swift */,
+			);
+			path = Create;
 			sourceTree = "<group>";
 		};
 		C00000000000000000000004 /* Onboarding */ = {
@@ -245,6 +259,8 @@
 				A00000000000000000000018 /* PlanoraStorage.swift in Sources */,
 				A00000000000000000000019 /* PlanoraStore.swift in Sources */,
 				A00000000000000000000020 /* PlanoraTheme.swift in Sources */,
+				A00000000000000000000021 /* PlanoraTask.swift in Sources */,
+				A00000000000000000000022 /* CreateTaskView.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */
@@ -387,7 +403,7 @@
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = T75ZC285FP;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
@@ -405,7 +421,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchengze.planora.t75zc285fp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -426,7 +442,7 @@
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = T75ZC285FP;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
@@ -444,7 +460,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchengze.planora.t75zc285fp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;

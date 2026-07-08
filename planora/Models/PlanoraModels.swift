@@ -103,20 +103,27 @@ struct PlanoraFeature: Identifiable, Hashable {
     ]
 }
 
-struct DashboardTask: Identifiable, Hashable {
-    let id = UUID()
-    let title: String
-    let detail: String
-    let progressText: String
-    let progress: Double
-    let tint: Color
-}
-
-struct ProgressSnapshot: Identifiable, Hashable {
+struct SubjectProgressSnapshot: Identifiable, Hashable {
     let id = UUID()
     let title: String
     let value: Double
     let tint: Color
+}
+
+struct TaskCompletionSnapshot: Hashable {
+    let title: String
+    let completed: Int
+    let total: Int
+    let tint: Color
+
+    var value: Double {
+        guard total > 0 else { return 0 }
+        return min(max(Double(completed) / Double(total), 0), 1)
+    }
+
+    var valueText: String {
+        "\(completed) / \(total) tasks"
+    }
 }
 
 struct CalendarEvent: Identifiable, Hashable {

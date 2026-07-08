@@ -53,43 +53,6 @@ final class PlanoraStore {
         )
     }
 
-    var upcomingTasks: [DashboardTask] {
-        [
-            DashboardTask(
-                title: curriculum == .ib ? "Physics IA" : "Physics Review",
-                detail: "3 days left",
-                progressText: "70% complete",
-                progress: 0.7,
-                tint: .planoraBlue
-            ),
-            DashboardTask(
-                title: curriculum == .ib ? "TOK Exhibition" : "English Speaking",
-                detail: "15 days left",
-                progressText: "Outline ready",
-                progress: 0.35,
-                tint: .planoraAmber
-            )
-        ]
-    }
-
-    var progressSnapshots: [ProgressSnapshot] {
-        let first = selectedSubjectTitles.first ?? "Physics HL"
-        let second = selectedSubjectTitles.dropFirst().first ?? "Math AA HL"
-
-        return [
-            ProgressSnapshot(title: "\(first) progress", value: 0.72, tint: .planoraBlue),
-            ProgressSnapshot(title: "\(second) progress", value: 0.58, tint: .planoraGreen)
-        ]
-    }
-
-    var calendarEvents: [CalendarEvent] {
-        [
-            CalendarEvent(day: 7, title: "Physics IA", tint: .planoraBlue),
-            CalendarEvent(day: 18, title: "TOK Exhibition", tint: .planoraAmber),
-            CalendarEvent(day: 24, title: "Math Practice", tint: .planoraGreen)
-        ]
-    }
-
     func showFeatureIntro() {
         phase = .features
     }
