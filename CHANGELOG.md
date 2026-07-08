@@ -1,5 +1,31 @@
 # Changelog / 更新说明
 
+## 1.1.1 - 2026-07-08
+
+### 中文
+
+Planora 1.1.1 是底栏实现修正版，改用系统 TabView / Liquid Glass Tab Bar，交由 iOS 27 SDK 处理底栏外观、位置和按压反馈。
+
+#### 改进
+
+- 删除自绘 FloatingGlassTabBar，不再手动绘制底部玻璃背景栏。
+- 改用 SwiftUI 系统 TabView / Tab API，让系统提供 Liquid Glass Tab Bar 外观。
+- 底栏位置改由系统 safe area 和 tab bar 行为管理，避免手动 padding / offset 造成不同机型偏差。
+- 中间“新建”入口改用系统 prominent tab role，保留更突出的加号入口。
+- 1.1.1 验证范围收敛到关键 iPhone 构建和视觉路径。
+
+### English
+
+Planora 1.1.1 replaces the custom tab bar with the system TabView / Liquid Glass Tab Bar so the iOS 27 SDK owns the tab appearance, placement, and press feedback.
+
+#### Improved
+
+- Removed the custom FloatingGlassTabBar and stopped drawing a manual glass background bar.
+- Switched to SwiftUI's system TabView / Tab API so the system provides the Liquid Glass Tab Bar appearance.
+- Let system safe area and tab bar behavior manage bottom placement instead of manual padding / offsets.
+- Switched the centered Create entry to the system prominent tab role, preserving a stronger plus entry point.
+- Focused 1.1.1 verification on the key iPhone build and visual path.
+
 ## 1.1 - 2026-07-07
 
 ### 中文

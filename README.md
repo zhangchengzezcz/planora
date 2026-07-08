@@ -8,8 +8,8 @@ Planora is a study planning app for IB and IGCSE students. Version 1.1 focuses o
 
 ## 当前版本 / Current Version
 
-- Version: **1.1**
-- Build: **2**
+- Version: **1.1.1**
+- Build: **3**
 - Platform: iOS, iPadOS, macOS, visionOS target support through the Xcode project
 - UI: SwiftUI, Observation, Liquid Glass-style custom surfaces
 - Status: Visual 1.1 foundation; deeper internal task features are intentionally not implemented yet
@@ -25,8 +25,8 @@ Planora is a study planning app for IB and IGCSE students. Version 1.1 focuses o
 - 科目与额外学习内容选择
 - 主页默认样式，包括重点任务、即将到来的任务、学习进度和日历预览
 - “我的”页面，包括个人信息、课程、科目数量和默认设置区域
-- 两项式玻璃底栏：首页、我的，以及中间的新建按钮
-- 底栏选中态支持按住拖动切换，带有交互玻璃反馈，并在浅色背景下增强对比度
+- 系统 TabView 底栏：首页、prominent 新建、我的
+- iOS 27 SDK 系统 Liquid Glass Tab Bar 外观，底部位置和按压反馈由系统管理
 - 本地 UserDefaults 保存学习空间基础信息
 
 ### English
@@ -38,8 +38,8 @@ Planora is a study planning app for IB and IGCSE students. Version 1.1 focuses o
 - Subject and extra learning selection
 - Dashboard visual shell with focus task, upcoming tasks, progress, and calendar preview
 - Profile screen with user profile, curriculum, subject count, and placeholder settings
-- Two-tab floating glass bar: Home and Profile, with a centered create button
-- Press-and-drag selected tab indicator with interactive glass feedback and improved contrast on light backgrounds
+- System TabView bar with Home, prominent Create, and Profile
+- iOS 27 SDK system Liquid Glass Tab Bar appearance, with placement and press feedback managed by the system
 - Local UserDefaults persistence for the basic learning profile
 
 ## 项目结构 / Project Structure
@@ -93,11 +93,11 @@ xcodebuild -project planora.xcodeproj \
 
 ### 中文
 
-Planora 1.1 追求 Apple 风格的简洁和清晰：内容直接嵌入背景，卡片和按钮保持轻量，底栏使用可交互玻璃效果但避免过度装饰。当前版本优先保证首页和欢迎流程的视觉完成度，为之后的任务管理、日历、AI 学习建议等功能留下结构。
+Planora 1.1.1 追求 Apple 风格的简洁和清晰：内容直接嵌入背景，卡片和按钮保持轻量，底栏改用系统 TabView，让 iOS 27 SDK 接管 Liquid Glass 导航外观。当前版本优先保证首页和欢迎流程的视觉完成度，为之后的任务管理、日历、AI 学习建议等功能留下结构。
 
 ### English
 
-Planora 1.1 aims for an Apple-like sense of clarity: content sits naturally on the background, panels stay light, controls remain direct, and the floating tab bar uses interactive glass without becoming visually noisy. This version prioritizes the welcome flow and dashboard foundation before deeper task management, calendar, and learning-assistant features are added.
+Planora 1.1.1 aims for an Apple-like sense of clarity: content sits naturally on the background, panels stay light, controls remain direct, and the tab bar is now system-managed through TabView so the iOS 27 SDK provides the Liquid Glass navigation appearance. This version prioritizes the welcome flow and dashboard foundation before deeper task management, calendar, and learning-assistant features are added.
 
 ## 后续计划 / Next Steps
 

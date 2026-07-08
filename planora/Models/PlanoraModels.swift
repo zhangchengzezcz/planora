@@ -11,6 +11,7 @@ enum PlanoraPhase: Hashable {
 
 enum MainTab: Hashable {
     case home
+    case create
     case profile
 }
 
