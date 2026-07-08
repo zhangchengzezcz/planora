@@ -6,17 +6,52 @@
 	objectVersion = 90;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A00000000000000000000001 /* DashboardComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* DashboardComponents.swift */; };
+		A00000000000000000000002 /* GlassPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* GlassPanel.swift */; };
+		A00000000000000000000003 /* PlanoraBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000003 /* PlanoraBackground.swift */; };
+		A00000000000000000000004 /* PlanoraButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000004 /* PlanoraButtons.swift */; };
+		A00000000000000000000005 /* PlanoraLogoMark.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000005 /* PlanoraLogoMark.swift */; };
+		A00000000000000000000006 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000006 /* ContentView.swift */; };
+		A00000000000000000000007 /* HomeDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000007 /* HomeDashboardView.swift */; };
+		A00000000000000000000008 /* MainAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000008 /* MainAppView.swift */; };
+		A00000000000000000000009 /* PlanoraModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000009 /* PlanoraModels.swift */; };
+		A00000000000000000000010 /* SubjectLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000010 /* SubjectLibrary.swift */; };
+		A00000000000000000000011 /* CurriculumSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000011 /* CurriculumSelectionView.swift */; };
+		A00000000000000000000012 /* FeatureIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000012 /* FeatureIntroView.swift */; };
+		A00000000000000000000013 /* SubjectSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000013 /* SubjectSelectionView.swift */; };
+		A00000000000000000000014 /* UserNameEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000014 /* UserNameEntryView.swift */; };
+		A00000000000000000000015 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000015 /* WelcomeView.swift */; };
+		A00000000000000000000016 /* PlanoraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000016 /* PlanoraApp.swift */; };
+		A00000000000000000000017 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000017 /* ProfileView.swift */; };
+		A00000000000000000000018 /* PlanoraStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000018 /* PlanoraStorage.swift */; };
+		A00000000000000000000019 /* PlanoraStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000019 /* PlanoraStore.swift */; };
+		A00000000000000000000020 /* PlanoraTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000020 /* PlanoraTheme.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		B00000000000000000000001 /* DashboardComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardComponents.swift; sourceTree = "<group>"; };
+		B00000000000000000000002 /* GlassPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassPanel.swift; sourceTree = "<group>"; };
+		B00000000000000000000003 /* PlanoraBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraBackground.swift; sourceTree = "<group>"; };
+		B00000000000000000000004 /* PlanoraButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraButtons.swift; sourceTree = "<group>"; };
+		B00000000000000000000005 /* PlanoraLogoMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraLogoMark.swift; sourceTree = "<group>"; };
+		B00000000000000000000006 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B00000000000000000000007 /* HomeDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDashboardView.swift; sourceTree = "<group>"; };
+		B00000000000000000000008 /* MainAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainAppView.swift; sourceTree = "<group>"; };
+		B00000000000000000000009 /* PlanoraModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraModels.swift; sourceTree = "<group>"; };
+		B00000000000000000000010 /* SubjectLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubjectLibrary.swift; sourceTree = "<group>"; };
+		B00000000000000000000011 /* CurriculumSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumSelectionView.swift; sourceTree = "<group>"; };
+		B00000000000000000000012 /* FeatureIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureIntroView.swift; sourceTree = "<group>"; };
+		B00000000000000000000013 /* SubjectSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubjectSelectionView.swift; sourceTree = "<group>"; };
+		B00000000000000000000014 /* UserNameEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNameEntryView.swift; sourceTree = "<group>"; };
+		B00000000000000000000015 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		B00000000000000000000016 /* PlanoraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraApp.swift; sourceTree = "<group>"; };
+		B00000000000000000000017 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		B00000000000000000000018 /* PlanoraStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraStorage.swift; sourceTree = "<group>"; };
+		B00000000000000000000019 /* PlanoraStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraStore.swift; sourceTree = "<group>"; };
+		B00000000000000000000020 /* PlanoraTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraTheme.swift; sourceTree = "<group>"; };
 		000000000000000000000120 /* planora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = planora.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		000000000000000000000010 /* planora */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = planora;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		000000000000000130000000 /* Frameworks */ = {
@@ -27,6 +62,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		000000000000000000000010 /* planora */ = {
+			isa = PBXGroup;
+			children = (
+				C00000000000000000000001 /* Components */,
+				C00000000000000000000002 /* Dashboard */,
+				C00000000000000000000003 /* Models */,
+				C00000000000000000000004 /* Onboarding */,
+				C00000000000000000000005 /* Profile */,
+				C00000000000000000000006 /* State */,
+				C00000000000000000000007 /* Theme */,
+				B00000000000000000000006 /* ContentView.swift */,
+				B00000000000000000000016 /* PlanoraApp.swift */,
+			);
+			path = planora;
+			sourceTree = "<group>";
+		};
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
@@ -43,6 +94,73 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		C00000000000000000000001 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000001 /* DashboardComponents.swift */,
+				B00000000000000000000002 /* GlassPanel.swift */,
+				B00000000000000000000003 /* PlanoraBackground.swift */,
+				B00000000000000000000004 /* PlanoraButtons.swift */,
+				B00000000000000000000005 /* PlanoraLogoMark.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000002 /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000007 /* HomeDashboardView.swift */,
+				B00000000000000000000008 /* MainAppView.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000009 /* PlanoraModels.swift */,
+				B00000000000000000000010 /* SubjectLibrary.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000004 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000011 /* CurriculumSelectionView.swift */,
+				B00000000000000000000012 /* FeatureIntroView.swift */,
+				B00000000000000000000013 /* SubjectSelectionView.swift */,
+				B00000000000000000000014 /* UserNameEntryView.swift */,
+				B00000000000000000000015 /* WelcomeView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000005 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000017 /* ProfileView.swift */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000006 /* State */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000018 /* PlanoraStorage.swift */,
+				B00000000000000000000019 /* PlanoraStore.swift */,
+			);
+			path = State;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000007 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000020 /* PlanoraTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -55,9 +173,6 @@
 				000000000000000140000000 /* Resources */,
 			);
 			buildRules = (
-			);
-			fileSystemSynchronizedGroups = (
-				000000000000000000000010 /* planora */,
 			);
 			name = planora;
 			productName = MyApp;
@@ -110,6 +225,26 @@
 		000000000000000120000000 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				A00000000000000000000001 /* DashboardComponents.swift in Sources */,
+				A00000000000000000000002 /* GlassPanel.swift in Sources */,
+				A00000000000000000000003 /* PlanoraBackground.swift in Sources */,
+				A00000000000000000000004 /* PlanoraButtons.swift in Sources */,
+				A00000000000000000000005 /* PlanoraLogoMark.swift in Sources */,
+				A00000000000000000000006 /* ContentView.swift in Sources */,
+				A00000000000000000000007 /* HomeDashboardView.swift in Sources */,
+				A00000000000000000000008 /* MainAppView.swift in Sources */,
+				A00000000000000000000009 /* PlanoraModels.swift in Sources */,
+				A00000000000000000000010 /* SubjectLibrary.swift in Sources */,
+				A00000000000000000000011 /* CurriculumSelectionView.swift in Sources */,
+				A00000000000000000000012 /* FeatureIntroView.swift in Sources */,
+				A00000000000000000000013 /* SubjectSelectionView.swift in Sources */,
+				A00000000000000000000014 /* UserNameEntryView.swift in Sources */,
+				A00000000000000000000015 /* WelcomeView.swift in Sources */,
+				A00000000000000000000016 /* PlanoraApp.swift in Sources */,
+				A00000000000000000000017 /* ProfileView.swift in Sources */,
+				A00000000000000000000018 /* PlanoraStorage.swift in Sources */,
+				A00000000000000000000019 /* PlanoraStore.swift in Sources */,
+				A00000000000000000000020 /* PlanoraTheme.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */
