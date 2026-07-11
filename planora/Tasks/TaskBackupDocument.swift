@@ -356,7 +356,7 @@ private struct PlanoraTaskBackupItem: Codable {
         id = task.id
         title = task.title
         subject = task.subject
-        typeRawValue = task.typeRawValue
+        typeRawValue = task.type.rawValue
         deadline = task.deadline
         hasDeadline = task.hasDeadline
         tracksProgress = task.tracksProgress
@@ -408,7 +408,7 @@ private struct PlanoraTaskBackupItem: Codable {
     }
 
     var task: PlanoraTask {
-        let type = TaskType(rawValue: typeRawValue) ?? .custom
+        let type = (TaskType(rawValue: typeRawValue) ?? .custom).canonical
         let progressKind = ProgressKind(rawValue: progressKindRawValue) ?? .percentage
         let progressState: ProgressState
 
@@ -470,7 +470,7 @@ private extension PlanoraTask {
                     "recurring",
                     normalizedImportText(title),
                     normalizedImportText(subject),
-                    typeRawValue,
+                    type.rawValue,
                     occurrenceDayIdentifier
                 ].joined(separator: "|")
             )
@@ -496,7 +496,7 @@ private extension PlanoraTask {
         [
             normalizedImportText(title),
             normalizedImportText(subject),
-            typeRawValue,
+            type.rawValue,
             deadline.map { String(Int($0.timeIntervalSince1970 / 60)) } ?? "none",
             String(Int(createdDate.timeIntervalSince1970 / 60))
         ].joined(separator: "|")
@@ -512,7 +512,7 @@ private extension PlanoraTask {
     func applyImportedValues(from source: PlanoraTask) {
         title = source.title
         subject = source.subject
-        typeRawValue = source.typeRawValue
+        typeRawValue = source.type.rawValue
         setDeadline(source.deadline, enabled: source.hasDeadline)
         setPlannedDate(source.plannedDate)
         deadlineDayIdentifier = source.deadlineDayIdentifier

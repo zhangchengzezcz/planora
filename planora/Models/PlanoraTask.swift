@@ -50,7 +50,7 @@ final class PlanoraTask {
         self.id = id
         self.title = title
         self.subject = subject
-        self.typeRawValue = type.rawValue
+        self.typeRawValue = type.canonical.rawValue
         self.deadline = hasDeadline ? deadline : nil
         self.hasDeadline = hasDeadline
         self.deadlineDayIdentifier = hasDeadline ? deadline.map { PlanoraCalendarDay(date: $0).identifier } : nil
@@ -83,8 +83,14 @@ final class PlanoraTask {
 
     // SwiftData persists enum raw values; these typed wrappers keep UI code safer.
     var type: TaskType {
-        get { TaskType(rawValue: typeRawValue) ?? .custom }
-        set { typeRawValue = newValue.rawValue }
+        get { (TaskType(rawValue: typeRawValue) ?? .custom).canonical }
+        set { typeRawValue = newValue.canonical.rawValue }
+    }
+
+    func normalizeLegacyTaskType() {
+        if typeRawValue == TaskType.coursework.rawValue {
+            typeRawValue = TaskType.assignment.rawValue
+        }
     }
 
     var progressState: ProgressState {
@@ -456,6 +462,10 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var id: String { rawValue }
 
+    var canonical: TaskType {
+        self == .coursework ? .assignment : self
+    }
+
     var title: String {
         switch self {
         case .assignment: L("作业", "Assignment")
@@ -474,8 +484,7 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var symbol: String {
         switch self {
-        case .assignment: "doc.text.fill"
-        case .coursework: "doc.richtext.fill"
+        case .assignment, .coursework: "doc.richtext.fill"
         case .practical: "testtube.2"
         case .revision: "books.vertical.fill"
         case .ia: "flask.fill"
@@ -537,7 +546,7 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
             var types: [TaskType] = []
 
             if !selectedSubjects.isEmpty {
-                types.append(contentsOf: [.assignment, .coursework, .practical, .revision, .exam])
+                types.append(contentsOf: [.assignment, .practical, .revision, .exam])
             }
 
             types.append(contentsOf: [.event, .custom])

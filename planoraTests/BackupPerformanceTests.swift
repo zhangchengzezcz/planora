@@ -85,6 +85,45 @@ final class BackupPerformanceTests: XCTestCase {
         XCTAssertNil(task.timelineData)
     }
 
+    func testLegacyCourseworkBackupImportsAsAssignment() throws {
+        let json = """
+        {
+          "version": 8,
+          "exportedAt": "2026-07-11T00:00:00Z",
+          "tasks": [
+            {
+              "title": "English coursework",
+              "subject": "English",
+              "typeRawValue": "coursework",
+              "hasDeadline": false,
+              "createdDate": "2026-07-01T00:00:00Z"
+            }
+          ]
+        }
+        """
+
+        let task = try XCTUnwrap(TaskBackupCodec.tasks(from: json).first)
+        XCTAssertEqual(task.type, .assignment)
+        XCTAssertEqual(task.typeRawValue, TaskType.assignment.rawValue)
+    }
+
+    func testCourseworkIsHiddenAndAssignmentUsesMergedIcon() {
+        let types = TaskType.availableTypes(for: .igcse, selectedSubjects: ["English"])
+
+        XCTAssertFalse(types.contains(.coursework))
+        XCTAssertEqual(types.filter { $0 == .assignment }.count, 1)
+        XCTAssertEqual(TaskType.assignment.symbol, "doc.richtext.fill")
+    }
+
+    func testPersistedCourseworkNormalizesToAssignment() {
+        let task = makeTask(index: 99)
+        task.typeRawValue = TaskType.coursework.rawValue
+
+        XCTAssertEqual(task.type, .assignment)
+        task.normalizeLegacyTaskType()
+        XCTAssertEqual(task.typeRawValue, TaskType.assignment.rawValue)
+    }
+
     func testV7RoundTripPreservesReminderRecurrenceAndPlanningData() throws {
         let task = makeTask(index: 1)
         task.setPlannedDate(Date(timeIntervalSince1970: 1_800_000_000))

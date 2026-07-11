@@ -17,6 +17,8 @@
 - 加入 2,000 项任务的 SwiftData、查询与备份性能基准。
 - 修复重复任务在 UUID 或系列 ID 变化后再次导入的问题；去重会按重复实例的标题、科目、类型与发生日期识别，同时保留同系列不同日期的任务。
 - 导入预览现在也会统计同一备份文件内部的重复实例，选择“跳过重复”时只导入一份。
+- 合并“作业”与“课程作业”，IGCSE 创建入口不再重复显示课程作业；作业改用原课程作业图标。
+- 旧课程作业任务和备份会自动迁移为作业，搜索、编辑与再次导出保持兼容。
 
 ### English
 
@@ -33,6 +35,8 @@
 - Added SwiftData, fetch, and backup performance coverage for 2,000 tasks.
 - Fixed recurring tasks being imported again after their task or series UUID changed by matching each occurrence on title, subject, type, and occurrence date while preserving distinct dates.
 - Import previews now count duplicate recurring occurrences inside the same backup, and Skip Duplicates imports only one copy.
+- Merged Assignment and Coursework so IGCSE creation no longer shows duplicate categories, and Assignment now uses the former Coursework icon.
+- Existing Coursework tasks and backups migrate to Assignment while remaining compatible with search, editing, and re-export.
 
 ## 1.4 - 2026-07-11
 

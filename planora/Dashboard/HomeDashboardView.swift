@@ -174,7 +174,10 @@ struct HomeDashboardView: View {
     }
 
     private func refreshScheduledWork() {
-        for task in tasks { task.normalizeCalendarDates() }
+        for task in tasks {
+            task.normalizeLegacyTaskType()
+            task.normalizeCalendarDates()
+        }
         try? modelContext.save()
         RecurringTaskEngine.ensureRollingSeries(tasks: tasks, in: modelContext)
         let refreshedTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? tasks
