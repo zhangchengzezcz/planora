@@ -10,7 +10,7 @@ struct GlassPanel<Content: View>: View {
     init(
         padding: CGFloat = 20,
         cornerRadius: CGFloat = PlanoraTheme.cardCornerRadius,
-        tint: Color = Color.white.opacity(0.16),
+        tint: Color = .planoraGlassTint,
         interactive: Bool = false,
         @ViewBuilder content: () -> Content
     ) {
@@ -26,9 +26,10 @@ struct GlassPanel<Content: View>: View {
 
         content
             .padding(padding)
-            .background(tint.opacity(0.34), in: shape)
+            .background(Color.planoraGlassFill, in: shape)
+            .background(tint.opacity(0.42), in: shape)
             .glassEffect(.regular.tint(tint).interactive(interactive), in: shape)
-            .overlay(shape.stroke(Color.white.opacity(0.56), lineWidth: 1))
-            .shadow(color: Color.planoraInk.opacity(0.08), radius: 24, x: 0, y: 12)
+            .overlay(shape.stroke(Color.planoraGlassStroke, lineWidth: 1))
+            .shadow(color: Color.planoraShadow, radius: 24, x: 0, y: 12)
     }
 }

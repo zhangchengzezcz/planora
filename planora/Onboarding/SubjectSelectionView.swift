@@ -8,78 +8,64 @@ struct SubjectSelectionView: View {
     ]
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 22) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("选择科目")
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color.planoraInk)
+        GeometryReader { proxy in
+            let topPadding: CGFloat = max(28, proxy.safeAreaInsets.top + 10)
 
-                    Text("先选正在学习的内容。")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 22) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(L("选择科目", "Choose Subjects"))
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.planoraInk)
 
-                GlassPanel {
-                    VStack(alignment: .leading, spacing: 16) {
-                        HStack {
-                            Image(systemName: store.curriculum.symbol)
-                                .foregroundStyle(store.curriculum.tint)
+                        Text(L("先选正在学习的内容。", "Select what you are studying now."))
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
-                            Text(store.curriculum.title)
-                                .font(.headline)
-                                .foregroundStyle(Color.planoraInk)
+                    GlassPanel {
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack {
+                                Image(systemName: store.curriculum.symbol)
+                                    .foregroundStyle(store.curriculum.tint)
 
-                            Spacer()
+                                Text(store.curriculum.title)
+                                    .font(.headline)
+                                    .foregroundStyle(Color.planoraInk)
 
-                            Text(store.curriculum.badge)
-                                .font(.caption.weight(.bold))
-                                .foregroundStyle(store.curriculum.tint)
-                        }
+                                Spacer()
 
-                        LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
-                            ForEach(SubjectLibrary.subjects(for: store.curriculum)) { subject in
-                                SelectableChip(
-                                    title: subject.title,
-                                    isSelected: store.selectedSubjects.contains(subject.title)
-                                ) {
-                                    store.toggleSubject(subject.title)
-                                }
+                                Text(store.curriculum.badge)
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(store.curriculum.tint)
                             }
+
+                            SubjectPicker(store: store, columns: columns)
                         }
                     }
-                }
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("额外学习")
-                        .font(.headline)
-                        .foregroundStyle(Color.planoraInk)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(L("额外学习", "Extra Learning"))
+                            .font(.headline)
+                            .foregroundStyle(Color.planoraInk)
 
-                    LazyVGrid(columns: columns, alignment: .leading, spacing: 12) {
-                        ForEach(SubjectLibrary.extraLearning, id: \.self) { item in
-                            SelectableChip(
-                                title: item,
-                                isSelected: store.selectedExtraLearning.contains(item)
-                            ) {
-                                store.toggleExtraLearning(item)
-                            }
-                        }
+                        ExtraLearningPicker(store: store, columns: columns)
+                    }
+
+                    PlanoraPrimaryButton(
+                        title: L("完成", "Finish"),
+                        systemImage: "sparkles",
+                        isDisabled: store.selectedSubjects.isEmpty
+                    ) {
+                        store.createLearningSpace()
                     }
                 }
-
-                PlanoraPrimaryButton(
-                    title: "完成",
-                    systemImage: "sparkles",
-                    isDisabled: store.selectedSubjects.isEmpty
-                ) {
-                    store.createLearningSpace()
-                }
-                .padding(.top, 2)
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height - topPadding, alignment: .top)
+                .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
+                .padding(.top, topPadding)
+                .padding(.bottom, PlanoraTheme.pageHorizontalPadding)
             }
-            .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
-            .padding(.top, 28)
-            .padding(.bottom, 24)
         }
     }
 }

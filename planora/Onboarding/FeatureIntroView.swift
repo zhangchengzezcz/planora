@@ -8,19 +8,19 @@ struct FeatureIntroView: View {
             let topContentInset = max(76, proxy.safeAreaInsets.top + 36)
             let buttonInset = PlanoraTheme.pageHorizontalPadding
 
-            ScrollView(showsIndicators: false) {
+            VStack(spacing: 0) {
                 VStack(spacing: 34) {
                     VStack(spacing: 16) {
                         PlanoraLogoMark(size: 74)
 
                         VStack(spacing: 10) {
-                            Text("欢迎使用 Planora")
+                            Text(L("欢迎使用 Planora", "Welcome to Planora"))
                                 .font(.system(size: 34, weight: .bold, design: .rounded))
                                 .foregroundStyle(Color.planoraInk)
                                 .multilineTextAlignment(.center)
                                 .fixedSize(horizontal: false, vertical: true)
 
-                            Text("为 IB 与 IGCSE 学生准备的学习规划工具。先选择课程和科目，之后主页会帮你看清任务、进度与重要日期。")
+                            Text(L("为 IB 与 IGCSE 学生准备的学习规划工具。先选择课程和科目，之后主页会帮你看清任务、进度与重要日期。", "A study planner for IB and IGCSE students. Choose your curriculum and subjects first, then the home page helps you see tasks, progress, and important dates clearly."))
                                 .font(.body)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
@@ -38,16 +38,16 @@ struct FeatureIntroView: View {
                     .padding(.horizontal, 30)
                 }
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: max(0, proxy.size.height - 114), alignment: .top)
                 .padding(.top, topContentInset)
-                .padding(.bottom, 28)
-            }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                PlanoraPrimaryButton(title: "开始使用", systemImage: "arrow.right", action: onContinue)
+
+                Spacer(minLength: 18)
+
+                PlanoraPrimaryButton(title: L("开始使用", "Get Started"), systemImage: "arrow.right", action: onContinue)
                     .padding(.horizontal, buttonInset)
                     .padding(.top, 8)
                     .padding(.bottom, buttonInset)
             }
+            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
         }
     }
 }

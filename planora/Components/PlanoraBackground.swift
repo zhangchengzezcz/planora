@@ -7,9 +7,9 @@ struct PlanoraBackground: View {
 
             LinearGradient(
                 colors: [
-                    Color.white.opacity(0.64),
-                    Color.planoraBlue.opacity(0.08),
-                    Color.planoraGreen.opacity(0.11)
+                    .planoraSurfaceOverlayTop,
+                    .planoraSurfaceOverlayBlue,
+                    .planoraSurfaceOverlayGreen
                 ],
                 startPoint: .top,
                 endPoint: .bottom

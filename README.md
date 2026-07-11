@@ -2,17 +2,17 @@
 
 **中文** | **English**
 
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.2 版本在原有欢迎流程、主页和个人页基础上，加入了第一个真实任务管理系统，让学生可以创建并保存自己的学术任务。
+Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.4.1 版本已经形成从创建、计划、提醒、重复执行到备份恢复的日常学习闭环，并重点强化了重复规则、通知和数据迁移稳定性。
 
-Planora is a study planning app for IB and IGCSE students. Version 1.2 adds the first real task-management system on top of the existing welcome flow, dashboard, profile screen, and SwiftUI app structure.
+Planora is a study planning app for IB and IGCSE students. Version 1.4.1 completes the daily loop from creation and planning through reminders, recurrence, completion, and recovery, with focused stability work around recurrence, notifications, and data migration.
 
 ## 当前版本 / Current Version
 
-- Version: **1.2**
-- Build: **4**
+- Version: **1.4.1**
+- Build: **5**
 - Platform: iOS, iPadOS, macOS, visionOS target support through the Xcode project
 - UI: SwiftUI, SwiftData, Observation, Liquid Glass-style custom surfaces
-- Status: Functional v1.2 academic task planner foundation
+- Status: Stable v1.4.1 daily academic planning workflow
 
 ## 功能范围 / Scope
 

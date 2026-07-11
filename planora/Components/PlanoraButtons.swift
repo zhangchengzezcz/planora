@@ -19,7 +19,7 @@ struct PlanoraPrimaryButton: View {
                 Image(systemName: systemImage)
                     .font(.headline.weight(.bold))
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(Color.planoraOnAccent)
             .frame(maxWidth: .infinity, minHeight: 56)
             .background {
                 shape
@@ -34,7 +34,7 @@ struct PlanoraPrimaryButton: View {
             )
             .overlay(
                 shape
-                    .stroke(Color.white.opacity(isDisabled ? 0.16 : 0.34), lineWidth: 1)
+                    .stroke(Color.planoraButtonStroke.opacity(isDisabled ? 0.48 : 1), lineWidth: 1)
             )
             .shadow(color: Color.planoraBlue.opacity(isDisabled ? 0.08 : 0.22), radius: 18, x: 0, y: 10)
             .opacity(isDisabled ? 0.45 : 1)
@@ -47,6 +47,7 @@ struct PlanoraPrimaryButton: View {
 struct SelectableChip: View {
     let title: String
     let isSelected: Bool
+    var isLocked = false
     let action: () -> Void
 
     var body: some View {
@@ -59,16 +60,22 @@ struct SelectableChip: View {
 
                 Text(title)
                     .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.78)
+                    .multilineTextAlignment(.center)
+
+                if isLocked {
+                    Image(systemName: "lock.fill")
+                        .font(.caption2.weight(.bold))
+                }
             }
-            .foregroundStyle(isSelected ? Color.white : Color.planoraInk)
-            .frame(maxWidth: .infinity, minHeight: 42)
+            .foregroundStyle(isSelected ? Color.planoraOnAccent : Color.planoraInk)
+            .frame(maxWidth: .infinity, minHeight: 50)
             .padding(.horizontal, 12)
-            .background(isSelected ? Color.planoraBlue : Color.white.opacity(0.6), in: Capsule())
+            .background(isSelected ? Color.planoraBlue : Color.planoraControlFill, in: Capsule())
             .overlay(
                 Capsule()
-                    .stroke(isSelected ? Color.clear : Color.white.opacity(0.72), lineWidth: 1)
+                    .stroke(isSelected ? Color.clear : Color.planoraControlStroke, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -87,6 +94,7 @@ struct MiniStatusPill: View {
             .minimumScaleFactor(0.82)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background(tint.opacity(0.1), in: Capsule())
+            .background(tint.opacity(0.14), in: Capsule())
+            .overlay(Capsule().stroke(tint.opacity(0.22), lineWidth: 1))
     }
 }

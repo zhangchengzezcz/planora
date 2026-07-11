@@ -11,7 +11,9 @@ enum PlanoraPhase: Hashable {
 
 enum MainTab: Hashable {
     case home
+    case tasks
     case create
+    case search
     case profile
 }
 
@@ -30,15 +32,15 @@ enum Curriculum: String, CaseIterable, Codable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .ib: "IB Diploma Programme"
-        case .igcse: "IGCSE International GCSE"
+        case .ib: L("IB 文凭课程", "IB Diploma Programme")
+        case .igcse: L("IGCSE 国际课程", "IGCSE International Curriculum")
         }
     }
 
     var subtitle: String {
         switch self {
         case .ib: "HL / SL / TOK / EE / CAS"
-        case .igcse: "Core subjects and exam preparation"
+        case .igcse: L("核心科目与考试准备", "Core subjects and exam preparation")
         }
     }
 
@@ -81,22 +83,22 @@ struct PlanoraFeature: Identifiable, Hashable {
     static let samples = [
         PlanoraFeature(
             id: "planning",
-            title: "选择适合你的课程体系",
-            description: "支持 IB 与 IGCSE，从课程结构开始建立你的学习空间。",
+            title: L("选择适合你的课程体系", "Choose Your Curriculum"),
+            description: L("支持 IB 与 IGCSE，从课程结构开始建立你的学习空间。", "Start with IB or IGCSE and build your learning space around your programme."),
             symbol: "sparkles.rectangle.stack.fill",
             tint: .planoraBlue
         ),
         PlanoraFeature(
             id: "milestones",
-            title: "整理科目与额外学习",
-            description: "把正在学习的科目、语言和竞赛内容放在同一个地方。",
+            title: L("整理科目与额外学习", "Organize Subjects and Extras"),
+            description: L("把正在学习的科目、语言和竞赛内容放在同一个地方。", "Keep subjects, language learning, competitions, and extras in one place."),
             symbol: "book.pages.fill",
             tint: .planoraAmber
         ),
         PlanoraFeature(
             id: "progress",
-            title: "关注任务、进度和日期",
-            description: "主页会显示接下来的重点、完成进度和日历预览。",
+            title: L("关注任务、进度和日期", "Track Tasks, Progress, and Dates"),
+            description: L("主页会显示接下来的重点、完成进度和日历预览。", "The home page highlights your next focus, progress, and important dates."),
             symbol: "chart.line.uptrend.xyaxis",
             tint: .planoraGreen
         )
@@ -122,7 +124,7 @@ struct TaskCompletionSnapshot: Hashable {
     }
 
     var valueText: String {
-        "\(completed) / \(total) tasks"
+        LF("task_completion_count_format", completed, total)
     }
 }
 

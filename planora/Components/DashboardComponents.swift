@@ -50,7 +50,7 @@ struct ProgressSubjectRow: View {
 
                 Spacer()
 
-                Text("\(Int(value * 100))%")
+                Text(PlanoraFormat.percent(value))
                     .font(.caption.weight(.bold))
                     .foregroundStyle(tint)
             }
@@ -65,6 +65,7 @@ struct SettingsRow: View {
     let icon: String
     let title: String
     let value: String
+    var showsChevron = false
 
     var body: some View {
         HStack(spacing: 14) {
@@ -85,8 +86,16 @@ struct SettingsRow: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.76)
+
+            if showsChevron {
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
     }
 }

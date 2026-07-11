@@ -6,8 +6,8 @@ struct PlanoraLogoMark: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color.white.opacity(0.18))
-                .glassEffect(.regular.tint(Color.white.opacity(0.2)), in: Circle())
+                .fill(Color.planoraGlassFill)
+                .glassEffect(.regular.tint(Color.planoraGlassTint), in: Circle())
 
             Circle()
                 .stroke(
@@ -30,7 +30,7 @@ struct PlanoraLogoMark: View {
             }
         }
         .frame(width: size, height: size)
-        .shadow(color: Color.planoraBlue.opacity(0.18), radius: size * 0.26, x: 0, y: size * 0.12)
+        .shadow(color: Color.planoraBlue.opacity(0.24), radius: size * 0.26, x: 0, y: size * 0.12)
         .accessibilityLabel("Planora")
     }
 }

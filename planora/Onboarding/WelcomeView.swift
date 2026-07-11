@@ -17,7 +17,7 @@ struct WelcomeView: View {
                 .offset(y: lifted ? -26 : 0)
 
             VStack(spacing: 8) {
-                Text("欢迎使用")
+                Text(L("欢迎使用", "Welcome to"))
                     .font(.title3.weight(.medium))
                     .foregroundStyle(.secondary)
 
@@ -30,7 +30,7 @@ struct WelcomeView: View {
 
             Spacer()
 
-            Text("学习计划，简单清晰。")
+            Text(L("学习计划，简单清晰。", "Study planning, simple and clear."))
                 .font(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)
                 .opacity(textVisible ? 0.75 : 0)

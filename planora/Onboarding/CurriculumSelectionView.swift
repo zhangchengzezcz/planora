@@ -8,12 +8,12 @@ struct CurriculumSelectionView: View {
             Spacer(minLength: 28)
 
             VStack(alignment: .leading, spacing: 10) {
-                Text("选择课程体系")
+                Text(L("选择课程体系", "Choose Curriculum"))
                     .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.planoraInk)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text("之后可以随时调整。")
+                Text(L("之后可以随时调整。", "You can change this later."))
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -34,7 +34,7 @@ struct CurriculumSelectionView: View {
 
             Spacer()
 
-            PlanoraPrimaryButton(title: "继续", systemImage: "arrow.right") {
+            PlanoraPrimaryButton(title: L("继续", "Continue"), systemImage: "arrow.right") {
                 store.showSubjectSelection()
             }
             .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
@@ -43,7 +43,7 @@ struct CurriculumSelectionView: View {
     }
 }
 
-private struct CurriculumCard: View {
+struct CurriculumCard: View {
     let curriculum: Curriculum
     let isSelected: Bool
     let action: () -> Void
