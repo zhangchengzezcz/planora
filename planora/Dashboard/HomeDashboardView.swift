@@ -175,7 +175,6 @@ struct HomeDashboardView: View {
 
     private func refreshScheduledWork() {
         for task in tasks {
-            task.normalizeLegacyTaskType()
             task.normalizeCalendarDates()
         }
         try? modelContext.save()

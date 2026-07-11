@@ -50,7 +50,7 @@ final class PlanoraTask {
         self.id = id
         self.title = title
         self.subject = subject
-        self.typeRawValue = type.canonical.rawValue
+        self.typeRawValue = type.rawValue
         self.deadline = hasDeadline ? deadline : nil
         self.hasDeadline = hasDeadline
         self.deadlineDayIdentifier = hasDeadline ? deadline.map { PlanoraCalendarDay(date: $0).identifier } : nil
@@ -83,14 +83,8 @@ final class PlanoraTask {
 
     // SwiftData persists enum raw values; these typed wrappers keep UI code safer.
     var type: TaskType {
-        get { (TaskType(rawValue: typeRawValue) ?? .custom).canonical }
-        set { typeRawValue = newValue.canonical.rawValue }
-    }
-
-    func normalizeLegacyTaskType() {
-        if typeRawValue == TaskType.coursework.rawValue {
-            typeRawValue = TaskType.assignment.rawValue
-        }
+        get { TaskType(rawValue: typeRawValue) ?? .custom }
+        set { typeRawValue = newValue.rawValue }
     }
 
     var progressState: ProgressState {
@@ -449,7 +443,6 @@ enum TaskPriority: Int, Codable, CaseIterable, Identifiable, Hashable {
 
 enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
     case assignment
-    case coursework
     case practical
     case revision
     case ia
@@ -462,14 +455,9 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var id: String { rawValue }
 
-    var canonical: TaskType {
-        self == .coursework ? .assignment : self
-    }
-
     var title: String {
         switch self {
         case .assignment: L("作业", "Assignment")
-        case .coursework: L("课程作业", "Coursework")
         case .practical: L("实验实践", "Practical")
         case .revision: L("复习计划", "Revision")
         case .ia: "IA"
@@ -484,7 +472,7 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var symbol: String {
         switch self {
-        case .assignment, .coursework: "doc.richtext.fill"
+        case .assignment: "doc.richtext.fill"
         case .practical: "testtube.2"
         case .revision: "books.vertical.fill"
         case .ia: "flask.fill"
@@ -500,7 +488,6 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
     var tint: Color {
         switch self {
         case .assignment: .planoraBlue
-        case .coursework: .planoraBlue
         case .practical: .planoraGreen
         case .revision: .planoraAmber
         case .ia: .planoraBlue
@@ -565,7 +552,7 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
         }
 
         switch self {
-        case .assignment, .coursework, .practical, .revision, .ia, .exam:
+        case .assignment, .practical, .revision, .ia, .exam:
             return academicSubjects
         case .ee:
             return selectedSubjectSet.contains("EE") ? ["EE"] : []
@@ -580,7 +567,7 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var defaultProgressState: ProgressState {
         switch self {
-        case .coursework, .practical, .revision, .ia, .ee, .tok, .cas:
+        case .practical, .revision, .ia, .ee, .tok, .cas:
             .stage(defaultStage)
         case .assignment, .exam, .event, .custom:
             .percentage(0)
@@ -589,7 +576,7 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var tracksProgressByDefault: Bool {
         switch self {
-        case .assignment, .coursework, .practical, .revision, .ia, .ee, .tok, .cas:
+        case .assignment, .practical, .revision, .ia, .ee, .tok, .cas:
             true
         case .exam, .event, .custom:
             false
@@ -598,7 +585,7 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var usesDeadlineByDefault: Bool {
         switch self {
-        case .assignment, .coursework, .practical, .ia, .ee, .tok, .exam, .event:
+        case .assignment, .practical, .ia, .ee, .tok, .exam, .event:
             true
         case .revision, .cas, .custom:
             false
@@ -609,8 +596,6 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
         switch self {
         case .assignment:
             7
-        case .coursework:
-            30
         case .practical:
             14
         case .revision:
@@ -632,7 +617,7 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
         switch self {
         case .event, .custom, .cas, .revision:
             true
-        case .assignment, .coursework, .practical, .ia, .ee, .tok, .exam:
+        case .assignment, .practical, .ia, .ee, .tok, .exam:
             false
         }
     }
@@ -641,8 +626,6 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
         switch self {
         case .assignment:
             L("Physics 作业", "Physics Assignment")
-        case .coursework:
-            L("English 课程作业", "English Coursework")
         case .practical:
             L("Physics 实验", "Physics Practical")
         case .revision:
@@ -672,8 +655,6 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
         switch self {
         case .assignment:
             return LF("default_assignment_title_format", subject)
-        case .coursework:
-            return LF("default_coursework_title_format", subject)
         case .practical:
             return LF("default_practical_title_format", subject)
         case .revision:
@@ -740,14 +721,6 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
                 L("进行中", "In progress"),
                 L("检查", "Review"),
                 L("已提交", "Submitted")
-            ]
-        case .coursework:
-            [
-                L("任务要求", "Brief"),
-                L("研究", "Research"),
-                L("草稿", "Draft"),
-                L("反馈", "Feedback"),
-                L("最终提交", "Final Submission")
             ]
         case .practical:
             [

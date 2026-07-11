@@ -12,15 +12,15 @@
 - Deadline 与 Planned Date 新增稳定日历日期标识，切换时区后仍保持原日期。
 - 通知重排统一使用最近 48 条滚动队列，并在新建系列、系列编辑、导入和撤销后立即刷新。
 - App 激活时会刷新通知权限；普通队列重排会保留有效的推迟提醒，同时清理已完成任务的旧请求。
-- 旧版备份缺失新字段时使用安全默认值，导入保存失败时回滚整个上下文，避免半成品。
-- 备份格式升级到版本 8，并继续兼容 v1、v2、v3 与 v7。
+- 导入保存失败时回滚整个上下文，避免留下半成品。
+- 备份格式使用版本 8；未上架阶段只接受当前格式，不再保留 v1、v2、v3 与 v7 兼容解码。
 - 加入 2,000 项任务的 SwiftData、查询与备份性能基准。
 - 修复重复任务在 UUID 或系列 ID 变化后再次导入的问题；去重会按重复实例的标题、科目、类型与发生日期识别，同时保留同系列不同日期的任务。
 - 导入预览现在也会统计同一备份文件内部的重复实例，选择“跳过重复”时只导入一份。
 - 合并“作业”与“课程作业”，IGCSE 创建入口不再重复显示课程作业；作业改用原课程作业图标。
-- 旧课程作业任务和备份会自动迁移为作业，搜索、编辑与再次导出保持兼容。
 - 修复空周仍显示“最忙”日期的问题；只有存在已安排任务时才计算最忙日。
 - 今日与本周的“无安排”状态移除玻璃卡片，改为直接嵌入背景的轻量文字。
+- 今日空状态只保留“今天没有安排”，移除计划日期操作说明。
 
 ### English
 
@@ -32,15 +32,15 @@
 - Added stable calendar-day identifiers for deadlines and planned dates across time-zone changes.
 - Unified scheduling around the nearest 48-request rolling queue after series creation, editing, import, and undo.
 - Refreshed notification authorization when the app becomes active and preserved valid snoozes during ordinary queue reconciliation.
-- Added safe defaults for legacy backup fields and transactional rollback when an import save fails.
-- Upgraded backups to version 8 while retaining v1, v2, v3, and v7 compatibility.
+- Added transactional rollback when an import save fails.
+- Standardized backups on version 8 and removed v1, v2, v3, and v7 compatibility before public release.
 - Added SwiftData, fetch, and backup performance coverage for 2,000 tasks.
 - Fixed recurring tasks being imported again after their task or series UUID changed by matching each occurrence on title, subject, type, and occurrence date while preserving distinct dates.
 - Import previews now count duplicate recurring occurrences inside the same backup, and Skip Duplicates imports only one copy.
 - Merged Assignment and Coursework so IGCSE creation no longer shows duplicate categories, and Assignment now uses the former Coursework icon.
-- Existing Coursework tasks and backups migrate to Assignment while remaining compatible with search, editing, and re-export.
 - Fixed empty weeks showing a misleading busiest day; busiest-day calculations now require scheduled tasks.
 - Removed glass cards from Today and This Week empty states in favor of lightweight text directly on the background.
+- Reduced the Today empty state to “Nothing Planned Today” and removed the Planned Date instruction.
 
 ## 1.4 - 2026-07-11
 
@@ -54,7 +54,7 @@
 - 新增 Planned Date，并提供今日和本周执行视图，区分计划完成日期与最终 Deadline。
 - 删除任务后支持撤销；破坏性操作前自动保存最近一次本地备份。
 - 导入前显示任务数与重复数，并支持跳过重复、覆盖相同任务或全部作为新任务导入。
-- JSON 备份格式升级到版本 7，包含提醒、重复系列与 Planned Date，同时兼容旧备份。
+- JSON 备份格式升级到版本 7，包含提醒、重复系列与 Planned Date。
 - 补齐上述功能的英文、简体中文与日文本地化。
 
 ### English
@@ -67,7 +67,7 @@
 - Added Planned Date plus Today and This Week execution views, distinct from final deadlines.
 - Added deletion undo and automatic local backups before destructive operations.
 - Added import previews and duplicate handling through skip, overwrite, or import-as-new strategies.
-- Upgraded JSON backups to version 7 with reminders, recurrence, and Planned Date while retaining older backup compatibility.
+- Upgraded JSON backups to version 7 with reminders, recurrence, and Planned Date.
 - Completed English, Simplified Chinese, and Japanese localization for the new workflows.
 
 ## Unreleased - 2026-07-10
@@ -77,9 +77,9 @@
 - 完成任务详情、编辑、完成、重新打开、删除和优先级闭环。
 - 首页 Current Focus 结合完成状态、优先级和截止日期选择重点任务。
 - 为阶段型任务加入可持久化的学术时间线，并支持在详情页按顺序推进阶段。
-- 加入 IA、EE、TOK、CAS 以及 IGCSE Coursework、Practical、Revision 工作流模板。
+- 加入 IA、EE、TOK、CAS 以及 IGCSE Practical、Revision 工作流模板。
 - 时间线进度接入首页科目进度计算。
-- JSON 备份格式升级到版本 3，同时保持旧备份兼容。
+- JSON 备份格式升级到版本 3。
 - 补充新增任务类型、阶段和界面的英文、简体中文与日文文案。
 - 新增科目 Dashboard，集中展示科目任务、进度、完成率和近期截止日期。
 - 搜索支持按科目、任务类型、截止状态、完成状态和优先级筛选。
@@ -91,9 +91,9 @@
 - Completed the task detail, editing, completion, reopening, deletion, and priority workflow.
 - Updated Current Focus to consider completion, priority, and deadline ordering.
 - Added persistent academic timelines for stage-based tasks with sequential milestone controls.
-- Added IA, EE, TOK, CAS, and IGCSE Coursework, Practical, and Revision workflow templates.
+- Added IA, EE, TOK, CAS, and IGCSE Practical and Revision workflow templates.
 - Connected timeline completion to subject progress calculations on Home.
-- Upgraded JSON backups to version 3 while preserving compatibility with older backups.
+- Upgraded JSON backups to version 3.
 - Added English, Simplified Chinese, and Japanese strings for the new task types and milestones.
 - Added subject dashboards for task totals, progress, completion, and upcoming deadlines.
 - Added subject, type, deadline, completion, and priority filters to Search.

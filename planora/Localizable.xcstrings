@@ -1122,28 +1122,6 @@
         }
       }
     },
-    "Coursework" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coursework"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "コースワーク"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "课程作业"
-          }
-        }
-      }
-    },
     "Create a task for this subject and it will appear here." : {
       "localizations" : {
         "en" : {
@@ -1690,28 +1668,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 作业"
-          }
-        }
-      }
-    },
-    "default_coursework_title_format" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Coursework"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ コースワーク"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 课程作业"
           }
         }
       }
@@ -2328,28 +2284,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "结束重复"
-          }
-        }
-      }
-    },
-    "English Coursework" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "English Coursework"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "英語コースワーク"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "English 课程作业"
           }
         }
       }
@@ -6103,28 +6037,6 @@
         }
       }
     },
-    "Set a Planned Date while editing a task to add it here." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set a Planned Date while editing a task to add it here."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "タスク編集で予定完了日を設定すると、ここに追加されます。"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在任务编辑页设置计划完成日期，即可加入今日。"
-          }
-        }
-      }
-    },
     "Set Date" : {
       "localizations" : {
         "en" : {
@@ -7397,6 +7309,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "撤销"
+          }
+        }
+      }
+    },
+    "Unsupported Backup Version" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unsupported Backup Version"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未対応のバックアップバージョン"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "备份版本不支持"
+          }
+        }
+      }
+    },
+    "Planora currently imports version 8 backups only." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planora currently imports version 8 backups only."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planora は現在、バージョン 8 のバックアップのみ読み込めます。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planora 当前只支持版本 8 的备份。"
           }
         }
       }

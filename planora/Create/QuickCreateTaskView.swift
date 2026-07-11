@@ -124,7 +124,7 @@ enum QuickCreatePreferences {
 
     static var lastTaskType: TaskType {
         guard let rawValue = UserDefaults.standard.string(forKey: typeKey) else { return .assignment }
-        return (TaskType(rawValue: rawValue) ?? .assignment).canonical
+        return TaskType(rawValue: rawValue) ?? .assignment
     }
 
     static var lastHasDeadline: Bool {
@@ -152,7 +152,7 @@ enum QuickCreatePreferences {
     ) {
         let defaults = UserDefaults.standard
         defaults.set(subject, forKey: subjectKey)
-        defaults.set(type.canonical.rawValue, forKey: typeKey)
+        defaults.set(type.rawValue, forKey: typeKey)
         defaults.set(hasDeadline, forKey: deadlineKey)
         let reusable = reminders.filter(\.isRelativeToDeadline)
         defaults.set(try? JSONEncoder().encode(reusable), forKey: remindersKey)

@@ -4,127 +4,14 @@ import XCTest
 
 @MainActor
 final class BackupPerformanceTests: XCTestCase {
-    func testLegacyV1BackupUsesSafeDefaults() throws {
-        let json = """
-        {
-          "version": 1,
-          "exportedAt": "2024-01-01T00:00:00Z",
-          "tasks": [
-            {
-              "title": "Legacy homework",
-              "subject": "Mathematics",
-              "deadline": "2024-02-01T00:00:00Z"
-            }
-          ]
-        }
-        """
-
-        let tasks = try TaskBackupCodec.tasks(from: json)
-        XCTAssertEqual(tasks.count, 1)
-        XCTAssertEqual(tasks[0].title, "Legacy homework")
-        XCTAssertTrue(tasks[0].hasDeadline)
-        XCTAssertEqual(tasks[0].priority, .medium)
-        XCTAssertTrue(tasks[0].reminders.isEmpty)
-        XCTAssertNil(tasks[0].recurrenceRule)
-    }
-
-    func testV3BackupWithoutNewFieldsImports() throws {
-        let json = """
-        {
-          "version": 3,
-          "exportedAt": "2025-01-01T00:00:00Z",
-          "tasks": [
-            {
-              "title": "Physics IA",
-              "subject": "Physics HL",
-              "typeRawValue": "ia",
-              "deadline": "2025-09-10T00:00:00Z",
-              "hasDeadline": true,
-              "tracksProgress": true,
-              "progressKindRawValue": "stage",
-              "percentageProgress": 0.4,
-              "stageName": "Analysis",
-              "notes": "Legacy v3",
-              "createdDate": "2025-01-01T00:00:00Z",
-              "isCompleted": false,
-              "importance": 2
-            }
-          ]
-        }
-        """
-
-        let task = try XCTUnwrap(TaskBackupCodec.tasks(from: json).first)
-        XCTAssertEqual(task.title, "Physics IA")
-        XCTAssertEqual(task.priority, .high)
-        XCTAssertNil(task.plannedDate)
-        XCTAssertFalse(task.isRecurring)
-    }
-
-    func testV2BackupWithoutTimelineFieldsImports() throws {
-        let json = """
-        {
-          "version": 2,
-          "exportedAt": "2024-08-01T00:00:00Z",
-          "tasks": [
-            {
-              "title": "English reading",
-              "subject": "English",
-              "typeRawValue": "assignment",
-              "hasDeadline": false,
-              "progressKindRawValue": "percentage",
-              "percentageProgress": 0.25,
-              "createdDate": "2024-08-01T00:00:00Z"
-            }
-          ]
-        }
-        """
-
-        let task = try XCTUnwrap(TaskBackupCodec.tasks(from: json).first)
-        XCTAssertFalse(task.hasDeadline)
-        XCTAssertEqual(task.percentageProgress, 0.25)
-        XCTAssertNil(task.timelineData)
-    }
-
-    func testLegacyCourseworkBackupImportsAsAssignment() throws {
-        let json = """
-        {
-          "version": 8,
-          "exportedAt": "2026-07-11T00:00:00Z",
-          "tasks": [
-            {
-              "title": "English coursework",
-              "subject": "English",
-              "typeRawValue": "coursework",
-              "hasDeadline": false,
-              "createdDate": "2026-07-01T00:00:00Z"
-            }
-          ]
-        }
-        """
-
-        let task = try XCTUnwrap(TaskBackupCodec.tasks(from: json).first)
-        XCTAssertEqual(task.type, .assignment)
-        XCTAssertEqual(task.typeRawValue, TaskType.assignment.rawValue)
-    }
-
-    func testCourseworkIsHiddenAndAssignmentUsesMergedIcon() {
+    func testIGCSEShowsSingleAssignmentWithMergedIcon() {
         let types = TaskType.availableTypes(for: .igcse, selectedSubjects: ["English"])
 
-        XCTAssertFalse(types.contains(.coursework))
         XCTAssertEqual(types.filter { $0 == .assignment }.count, 1)
         XCTAssertEqual(TaskType.assignment.symbol, "doc.richtext.fill")
     }
 
-    func testPersistedCourseworkNormalizesToAssignment() {
-        let task = makeTask(index: 99)
-        task.typeRawValue = TaskType.coursework.rawValue
-
-        XCTAssertEqual(task.type, .assignment)
-        task.normalizeLegacyTaskType()
-        XCTAssertEqual(task.typeRawValue, TaskType.assignment.rawValue)
-    }
-
-    func testV7RoundTripPreservesReminderRecurrenceAndPlanningData() throws {
+    func testV8RoundTripPreservesReminderRecurrenceAndPlanningData() throws {
         let task = makeTask(index: 1)
         task.setPlannedDate(Date(timeIntervalSince1970: 1_800_000_000))
         task.reminders = [TaskReminder(timing: .daysBefore(3), hour: 8, minute: 30)]
@@ -133,7 +20,6 @@ final class BackupPerformanceTests: XCTestCase {
         task.recurrenceSequence = 3
 
         let json = try TaskBackupCodec.json(for: [task])
-            .replacingOccurrences(of: "\"version\" : 8", with: "\"version\" : 7")
         let restored = try XCTUnwrap(TaskBackupCodec.tasks(from: json).first)
 
         XCTAssertEqual(restored.id, task.id)
@@ -148,13 +34,28 @@ final class BackupPerformanceTests: XCTestCase {
         XCTAssertEqual(restored.recurrenceSequence, 3)
     }
 
+    func testOlderBackupVersionsAreRejected() throws {
+        let json = try TaskBackupCodec.json(for: [makeTask(index: 1)])
+            .replacingOccurrences(of: "\"version\" : 8", with: "\"version\" : 7")
+
+        XCTAssertThrowsError(try TaskBackupCodec.tasks(from: json)) { error in
+            guard case TaskBackupError.unsupportedVersion = error else {
+                return XCTFail("Expected unsupported version error, got \(error)")
+            }
+        }
+    }
+
     func testMalformedEmptyAndPartialBackupsDoNotMutateExistingStore() throws {
         let container = try inMemoryContainer()
         let context = container.mainContext
         context.insert(makeTask(index: 0))
         try context.save()
 
-        for invalid in ["{broken", "{\"version\":7,\"tasks\":[]}", "{\"version\":7,\"tasks\":[{\"subject\":\"Physics\"}]}" ] {
+        for invalid in [
+            "{broken",
+            "{\"version\":8,\"exportedAt\":\"2026-07-11T00:00:00Z\",\"tasks\":[]}",
+            "{\"version\":8,\"exportedAt\":\"2026-07-11T00:00:00Z\",\"tasks\":[{\"subject\":\"Physics\"}]}"
+        ] {
             XCTAssertThrowsError(try TaskBackupCodec.tasks(from: invalid))
             XCTAssertEqual(try context.fetchCount(FetchDescriptor<PlanoraTask>()), 1)
         }

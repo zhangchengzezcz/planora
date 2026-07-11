@@ -38,6 +38,7 @@ enum TaskBackupError: LocalizedError {
     case invalidJSONFormat
     case missingTaskData
     case emptyBackup
+    case unsupportedVersion
 
     var alertTitle: String {
         switch self {
@@ -49,6 +50,8 @@ enum TaskBackupError: LocalizedError {
             L("格式错误", "Format Error")
         case .missingTaskData, .emptyBackup:
             L("备份数据缺失", "Backup Data Missing")
+        case .unsupportedVersion:
+            L("备份版本不支持", "Unsupported Backup Version")
         }
     }
 
@@ -64,6 +67,8 @@ enum TaskBackupError: LocalizedError {
             L("JSON 文件可以读取，但其中的 Planora 任务数据缺失或不完整。", "The JSON file is readable, but its Planora task data is missing or incomplete.")
         case .emptyBackup:
             L("这个备份中没有任务，因此没有导入任何内容。", "This backup contains no tasks, so nothing was imported.")
+        case .unsupportedVersion:
+            L("Planora 当前只支持版本 8 的备份。", "Planora currently imports version 8 backups only.")
         }
     }
 
@@ -80,6 +85,8 @@ enum TaskBackupError: LocalizedError {
 
 @MainActor
 enum TaskBackupCodec {
+    static let currentVersion = 8
+
     static func json(for tasks: [PlanoraTask]) throws -> String {
         let backup = PlanoraTaskBackup(
             exportedAt: Date(),
@@ -115,17 +122,18 @@ enum TaskBackupCodec {
             throw TaskBackupError.wrongBackupFile
         }
 
-        // Keep these branches distinct so the UI can tell users whether the file is
-        // malformed JSON, a valid but unrelated JSON file, or an incomplete backup.
-        let hasTasksPayload = dictionary["tasks"] != nil
-        let hasPlanoraMetadata = dictionary["exportedAt"] != nil && dictionary["version"] != nil
-
-        guard hasTasksPayload || hasPlanoraMetadata else {
+        guard dictionary["tasks"] != nil || dictionary["version"] != nil else {
             throw TaskBackupError.wrongBackupFile
         }
 
-        guard hasTasksPayload else {
+        guard let version = dictionary["version"] as? Int,
+              dictionary["exportedAt"] != nil,
+              dictionary["tasks"] != nil else {
             throw TaskBackupError.missingTaskData
+        }
+
+        guard version == currentVersion else {
+            throw TaskBackupError.unsupportedVersion
         }
 
         let decoder = JSONDecoder()
@@ -309,7 +317,7 @@ enum AutomaticTaskBackup {
 // MARK: - Backup Payload
 
 private struct PlanoraTaskBackup: Codable {
-    var version = 8
+    var version = TaskBackupCodec.currentVersion
     var exportedAt: Date
     var tasks: [PlanoraTaskBackupItem]
 
@@ -318,16 +326,10 @@ private struct PlanoraTaskBackup: Codable {
         self.tasks = tasks
     }
 
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        version = try container.decodeIfPresent(Int.self, forKey: .version) ?? 1
-        exportedAt = try container.decodeIfPresent(Date.self, forKey: .exportedAt) ?? Date(timeIntervalSince1970: 0)
-        tasks = try container.decode([PlanoraTaskBackupItem].self, forKey: .tasks)
-    }
 }
 
 private struct PlanoraTaskBackupItem: Codable {
-    var id: UUID?
+    var id: UUID
     var title: String
     var subject: String
     var typeRawValue: String
@@ -346,7 +348,7 @@ private struct PlanoraTaskBackupItem: Codable {
     var reminderData: Data?
     var recurrenceData: Data?
     var recurrenceSeriesID: UUID?
-    var recurrenceSequence: Int?
+    var recurrenceSequence: Int
     var recurrenceOccurrenceDate: Date?
     var plannedDate: Date?
     var deadlineDayIdentifier: String?
@@ -379,36 +381,8 @@ private struct PlanoraTaskBackupItem: Codable {
         plannedDayIdentifier = task.plannedDayIdentifier
     }
 
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decodeIfPresent(UUID.self, forKey: .id)
-        title = try container.decode(String.self, forKey: .title)
-        subject = try container.decodeIfPresent(String.self, forKey: .subject) ?? "General"
-        typeRawValue = try container.decodeIfPresent(String.self, forKey: .typeRawValue) ?? TaskType.custom.rawValue
-        deadline = try container.decodeIfPresent(Date.self, forKey: .deadline)
-        hasDeadline = try container.decodeIfPresent(Bool.self, forKey: .hasDeadline) ?? (deadline != nil)
-        tracksProgress = try container.decodeIfPresent(Bool.self, forKey: .tracksProgress) ?? true
-        progressKindRawValue = try container.decodeIfPresent(String.self, forKey: .progressKindRawValue) ?? ProgressKind.percentage.rawValue
-        percentageProgress = try container.decodeIfPresent(Double.self, forKey: .percentageProgress) ?? 0
-        stageName = try container.decodeIfPresent(String.self, forKey: .stageName) ?? ""
-        notes = try container.decodeIfPresent(String.self, forKey: .notes) ?? ""
-        createdDate = try container.decodeIfPresent(Date.self, forKey: .createdDate) ?? Date(timeIntervalSince1970: 0)
-        isCompleted = try container.decodeIfPresent(Bool.self, forKey: .isCompleted) ?? false
-        completedDate = try container.decodeIfPresent(Date.self, forKey: .completedDate)
-        importance = try container.decodeIfPresent(Int.self, forKey: .importance) ?? TaskPriority.medium.rawValue
-        timelineData = try container.decodeIfPresent(Data.self, forKey: .timelineData)
-        reminderData = try container.decodeIfPresent(Data.self, forKey: .reminderData)
-        recurrenceData = try container.decodeIfPresent(Data.self, forKey: .recurrenceData)
-        recurrenceSeriesID = try container.decodeIfPresent(UUID.self, forKey: .recurrenceSeriesID)
-        recurrenceSequence = try container.decodeIfPresent(Int.self, forKey: .recurrenceSequence)
-        recurrenceOccurrenceDate = try container.decodeIfPresent(Date.self, forKey: .recurrenceOccurrenceDate)
-        plannedDate = try container.decodeIfPresent(Date.self, forKey: .plannedDate)
-        deadlineDayIdentifier = try container.decodeIfPresent(String.self, forKey: .deadlineDayIdentifier)
-        plannedDayIdentifier = try container.decodeIfPresent(String.self, forKey: .plannedDayIdentifier)
-    }
-
     var task: PlanoraTask {
-        let type = (TaskType(rawValue: typeRawValue) ?? .custom).canonical
+        let type = TaskType(rawValue: typeRawValue) ?? .custom
         let progressKind = ProgressKind(rawValue: progressKindRawValue) ?? .percentage
         let progressState: ProgressState
 
@@ -420,7 +394,7 @@ private struct PlanoraTaskBackupItem: Codable {
         }
 
         let restoredTask = PlanoraTask(
-            id: id ?? UUID(),
+            id: id,
             title: title,
             subject: subject,
             type: type,
@@ -447,7 +421,7 @@ private struct PlanoraTaskBackupItem: Codable {
         restoredTask.reminderData = reminderData
         restoredTask.recurrenceData = recurrenceData
         restoredTask.recurrenceSeriesID = recurrenceSeriesID
-        restoredTask.recurrenceSequence = recurrenceSequence ?? 0
+        restoredTask.recurrenceSequence = recurrenceSequence
         restoredTask.recurrenceOccurrenceDate = recurrenceOccurrenceDate
         restoredTask.deadlineDayIdentifier = deadlineDayIdentifier
         restoredTask.plannedDayIdentifier = plannedDayIdentifier

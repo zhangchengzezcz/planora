@@ -97,10 +97,7 @@ struct TodayPlanningView: View {
                 )
 
                 if overdue.isEmpty && dueToday.isEmpty && plannedToday.isEmpty {
-                    PlanningEmptyState(
-                        title: L("今天没有安排", "Nothing Planned Today"),
-                        message: L("在任务编辑页设置计划完成日期，即可加入今日。", "Set a Planned Date while editing a task to add it here.")
-                    )
+                    PlanningEmptyState(title: L("今天没有安排", "Nothing Planned Today"))
                 } else {
                     PlanningTaskSection(title: L("已逾期", "Overdue"), tasks: overdue, store: store, tint: .red)
                     PlanningTaskSection(title: L("今天截止", "Due Today"), tasks: dueToday, store: store, tint: .planoraAmber)
@@ -306,17 +303,11 @@ private struct PlanningTaskRow: View {
 
 private struct PlanningEmptyState: View {
     let title: String
-    let message: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            Text(title)
-                .font(.headline.weight(.bold))
-                .foregroundStyle(Color.planoraInk)
-            Text(message)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
+        Text(title)
+            .font(.headline.weight(.bold))
+            .foregroundStyle(Color.planoraInk)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 4)
     }
