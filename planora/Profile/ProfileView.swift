@@ -77,7 +77,7 @@ struct ProfileView: View {
     private var profileHeader: some View {
         VStack(alignment: .leading, spacing: 18) {
             Text(L("我的", "Me"))
-                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .font(.system(size: 34, weight: .bold))
                 .foregroundStyle(Color.planoraInk)
                 .padding(.top, 18)
 
@@ -125,7 +125,17 @@ struct ProfileView: View {
                 }
                 .buttonStyle(.plain)
                 Divider().padding(.leading, 52)
-                SettingsRow(icon: "gearshape", title: L("设置", "Settings"), value: L("默认", "Default"))
+                NavigationLink {
+                    AppearanceSettingsView(store: store)
+                } label: {
+                    SettingsRow(
+                        icon: "paintpalette.fill",
+                        title: L("外观", "Appearance"),
+                        value: store.appearanceSettings.summary,
+                        showsChevron: true
+                    )
+                }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -341,7 +351,7 @@ private struct NameEditView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("编辑姓名", "Edit Name"))
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("修改后，主页问候和个人资料会同步更新。", "Update your name here. The home greeting and profile will stay in sync."))
@@ -387,6 +397,185 @@ private struct NameEditView: View {
     }
 }
 
+private struct AppearanceSettingsView: View {
+    let store: PlanoraStore
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 26) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(L("外观", "Appearance"))
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundStyle(Color.planoraInk)
+
+                    Text(L("调整 Planora 在这台设备上的显示方式。", "Customize how Planora looks on this device."))
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 18)
+
+                AppearanceControlSection(title: L("显示模式", "Display Mode")) {
+                    Picker(L("显示模式", "Display Mode"), selection: binding(\.displayMode)) {
+                        ForEach(PlanoraDisplayMode.allCases) { mode in
+                            Text(mode.title).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                AppearanceControlSection(title: L("字体", "Font")) {
+                    Picker(L("字体", "Font"), selection: binding(\.fontStyle)) {
+                        ForEach(PlanoraFontStyle.allCases) { style in
+                            Text(style.title).tag(style)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                AppearanceControlSection(title: L("背景", "Background")) {
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(PlanoraBackgroundStyle.allCases) { style in
+                            BackgroundStyleButton(
+                                style: style,
+                                isSelected: store.appearanceSettings.backgroundStyle == style
+                            ) {
+                                store.updateAppearance { $0.backgroundStyle = style }
+                            }
+                        }
+                    }
+                }
+
+                AppearanceControlSection(title: L("强调色", "Accent Color")) {
+                    HStack(spacing: 18) {
+                        ForEach(PlanoraAccent.allCases) { accent in
+                            AccentColorButton(
+                                accent: accent,
+                                isSelected: store.appearanceSettings.accent == accent
+                            ) {
+                                store.updateAppearance { $0.accent = accent }
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                Button {
+                    store.resetAppearance()
+                } label: {
+                    Label(L("恢复默认外观", "Reset Appearance"), systemImage: "arrow.counterclockwise")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, minHeight: 48)
+                }
+                .buttonStyle(.bordered)
+                .tint(store.appearanceSettings.accent.color)
+            }
+            .padding(.bottom, 32)
+        }
+        .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
+        .planoraDetailNavigationBar()
+        .background(PlanoraBackground())
+    }
+
+    private func binding<Value>(_ keyPath: WritableKeyPath<PlanoraAppearanceSettings, Value>) -> Binding<Value> {
+        Binding(
+            get: { store.appearanceSettings[keyPath: keyPath] },
+            set: { value in
+                store.updateAppearance { $0[keyPath: keyPath] = value }
+            }
+        )
+    }
+}
+
+private struct AppearanceControlSection<Content: View>: View {
+    let title: String
+    let content: Content
+
+    init(title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(Color.planoraInk)
+            content
+        }
+    }
+}
+
+private struct BackgroundStyleButton: View {
+    let style: PlanoraBackgroundStyle
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 8) {
+                style.swatch
+                    .frame(height: 68)
+                    .overlay(alignment: .topTrailing) {
+                        if isSelected {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(Color.planoraOnAccent)
+                                .padding(8)
+                        }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .stroke(isSelected ? Color.planoraInk.opacity(0.55) : Color.planoraControlStroke, lineWidth: isSelected ? 2 : 1)
+                    }
+
+                Text(style.title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.planoraInk)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(style.title)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+private struct AccentColorButton: View {
+    let accent: PlanoraAccent
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 7) {
+                ZStack {
+                    Circle()
+                        .fill(accent.color)
+                        .frame(width: 38, height: 38)
+                    if isSelected {
+                        Image(systemName: "checkmark")
+                            .font(.caption.weight(.black))
+                            .foregroundStyle(Color.planoraOnAccent)
+                    }
+                }
+
+                Text(accent.title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.planoraInk)
+            }
+            .frame(minWidth: 48)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accent.title)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
 private struct CurriculumEditView: View {
     @Environment(\.modelContext) private var modelContext
     let store: PlanoraStore
@@ -399,7 +588,7 @@ private struct CurriculumEditView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("课程体系", "Curriculum"))
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("选择与你当前学习内容匹配的课程体系。", "Choose the curriculum that matches your current study plan."))
@@ -474,7 +663,7 @@ private struct SubjectEditView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("编辑科目", "Edit Subjects"))
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(LF("curriculum_subjects_format", store.curriculum.title))

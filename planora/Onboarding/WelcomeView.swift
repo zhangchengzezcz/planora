@@ -22,7 +22,7 @@ struct WelcomeView: View {
                     .foregroundStyle(.secondary)
 
                 Text("Planora")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .font(.system(size: 48, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
             }
             .opacity(textVisible ? 1 : 0)

@@ -250,6 +250,44 @@ final class BackupPerformanceTests: XCTestCase {
         }
     }
 
+    func testAppearanceSettingsRoundTripPreservesEveryChoice() throws {
+        let settings = PlanoraAppearanceSettings(
+            displayMode: .dark,
+            fontStyle: .serif,
+            backgroundStyle: .rose,
+            accent: .amber
+        )
+
+        let data = try JSONEncoder().encode(settings)
+        let restored = try JSONDecoder().decode(PlanoraAppearanceSettings.self, from: data)
+
+        XCTAssertEqual(restored, settings)
+    }
+
+    func testAppearanceDefaultsRemainStable() {
+        let settings = PlanoraAppearanceSettings.default
+
+        XCTAssertEqual(settings.displayMode, .system)
+        XCTAssertEqual(settings.fontStyle, .system)
+        XCTAssertEqual(settings.backgroundStyle, .aurora)
+        XCTAssertEqual(settings.accent, .blue)
+    }
+
+    func testAppearanceStoragePersistsSelection() {
+        let original = PlanoraAppearanceStorage.load()
+        defer { PlanoraAppearanceStorage.save(original) }
+        let settings = PlanoraAppearanceSettings(
+            displayMode: .light,
+            fontStyle: .rounded,
+            backgroundStyle: .mint,
+            accent: .green
+        )
+
+        PlanoraAppearanceStorage.save(settings)
+
+        XCTAssertEqual(PlanoraAppearanceStorage.load(), settings)
+    }
+
     private func inMemoryContainer() throws -> ModelContainer {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         return try ModelContainer(for: PlanoraTask.self, configurations: configuration)

@@ -311,7 +311,7 @@ private struct HomeHeader: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(LF("home_hello_user_format", store.userName))
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .font(.system(size: 34, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(L("现在应该关注什么？", "What needs attention now?"))

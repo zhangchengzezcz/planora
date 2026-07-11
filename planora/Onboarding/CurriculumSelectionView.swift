@@ -9,7 +9,7 @@ struct CurriculumSelectionView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 Text(L("选择课程体系", "Choose Curriculum"))
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
                     .fixedSize(horizontal: false, vertical: true)
 

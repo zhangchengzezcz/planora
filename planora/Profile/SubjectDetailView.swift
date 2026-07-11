@@ -96,7 +96,7 @@ struct SubjectDetailView: View {
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(PlanoraFormat.subjectDisplayName(subject))
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .font(.system(size: 30, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
                         .lineLimit(2)
                         .minimumScaleFactor(0.72)

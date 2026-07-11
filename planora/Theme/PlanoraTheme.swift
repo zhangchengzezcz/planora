@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
@@ -7,6 +8,157 @@ enum PlanoraTheme {
     static let pageHorizontalPadding: CGFloat = 20
     static let cardCornerRadius: CGFloat = 28
     static let compactCornerRadius: CGFloat = 18
+}
+
+struct PlanoraAppearanceSettings: Codable, Equatable {
+    var displayMode: PlanoraDisplayMode = .system
+    var fontStyle: PlanoraFontStyle = .system
+    var backgroundStyle: PlanoraBackgroundStyle = .aurora
+    var accent: PlanoraAccent = .blue
+
+    static let `default` = PlanoraAppearanceSettings()
+
+    @MainActor var summary: String {
+        "\(displayMode.title) · \(backgroundStyle.title)"
+    }
+}
+
+enum PlanoraDisplayMode: String, Codable, CaseIterable, Identifiable {
+    case system
+    case light
+    case dark
+
+    var id: String { rawValue }
+
+    @MainActor var title: String {
+        switch self {
+        case .system: L("跟随系统", "Follow System")
+        case .light: L("浅色", "Light")
+        case .dark: L("深色", "Dark")
+        }
+    }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
+        }
+    }
+}
+
+enum PlanoraFontStyle: String, Codable, CaseIterable, Identifiable {
+    case system
+    case rounded
+    case serif
+
+    var id: String { rawValue }
+
+    @MainActor var title: String {
+        switch self {
+        case .system: L("系统", "System")
+        case .rounded: L("圆体", "Rounded")
+        case .serif: L("衬线体", "Serif")
+        }
+    }
+
+    var design: Font.Design? {
+        switch self {
+        case .system: nil
+        case .rounded: .rounded
+        case .serif: .serif
+        }
+    }
+}
+
+enum PlanoraBackgroundStyle: String, Codable, CaseIterable, Identifiable {
+    case aurora
+    case sky
+    case mint
+    case rose
+
+    var id: String { rawValue }
+
+    @MainActor var title: String {
+        switch self {
+        case .aurora: L("极光", "Aurora")
+        case .sky: L("天空", "Sky")
+        case .mint: L("薄荷", "Mint")
+        case .rose: L("玫瑰", "Rose")
+        }
+    }
+
+    var colors: [Color] {
+        switch self {
+        case .aurora:
+            [.planoraMist, .planoraSurfaceMid, .planoraPaper]
+        case .sky:
+            [.planoraMist, .planoraBlue.opacity(0.20), .planoraPaper]
+        case .mint:
+            [.planoraMist, .planoraGreen.opacity(0.20), .planoraPaper]
+        case .rose:
+            [.planoraMist, .pink.opacity(0.16), .planoraPaper]
+        }
+    }
+
+    var swatch: LinearGradient {
+        LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
+}
+
+enum PlanoraAccent: String, Codable, CaseIterable, Identifiable {
+    case blue
+    case green
+    case amber
+    case pink
+
+    var id: String { rawValue }
+
+    @MainActor var title: String {
+        switch self {
+        case .blue: L("蓝色", "Blue")
+        case .green: L("绿色", "Green")
+        case .amber: L("琥珀", "Amber")
+        case .pink: L("粉色", "Pink")
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .blue: .planoraBlue
+        case .green: .planoraGreen
+        case .amber: .planoraAmber
+        case .pink: .pink
+        }
+    }
+}
+
+enum PlanoraAppearanceStorage {
+    private static let key = "planora.appearance"
+
+    static func load() -> PlanoraAppearanceSettings {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let settings = try? JSONDecoder().decode(PlanoraAppearanceSettings.self, from: data) else {
+            return .default
+        }
+        return settings
+    }
+
+    static func save(_ settings: PlanoraAppearanceSettings) {
+        guard let data = try? JSONEncoder().encode(settings) else { return }
+        UserDefaults.standard.set(data, forKey: key)
+    }
+}
+
+private struct PlanoraAppearanceEnvironmentKey: EnvironmentKey {
+    static let defaultValue = PlanoraAppearanceSettings.default
+}
+
+extension EnvironmentValues {
+    var planoraAppearance: PlanoraAppearanceSettings {
+        get { self[PlanoraAppearanceEnvironmentKey.self] }
+        set { self[PlanoraAppearanceEnvironmentKey.self] = newValue }
+    }
 }
 
 extension Color {

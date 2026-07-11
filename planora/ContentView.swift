@@ -43,6 +43,10 @@ private struct PlanoraRootView: View {
             }
             .transition(.opacity.combined(with: .scale(scale: 0.985)))
         }
+        .environment(\.planoraAppearance, store.appearanceSettings)
+        .fontDesign(store.appearanceSettings.fontStyle.design)
+        .tint(store.appearanceSettings.accent.color)
+        .preferredColorScheme(store.appearanceSettings.displayMode.colorScheme)
         .animation(.smooth(duration: 0.35), value: store.phase)
         .onOpenURL { url in
             importSharedBackup(from: url)

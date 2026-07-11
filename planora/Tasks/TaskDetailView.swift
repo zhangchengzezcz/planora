@@ -81,7 +81,7 @@ struct TaskDetailView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(task.title)
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .font(.system(size: 30, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
                     .fixedSize(horizontal: false, vertical: true)
 

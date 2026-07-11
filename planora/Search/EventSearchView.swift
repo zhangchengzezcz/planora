@@ -81,7 +81,7 @@ struct EventSearchView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("搜索", "Search"))
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("快速查找任务、事件和重要日期。", "Quickly find tasks, events, and important dates."))

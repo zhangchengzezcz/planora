@@ -21,6 +21,9 @@
 - 修复空周仍显示“最忙”日期的问题；只有存在已安排任务时才计算最忙日。
 - 今日与本周的“无安排”状态移除玻璃卡片，改为直接嵌入背景的轻量文字。
 - 今日空状态只保留“今天没有安排”，移除计划日期操作说明。
+- 设置页新增外观自定义，可选择跟随系统、浅色或深色模式，以及系统、圆体或衬线字体。
+- 新增极光、天空、薄荷与玫瑰背景，并支持蓝色、绿色、琥珀与粉色强调色；选择会在设备本地保存并即时应用。
+- 新增一键恢复默认外观，品牌 Logo 保持固定字形，避免全局字体影响品牌识别。
 
 ### English
 
@@ -41,6 +44,9 @@
 - Fixed empty weeks showing a misleading busiest day; busiest-day calculations now require scheduled tasks.
 - Removed glass cards from Today and This Week empty states in favor of lightweight text directly on the background.
 - Reduced the Today empty state to “Nothing Planned Today” and removed the Planned Date instruction.
+- Added Appearance settings for system, light, or dark display modes and system, rounded, or serif typography.
+- Added Aurora, Sky, Mint, and Rose backgrounds plus blue, green, amber, and pink accents, saved locally and applied immediately.
+- Added one-tap appearance reset while keeping the Planora logo typography stable.
 
 ## 1.4 - 2026-07-11
 

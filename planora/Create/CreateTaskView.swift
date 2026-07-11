@@ -23,7 +23,7 @@ struct CreateTaskView: View {
             VStack(alignment: .leading, spacing: 20) {
                 HStack(alignment: .top) {
                     Text(L("新建任务", "New Task"))
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Spacer(minLength: 12)
@@ -426,7 +426,7 @@ private struct FormHeader: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(type.title)
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(L("新建任务", "New Task"))

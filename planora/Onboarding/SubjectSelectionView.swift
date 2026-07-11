@@ -15,7 +15,7 @@ struct SubjectSelectionView: View {
                 VStack(alignment: .leading, spacing: 22) {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(L("选择科目", "Choose Subjects"))
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .font(.system(size: 32, weight: .bold))
                             .foregroundStyle(Color.planoraInk)
 
                         Text(L("先选正在学习的内容。", "Select what you are studying now."))

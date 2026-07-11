@@ -16,7 +16,7 @@ struct TaskListView: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(L("任务", "Tasks"))
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .font(.system(size: 34, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(L("按完成时间查看所有任务。", "Review every task by completion time."))

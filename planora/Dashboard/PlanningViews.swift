@@ -233,7 +233,7 @@ private struct PlanningHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(title)
-                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .font(.system(size: 34, weight: .bold))
                 .foregroundStyle(Color.planoraInk)
             Text(subtitle)
                 .font(.callout.weight(.medium))

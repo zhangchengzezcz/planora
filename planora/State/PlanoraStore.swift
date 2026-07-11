@@ -15,6 +15,7 @@ final class PlanoraStore {
     var selectedExtraLearning: Set<String> = ["语言学习"]
     var selectedTab: MainTab = .home
     var userName = ""
+    var appearanceSettings = PlanoraAppearanceStorage.load()
     var pendingDeletionUndo: DeletedTaskUndo?
 
     @ObservationIgnored private let storage: PlanoraStorage
@@ -105,6 +106,16 @@ final class PlanoraStore {
     func updateUserName(_ newName: String) {
         userName = newName.trimmingCharacters(in: .whitespacesAndNewlines)
         persistIfNeeded()
+    }
+
+    func updateAppearance(_ update: (inout PlanoraAppearanceSettings) -> Void) {
+        update(&appearanceSettings)
+        PlanoraAppearanceStorage.save(appearanceSettings)
+    }
+
+    func resetAppearance() {
+        appearanceSettings = .default
+        PlanoraAppearanceStorage.save(appearanceSettings)
     }
 
     func selectCurriculum(_ newCurriculum: Curriculum) {
