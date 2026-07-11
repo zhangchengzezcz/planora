@@ -24,6 +24,10 @@
 - 设置页新增外观自定义，可选择跟随系统、浅色或深色模式，以及系统、圆体或衬线字体。
 - 新增极光、天空、薄荷与玫瑰背景，并支持蓝色、绿色、琥珀与粉色强调色；选择会在设备本地保存并即时应用。
 - 新增一键恢复默认外观，品牌 Logo 保持固定字形，避免全局字体影响品牌识别。
+- 恢复独立“设置”入口，并将外观与任务显示作为两个互不影响的设置页面。
+- 外观新增经典、海洋、森林与日落颜色主题，以及仅作用于中文界面的字体开关。
+- 任务显示新增舒适/紧凑外观、默认排序、已完成任务、进度百分比和任务备注开关。
+- 搜索栏改为独立胶囊输入框与圆形关闭按钮，点击关闭按钮可收起键盘并保留搜索内容。
 
 ### English
 
@@ -47,6 +51,10 @@
 - Added Appearance settings for system, light, or dark display modes and system, rounded, or serif typography.
 - Added Aurora, Sky, Mint, and Rose backgrounds plus blue, green, amber, and pink accents, saved locally and applied immediately.
 - Added one-tap appearance reset while keeping the Planora logo typography stable.
+- Restored a dedicated Settings entry with separate Appearance and Task Display pages.
+- Added Classic, Ocean, Forest, and Sunset color themes plus a Chinese-interface-only font switch.
+- Added comfortable/compact task layouts, default sorting, and toggles for completed tasks, progress percentages, and notes.
+- Reworked search into a capsule field with a separate circular close button that dismisses the keyboard without clearing the query.
 
 ## 1.4 - 2026-07-11
 

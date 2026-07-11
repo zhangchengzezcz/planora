@@ -16,6 +16,7 @@ final class PlanoraStore {
     var selectedTab: MainTab = .home
     var userName = ""
     var appearanceSettings = PlanoraAppearanceStorage.load()
+    var taskDisplaySettings = PlanoraTaskDisplayStorage.load()
     var pendingDeletionUndo: DeletedTaskUndo?
 
     @ObservationIgnored private let storage: PlanoraStorage
@@ -116,6 +117,16 @@ final class PlanoraStore {
     func resetAppearance() {
         appearanceSettings = .default
         PlanoraAppearanceStorage.save(appearanceSettings)
+    }
+
+    func updateTaskDisplay(_ update: (inout PlanoraTaskDisplaySettings) -> Void) {
+        update(&taskDisplaySettings)
+        PlanoraTaskDisplayStorage.save(taskDisplaySettings)
+    }
+
+    func resetTaskDisplay() {
+        taskDisplaySettings = .default
+        PlanoraTaskDisplayStorage.save(taskDisplaySettings)
     }
 
     func selectCurriculum(_ newCurriculum: Curriculum) {

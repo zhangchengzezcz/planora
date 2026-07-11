@@ -4,12 +4,15 @@ import SwiftUI
 struct TaskListView: View {
     @Bindable var store: PlanoraStore
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.planoraTaskDisplay) private var displaySettings
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
     @State private var taskPendingDeletion: PlanoraTask?
     @State private var isShowingDeleteConfirmation = false
 
     private var sortedTasks: [PlanoraTask] {
-        tasks.sorted(by: sortByCompletionTime)
+        tasks
+            .filter { displaySettings.showsCompletedTasks || !$0.isCompleted }
+            .sorted(by: sortTasks)
     }
 
     var body: some View {
@@ -19,7 +22,7 @@ struct TaskListView: View {
                     .font(.system(size: 34, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
 
-                Text(L("按完成时间查看所有任务。", "Review every task by completion time."))
+                Text(L("根据设置显示和排序任务。", "Tasks are displayed and sorted using your settings."))
                     .font(.callout.weight(.medium))
                     .foregroundStyle(.secondary)
             }
@@ -99,29 +102,55 @@ struct TaskListView: View {
         }
     }
 
-    private func sortByCompletionTime(_ lhs: PlanoraTask, _ rhs: PlanoraTask) -> Bool {
+    private func sortTasks(_ lhs: PlanoraTask, _ rhs: PlanoraTask) -> Bool {
         if lhs.isCompleted != rhs.isCompleted {
             return !lhs.isCompleted
         }
 
-        if lhs.importance != rhs.importance {
-            return lhs.importance > rhs.importance
+        switch displaySettings.sortOrder {
+        case .smart:
+            if lhs.importance != rhs.importance {
+                return lhs.importance > rhs.importance
+            }
+            if deadlineComesFirst(lhs, rhs) != nil {
+                return deadlineComesFirst(lhs, rhs) ?? false
+            }
+            return lhs.createdDate > rhs.createdDate
+        case .deadline:
+            if deadlineComesFirst(lhs, rhs) != nil {
+                return deadlineComesFirst(lhs, rhs) ?? false
+            }
+            return lhs.createdDate > rhs.createdDate
+        case .priority:
+            if lhs.importance != rhs.importance {
+                return lhs.importance > rhs.importance
+            }
+            return lhs.createdDate > rhs.createdDate
+        case .createdDate:
+            return lhs.createdDate > rhs.createdDate
+        case .title:
+            let comparison = lhs.title.localizedStandardCompare(rhs.title)
+            if comparison != .orderedSame {
+                return comparison == .orderedAscending
+            }
+            return lhs.createdDate > rhs.createdDate
         }
+    }
 
+    private func deadlineComesFirst(_ lhs: PlanoraTask, _ rhs: PlanoraTask) -> Bool? {
         switch (lhs.hasDeadline, rhs.hasDeadline) {
         case (true, true):
             if lhs.deadline != rhs.deadline {
                 return (lhs.deadline ?? .distantFuture) < (rhs.deadline ?? .distantFuture)
             }
+            return nil
         case (true, false):
             return true
         case (false, true):
             return false
         case (false, false):
-            break
+            return nil
         }
-
-        return lhs.createdDate > rhs.createdDate
     }
 
     private func delete(_ task: PlanoraTask, scope: RecurrenceEditScope) {
@@ -167,17 +196,20 @@ struct TaskListView: View {
 }
 
 private struct TaskListRow: View {
+    @Environment(\.planoraTaskDisplay) private var displaySettings
     let task: PlanoraTask
 
+    private var isCompact: Bool { displaySettings.density == .compact }
+
     var body: some View {
-        GlassPanel(padding: 16, cornerRadius: PlanoraTheme.compactCornerRadius) {
-            VStack(alignment: .leading, spacing: 13) {
-                HStack(spacing: 14) {
+        GlassPanel(padding: isCompact ? 12 : 16, cornerRadius: PlanoraTheme.compactCornerRadius) {
+            VStack(alignment: .leading, spacing: isCompact ? 9 : 13) {
+                HStack(spacing: isCompact ? 10 : 14) {
                     Image(systemName: task.type.symbol)
                         .font(.headline)
                         .foregroundStyle(task.type.tint)
-                        .frame(width: 42, height: 42)
-                        .background(task.type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .frame(width: isCompact ? 34 : 42, height: isCompact ? 34 : 42)
+                        .background(task.type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: isCompact ? 10 : 14, style: .continuous))
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(task.title)
@@ -202,14 +234,14 @@ private struct TaskListRow: View {
                 HStack(spacing: 10) {
                     TaskListMetric(label: L("完成时间", "Completion Time"), value: task.completionTimeText, tint: task.type.tint, isPrimary: true)
 
-                    if task.tracksProgress {
+                    if task.tracksProgress && (task.progressState.kind != .percentage || displaySettings.showsProgressPercentage) {
                         TaskListMetric(label: task.progressState.label, value: task.progressState.valueText, tint: task.type.tint)
                     } else {
                         TaskListMetric(label: L("类型", "Type"), value: task.type.title, tint: task.type.tint)
                     }
                 }
 
-                if !task.notes.isEmpty {
+                if displaySettings.showsNotes && !task.notes.isEmpty {
                     Text(task.notes)
                         .font(.caption)
                         .foregroundStyle(.secondary)

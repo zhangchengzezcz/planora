@@ -410,37 +410,55 @@ private struct EventSearchField: View {
     let isFocused: FocusState<Bool>.Binding
 
     var body: some View {
-        let shape = Capsule()
-
         HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .font(.headline.weight(.semibold))
-                .foregroundStyle(Color.planoraDeepGreen)
+            let searchShape = Capsule()
 
-            TextField(L("搜索任务或事件", "Search tasks or events"), text: $text)
-                .font(.headline)
-                .foregroundStyle(Color.planoraInk)
-                .textFieldStyle(.plain)
-                .textInputAutocapitalization(.never)
-                .disableAutocorrection(true)
-                .focused(isFocused)
+            HStack(spacing: 12) {
+                Image(systemName: "magnifyingglass")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(Color.planoraInk)
 
-            if !text.isEmpty {
+                TextField(L("搜索任务或事件", "Search tasks or events"), text: $text)
+                    .font(.title3)
+                    .foregroundStyle(Color.planoraInk)
+                    .textFieldStyle(.plain)
+                    .textInputAutocapitalization(.never)
+                    .disableAutocorrection(true)
+                    .submitLabel(.search)
+                    .focused(isFocused)
+                    .onSubmit {
+                        isFocused.wrappedValue = false
+                    }
+
+                Image(systemName: "mic.fill")
+                    .font(.title3.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+            }
+            .padding(.horizontal, 18)
+            .frame(maxWidth: .infinity, minHeight: 58)
+            .background(Color.planoraGlassFill, in: searchShape)
+            .glassEffect(.regular.tint(Color.planoraGlassTint).interactive(), in: searchShape)
+            .overlay(searchShape.stroke(Color.planoraGlassStroke, lineWidth: 1))
+
+            if isFocused.wrappedValue {
                 Button {
-                    text = ""
+                    isFocused.wrappedValue = false
                 } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                    Image(systemName: "xmark")
+                        .font(.title2.weight(.medium))
+                        .foregroundStyle(Color.planoraInk)
+                        .frame(width: 58, height: 58)
+                        .background(Color.planoraGlassFill, in: Circle())
+                        .glassEffect(.regular.tint(Color.planoraGlassTint).interactive(), in: Circle())
+                        .overlay(Circle().stroke(Color.planoraGlassStroke, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(L("收起键盘", "Dismiss Keyboard"))
+                .transition(.scale(scale: 0.88).combined(with: .opacity))
             }
         }
-        .padding(.horizontal, 16)
-        .frame(minHeight: 54)
-        .background(Color.planoraGlassFill, in: shape)
-        .glassEffect(.regular.tint(Color.planoraGlassTint).interactive(), in: shape)
-        .overlay(shape.stroke(Color.planoraGlassStroke, lineWidth: 1))
+        .animation(.smooth(duration: 0.2), value: isFocused.wrappedValue)
     }
 }
 

@@ -255,7 +255,8 @@ final class BackupPerformanceTests: XCTestCase {
             displayMode: .dark,
             fontStyle: .serif,
             backgroundStyle: .rose,
-            accent: .amber
+            accent: .amber,
+            usesChineseFont: true
         )
 
         let data = try JSONEncoder().encode(settings)
@@ -271,6 +272,7 @@ final class BackupPerformanceTests: XCTestCase {
         XCTAssertEqual(settings.fontStyle, .system)
         XCTAssertEqual(settings.backgroundStyle, .aurora)
         XCTAssertEqual(settings.accent, .blue)
+        XCTAssertFalse(settings.usesChineseFont)
     }
 
     func testAppearanceStoragePersistsSelection() {
@@ -286,6 +288,60 @@ final class BackupPerformanceTests: XCTestCase {
         PlanoraAppearanceStorage.save(settings)
 
         XCTAssertEqual(PlanoraAppearanceStorage.load(), settings)
+    }
+
+    func testPreviousAppearancePayloadDefaultsChineseFontSwitchToOff() throws {
+        let data = Data(#"{"displayMode":"dark","fontStyle":"serif","backgroundStyle":"rose","accent":"pink"}"#.utf8)
+        let settings = try JSONDecoder().decode(PlanoraAppearanceSettings.self, from: data)
+
+        XCTAssertEqual(settings.displayMode, .dark)
+        XCTAssertEqual(settings.fontStyle, .serif)
+        XCTAssertEqual(settings.backgroundStyle, .rose)
+        XCTAssertEqual(settings.accent, .pink)
+        XCTAssertFalse(settings.usesChineseFont)
+    }
+
+    func testTaskDisplaySettingsRoundTripPreservesEveryChoice() throws {
+        let settings = PlanoraTaskDisplaySettings(
+            density: .compact,
+            sortOrder: .title,
+            showsCompletedTasks: false,
+            showsProgressPercentage: false,
+            showsNotes: false
+        )
+
+        let data = try JSONEncoder().encode(settings)
+        let restored = try JSONDecoder().decode(PlanoraTaskDisplaySettings.self, from: data)
+
+        XCTAssertEqual(restored, settings)
+    }
+
+    func testTaskDisplayDefaultsRemainStable() {
+        let settings = PlanoraTaskDisplaySettings.default
+
+        XCTAssertEqual(settings.density, .comfortable)
+        XCTAssertEqual(settings.sortOrder, .smart)
+        XCTAssertTrue(settings.showsCompletedTasks)
+        XCTAssertTrue(settings.showsProgressPercentage)
+        XCTAssertTrue(settings.showsNotes)
+    }
+
+    func testTaskDisplayStoragePersistsIndependentlyFromAppearance() {
+        let original = PlanoraTaskDisplayStorage.load()
+        let appearanceBefore = PlanoraAppearanceStorage.load()
+        defer { PlanoraTaskDisplayStorage.save(original) }
+        let settings = PlanoraTaskDisplaySettings(
+            density: .compact,
+            sortOrder: .deadline,
+            showsCompletedTasks: false,
+            showsProgressPercentage: true,
+            showsNotes: false
+        )
+
+        PlanoraTaskDisplayStorage.save(settings)
+
+        XCTAssertEqual(PlanoraTaskDisplayStorage.load(), settings)
+        XCTAssertEqual(PlanoraAppearanceStorage.load(), appearanceBefore)
     }
 
     private func inMemoryContainer() throws -> ModelContainer {

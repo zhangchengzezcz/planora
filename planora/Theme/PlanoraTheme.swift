@@ -15,11 +15,48 @@ struct PlanoraAppearanceSettings: Codable, Equatable {
     var fontStyle: PlanoraFontStyle = .system
     var backgroundStyle: PlanoraBackgroundStyle = .aurora
     var accent: PlanoraAccent = .blue
+    var usesChineseFont = false
 
     static let `default` = PlanoraAppearanceSettings()
 
     @MainActor var summary: String {
         "\(displayMode.title) · \(backgroundStyle.title)"
+    }
+
+    var appliedFontDesign: Font.Design? {
+        guard usesChineseFont, PlanoraLocalization.usesChineseLocalization else { return nil }
+        return fontStyle.design
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case displayMode
+        case fontStyle
+        case backgroundStyle
+        case accent
+        case usesChineseFont
+    }
+
+    init(
+        displayMode: PlanoraDisplayMode = .system,
+        fontStyle: PlanoraFontStyle = .system,
+        backgroundStyle: PlanoraBackgroundStyle = .aurora,
+        accent: PlanoraAccent = .blue,
+        usesChineseFont: Bool = false
+    ) {
+        self.displayMode = displayMode
+        self.fontStyle = fontStyle
+        self.backgroundStyle = backgroundStyle
+        self.accent = accent
+        self.usesChineseFont = usesChineseFont
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        displayMode = try container.decodeIfPresent(PlanoraDisplayMode.self, forKey: .displayMode) ?? .system
+        fontStyle = try container.decodeIfPresent(PlanoraFontStyle.self, forKey: .fontStyle) ?? .system
+        backgroundStyle = try container.decodeIfPresent(PlanoraBackgroundStyle.self, forKey: .backgroundStyle) ?? .aurora
+        accent = try container.decodeIfPresent(PlanoraAccent.self, forKey: .accent) ?? .blue
+        usesChineseFont = try container.decodeIfPresent(Bool.self, forKey: .usesChineseFont) ?? false
     }
 }
 
@@ -68,6 +105,55 @@ enum PlanoraFontStyle: String, Codable, CaseIterable, Identifiable {
         case .rounded: .rounded
         case .serif: .serif
         }
+    }
+
+    static var chineseChoices: [PlanoraFontStyle] { [.rounded, .serif] }
+}
+
+enum PlanoraColorTheme: String, CaseIterable, Identifiable {
+    case classic
+    case ocean
+    case forest
+    case sunset
+
+    var id: String { rawValue }
+
+    @MainActor var title: String {
+        switch self {
+        case .classic: L("经典", "Classic")
+        case .ocean: L("海洋", "Ocean")
+        case .forest: L("森林", "Forest")
+        case .sunset: L("日落", "Sunset")
+        }
+    }
+
+    var backgroundStyle: PlanoraBackgroundStyle {
+        switch self {
+        case .classic: .aurora
+        case .ocean: .sky
+        case .forest: .mint
+        case .sunset: .rose
+        }
+    }
+
+    var accent: PlanoraAccent {
+        switch self {
+        case .classic, .ocean: .blue
+        case .forest: .green
+        case .sunset: .pink
+        }
+    }
+
+    var swatch: LinearGradient {
+        LinearGradient(
+            colors: [accent.color.opacity(0.9)] + backgroundStyle.colors,
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    func matches(_ settings: PlanoraAppearanceSettings) -> Bool {
+        settings.backgroundStyle == backgroundStyle && settings.accent == accent
     }
 }
 
@@ -158,6 +244,82 @@ extension EnvironmentValues {
     var planoraAppearance: PlanoraAppearanceSettings {
         get { self[PlanoraAppearanceEnvironmentKey.self] }
         set { self[PlanoraAppearanceEnvironmentKey.self] = newValue }
+    }
+}
+
+struct PlanoraTaskDisplaySettings: Codable, Equatable {
+    var density: PlanoraTaskDensity = .comfortable
+    var sortOrder: PlanoraTaskSortOrder = .smart
+    var showsCompletedTasks = true
+    var showsProgressPercentage = true
+    var showsNotes = true
+
+    static let `default` = PlanoraTaskDisplaySettings()
+
+    @MainActor var summary: String {
+        "\(density.title) · \(sortOrder.title)"
+    }
+}
+
+enum PlanoraTaskDensity: String, Codable, CaseIterable, Identifiable {
+    case comfortable
+    case compact
+
+    var id: String { rawValue }
+
+    @MainActor var title: String {
+        switch self {
+        case .comfortable: L("舒适", "Comfortable")
+        case .compact: L("紧凑", "Compact")
+        }
+    }
+}
+
+enum PlanoraTaskSortOrder: String, Codable, CaseIterable, Identifiable {
+    case smart
+    case deadline
+    case priority
+    case createdDate
+    case title
+
+    var id: String { rawValue }
+
+    @MainActor var title: String {
+        switch self {
+        case .smart: L("智能排序", "Smart")
+        case .deadline: L("截止日期", "Deadline")
+        case .priority: L("优先级", "Priority")
+        case .createdDate: L("创建时间", "Created")
+        case .title: L("标题", "Title")
+        }
+    }
+}
+
+enum PlanoraTaskDisplayStorage {
+    private static let key = "planora.task-display.v1"
+
+    static func load() -> PlanoraTaskDisplaySettings {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let settings = try? JSONDecoder().decode(PlanoraTaskDisplaySettings.self, from: data) else {
+            return .default
+        }
+        return settings
+    }
+
+    static func save(_ settings: PlanoraTaskDisplaySettings) {
+        guard let data = try? JSONEncoder().encode(settings) else { return }
+        UserDefaults.standard.set(data, forKey: key)
+    }
+}
+
+private struct PlanoraTaskDisplayEnvironmentKey: EnvironmentKey {
+    static let defaultValue = PlanoraTaskDisplaySettings.default
+}
+
+extension EnvironmentValues {
+    var planoraTaskDisplay: PlanoraTaskDisplaySettings {
+        get { self[PlanoraTaskDisplayEnvironmentKey.self] }
+        set { self[PlanoraTaskDisplayEnvironmentKey.self] = newValue }
     }
 }
 

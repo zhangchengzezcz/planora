@@ -126,12 +126,12 @@ struct ProfileView: View {
                 .buttonStyle(.plain)
                 Divider().padding(.leading, 52)
                 NavigationLink {
-                    AppearanceSettingsView(store: store)
+                    SettingsHomeView(store: store)
                 } label: {
                     SettingsRow(
-                        icon: "paintpalette.fill",
-                        title: L("外观", "Appearance"),
-                        value: store.appearanceSettings.summary,
+                        icon: "gearshape.fill",
+                        title: L("设置", "Settings"),
+                        value: "",
                         showsChevron: true
                     )
                 }
@@ -397,6 +397,61 @@ private struct NameEditView: View {
     }
 }
 
+private struct SettingsHomeView: View {
+    let store: PlanoraStore
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 22) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(L("设置", "Settings"))
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundStyle(Color.planoraInk)
+
+                    Text(L("调整 Planora 的显示方式和任务列表偏好。", "Manage Planora appearance and task-list preferences."))
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 18)
+
+                DashboardSection(title: L("偏好设置", "Preferences")) {
+                    VStack(spacing: 0) {
+                        NavigationLink {
+                            AppearanceSettingsView(store: store)
+                        } label: {
+                            SettingsRow(
+                                icon: "paintpalette.fill",
+                                title: L("外观", "Appearance"),
+                                value: store.appearanceSettings.summary,
+                                showsChevron: true
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        Divider().padding(.leading, 52)
+
+                        NavigationLink {
+                            TaskDisplaySettingsView(store: store)
+                        } label: {
+                            SettingsRow(
+                                icon: "list.bullet.rectangle.portrait.fill",
+                                title: L("任务显示", "Task Display"),
+                                value: store.taskDisplaySettings.summary,
+                                showsChevron: true
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .padding(.bottom, 32)
+        }
+        .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
+        .planoraDetailNavigationBar()
+        .background(PlanoraBackground())
+    }
+}
+
 private struct AppearanceSettingsView: View {
     let store: PlanoraStore
 
@@ -419,6 +474,22 @@ private struct AppearanceSettingsView: View {
                 }
                 .padding(.top, 18)
 
+                AppearanceControlSection(title: L("颜色主题", "Color Theme")) {
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(PlanoraColorTheme.allCases) { theme in
+                            ColorThemeButton(
+                                theme: theme,
+                                isSelected: theme.matches(store.appearanceSettings)
+                            ) {
+                                store.updateAppearance {
+                                    $0.backgroundStyle = theme.backgroundStyle
+                                    $0.accent = theme.accent
+                                }
+                            }
+                        }
+                    }
+                }
+
                 AppearanceControlSection(title: L("显示模式", "Display Mode")) {
                     Picker(L("显示模式", "Display Mode"), selection: binding(\.displayMode)) {
                         ForEach(PlanoraDisplayMode.allCases) { mode in
@@ -428,13 +499,27 @@ private struct AppearanceSettingsView: View {
                     .pickerStyle(.segmented)
                 }
 
-                AppearanceControlSection(title: L("字体", "Font")) {
-                    Picker(L("字体", "Font"), selection: binding(\.fontStyle)) {
-                        ForEach(PlanoraFontStyle.allCases) { style in
-                            Text(style.title).tag(style)
+                AppearanceControlSection(title: L("中文字体", "Chinese Font")) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Toggle(
+                            L("启用中文字体样式", "Enable Chinese Font Style"),
+                            isOn: chineseFontBinding
+                        )
+                        .font(.subheadline.weight(.semibold))
+
+                        if store.appearanceSettings.usesChineseFont {
+                            Picker(L("中文字体", "Chinese Font"), selection: binding(\.fontStyle)) {
+                                ForEach(PlanoraFontStyle.chineseChoices) { style in
+                                    Text(style.title).tag(style)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+
+                            Text(L("字体样式目前只应用于中文界面。", "Font styling currently applies to the Chinese interface only."))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
-                    .pickerStyle(.segmented)
                 }
 
                 AppearanceControlSection(title: L("背景", "Background")) {
@@ -486,6 +571,93 @@ private struct AppearanceSettingsView: View {
             get: { store.appearanceSettings[keyPath: keyPath] },
             set: { value in
                 store.updateAppearance { $0[keyPath: keyPath] = value }
+            }
+        )
+    }
+
+    private var chineseFontBinding: Binding<Bool> {
+        Binding(
+            get: { store.appearanceSettings.usesChineseFont },
+            set: { isEnabled in
+                store.updateAppearance {
+                    $0.usesChineseFont = isEnabled
+                    if isEnabled, $0.fontStyle == .system {
+                        $0.fontStyle = .rounded
+                    }
+                }
+            }
+        )
+    }
+}
+
+private struct TaskDisplaySettingsView: View {
+    let store: PlanoraStore
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 26) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(L("任务显示", "Task Display"))
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundStyle(Color.planoraInk)
+
+                    Text(L("这些选项只改变任务列表，不会修改任务内容。", "These options change the task list without editing task data."))
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 18)
+
+                AppearanceControlSection(title: L("任务外观", "Task Appearance")) {
+                    Picker(L("任务外观", "Task Appearance"), selection: binding(\.density)) {
+                        ForEach(PlanoraTaskDensity.allCases) { density in
+                            Text(density.title).tag(density)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                AppearanceControlSection(title: L("默认排序", "Default Sorting")) {
+                    Picker(L("默认排序", "Default Sorting"), selection: binding(\.sortOrder)) {
+                        ForEach(PlanoraTaskSortOrder.allCases) { order in
+                            Text(order.title).tag(order)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .buttonStyle(.bordered)
+                }
+
+                AppearanceControlSection(title: L("显示内容", "Visible Content")) {
+                    VStack(spacing: 14) {
+                        Toggle(L("显示已完成任务", "Show Completed Tasks"), isOn: binding(\.showsCompletedTasks))
+                        Divider()
+                        Toggle(L("显示进度百分比", "Show Progress Percentage"), isOn: binding(\.showsProgressPercentage))
+                        Divider()
+                        Toggle(L("显示任务备注", "Show Task Notes"), isOn: binding(\.showsNotes))
+                    }
+                    .font(.subheadline.weight(.semibold))
+                }
+
+                Button {
+                    store.resetTaskDisplay()
+                } label: {
+                    Label(L("恢复默认任务显示", "Reset Task Display"), systemImage: "arrow.counterclockwise")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, minHeight: 48)
+                }
+                .buttonStyle(.bordered)
+            }
+            .padding(.bottom, 32)
+        }
+        .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
+        .planoraDetailNavigationBar()
+        .background(PlanoraBackground())
+    }
+
+    private func binding<Value>(_ keyPath: WritableKeyPath<PlanoraTaskDisplaySettings, Value>) -> Binding<Value> {
+        Binding(
+            get: { store.taskDisplaySettings[keyPath: keyPath] },
+            set: { value in
+                store.updateTaskDisplay { $0[keyPath: keyPath] = value }
             }
         )
     }
@@ -541,6 +713,41 @@ private struct BackgroundStyleButton: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(style.title)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+private struct ColorThemeButton: View {
+    let theme: PlanoraColorTheme
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 8) {
+                theme.swatch
+                    .frame(height: 58)
+                    .overlay(alignment: .topTrailing) {
+                        if isSelected {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(Color.planoraOnAccent)
+                                .padding(8)
+                        }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .stroke(isSelected ? Color.planoraInk.opacity(0.55) : Color.planoraControlStroke, lineWidth: isSelected ? 2 : 1)
+                    }
+
+                Text(theme.title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.planoraInk)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(theme.title)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
