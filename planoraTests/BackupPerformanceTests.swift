@@ -138,6 +138,93 @@ final class BackupPerformanceTests: XCTestCase {
         XCTAssertEqual(try context.fetchCount(FetchDescriptor<PlanoraTask>()), 1)
     }
 
+    func testRecurringImportDeduplicatesAfterIDsAndSeriesIDsChange() throws {
+        let container = try inMemoryContainer()
+        let context = container.mainContext
+        let dates = [
+            Date(timeIntervalSince1970: 1_800_000_000),
+            Date(timeIntervalSince1970: 1_800_604_800)
+        ]
+        let existingSeriesID = UUID()
+        let importedSeriesID = UUID()
+        let existing = dates.enumerated().map { index, date in
+            makeRecurringTask(date: date, seriesID: existingSeriesID, sequence: index)
+        }
+        for task in existing { context.insert(task) }
+        try context.save()
+
+        let imported = dates.enumerated().map { index, date -> PlanoraTask in
+            let task = makeRecurringTask(date: date, seriesID: importedSeriesID, sequence: index)
+            task.id = UUID()
+            task.createdDate = Date(timeIntervalSince1970: 1_900_000_000 + Double(index))
+            return task
+        }
+        let preview = TaskBackupImporter.preview(tasks: imported, existingTasks: existing)
+        let result = try TaskBackupImporter.importTasks(
+            preview,
+            strategy: .skipDuplicates,
+            existingTasks: existing,
+            into: context
+        )
+
+        XCTAssertEqual(preview.duplicateCount, 2)
+        XCTAssertEqual(result.importedCount, 0)
+        XCTAssertEqual(result.skippedCount, 2)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<PlanoraTask>()), 2)
+    }
+
+    func testRecurringImportKeepsDifferentOccurrenceDates() throws {
+        let container = try inMemoryContainer()
+        let context = container.mainContext
+        let existing = makeRecurringTask(
+            date: Date(timeIntervalSince1970: 1_800_000_000),
+            seriesID: UUID(),
+            sequence: 0
+        )
+        context.insert(existing)
+        try context.save()
+
+        let imported = makeRecurringTask(
+            date: Date(timeIntervalSince1970: 1_800_086_400),
+            seriesID: UUID(),
+            sequence: 0
+        )
+        let preview = TaskBackupImporter.preview(tasks: [imported], existingTasks: [existing])
+        let result = try TaskBackupImporter.importTasks(
+            preview,
+            strategy: .skipDuplicates,
+            existingTasks: [existing],
+            into: context
+        )
+
+        XCTAssertEqual(preview.duplicateCount, 0)
+        XCTAssertEqual(result.importedCount, 1)
+        XCTAssertEqual(result.skippedCount, 0)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<PlanoraTask>()), 2)
+    }
+
+    func testRecurringDuplicatesInsideSingleBackupAreSkipped() throws {
+        let container = try inMemoryContainer()
+        let context = container.mainContext
+        let date = Date(timeIntervalSince1970: 1_800_000_000)
+        let first = makeRecurringTask(date: date, seriesID: UUID(), sequence: 0)
+        let duplicate = makeRecurringTask(date: date, seriesID: UUID(), sequence: 4)
+        duplicate.createdDate = Date(timeIntervalSince1970: 1_900_000_000)
+
+        let preview = TaskBackupImporter.preview(tasks: [first, duplicate], existingTasks: [])
+        let result = try TaskBackupImporter.importTasks(
+            preview,
+            strategy: .skipDuplicates,
+            existingTasks: [],
+            into: context
+        )
+
+        XCTAssertEqual(preview.duplicateCount, 1)
+        XCTAssertEqual(result.importedCount, 1)
+        XCTAssertEqual(result.skippedCount, 1)
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<PlanoraTask>()), 1)
+    }
+
     func testRecurringSeriesRoundTripKeepsSeriesIdentity() throws {
         let seriesID = UUID()
         let tasks = (0..<4).map { index -> PlanoraTask in
@@ -241,5 +328,28 @@ final class BackupPerformanceTests: XCTestCase {
             createdDate: Date(timeIntervalSince1970: 1_700_000_000 + Double(index)),
             importance: index % 3
         )
+    }
+
+    private func makeRecurringTask(date: Date, seriesID: UUID, sequence: Int) -> PlanoraTask {
+        let task = PlanoraTask(
+            title: "English Weekly Reading",
+            subject: "English B SL",
+            type: .assignment,
+            deadline: date,
+            hasDeadline: true,
+            tracksProgress: true,
+            progressState: .percentage(0.25),
+            notes: "Recurring import fixture",
+            createdDate: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+        task.recurrenceRule = TaskRecurrenceRule(
+            frequency: .weekly,
+            weekdays: [2, 5],
+            end: .afterCount(8)
+        )
+        task.recurrenceSeriesID = seriesID
+        task.recurrenceSequence = sequence
+        task.recurrenceOccurrenceDate = date
+        return task
     }
 }

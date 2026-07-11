@@ -15,6 +15,8 @@
 - 旧版备份缺失新字段时使用安全默认值，导入保存失败时回滚整个上下文，避免半成品。
 - 备份格式升级到版本 8，并继续兼容 v1、v2、v3 与 v7。
 - 加入 2,000 项任务的 SwiftData、查询与备份性能基准。
+- 修复重复任务在 UUID 或系列 ID 变化后再次导入的问题；去重会按重复实例的标题、科目、类型与发生日期识别，同时保留同系列不同日期的任务。
+- 导入预览现在也会统计同一备份文件内部的重复实例，选择“跳过重复”时只导入一份。
 
 ### English
 
@@ -29,6 +31,8 @@
 - Added safe defaults for legacy backup fields and transactional rollback when an import save fails.
 - Upgraded backups to version 8 while retaining v1, v2, v3, and v7 compatibility.
 - Added SwiftData, fetch, and backup performance coverage for 2,000 tasks.
+- Fixed recurring tasks being imported again after their task or series UUID changed by matching each occurrence on title, subject, type, and occurrence date while preserving distinct dates.
+- Import previews now count duplicate recurring occurrences inside the same backup, and Skip Duplicates imports only one copy.
 
 ## 1.4 - 2026-07-11
 

@@ -173,11 +173,21 @@ enum TaskBackupImporter {
         }
 
         let importedTasks = try TaskBackupCodec.tasks(from: text)
-        let existingIDs = Set(existingTasks.map(\.id))
-        let existingFingerprints = Set(existingTasks.map(\.importFingerprint))
-        let duplicateCount = importedTasks.filter {
-            existingIDs.contains($0.id) || existingFingerprints.contains($0.importFingerprint)
-        }.count
+        return preview(tasks: importedTasks, existingTasks: existingTasks)
+    }
+
+    static func preview(tasks importedTasks: [PlanoraTask], existingTasks: [PlanoraTask]) -> TaskImportPreview {
+        var index = TaskImportIndex(tasks: existingTasks)
+        var duplicateCount = 0
+
+        for task in importedTasks {
+            if index.duplicate(of: task) != nil {
+                duplicateCount += 1
+            } else {
+                index.insert(task)
+            }
+        }
+
         return TaskImportPreview(tasks: importedTasks, duplicateCount: duplicateCount)
     }
 
@@ -188,19 +198,14 @@ enum TaskBackupImporter {
         into modelContext: ModelContext
     ) throws -> TaskImportResult {
         AutomaticTaskBackup.save(tasks: existingTasks)
-        var existingByID: [UUID: PlanoraTask] = [:]
-        var existingByFingerprint: [String: PlanoraTask] = [:]
-        for task in existingTasks {
-            existingByID[task.id] = task
-            existingByFingerprint[task.importFingerprint] = task
-        }
+        var importIndex = TaskImportIndex(tasks: existingTasks)
         var importedCount = 0
         var skippedCount = 0
         var seriesIDMap: [UUID: UUID] = [:]
 
         do {
             for importedTask in preview.tasks {
-                let duplicate = existingByID[importedTask.id] ?? existingByFingerprint[importedTask.importFingerprint]
+                let duplicate = importIndex.duplicate(of: importedTask)
 
                 switch strategy {
                 case .skipDuplicates where duplicate != nil:
@@ -209,6 +214,7 @@ enum TaskBackupImporter {
                 case .overwriteDuplicates where duplicate != nil:
                     if let duplicate {
                         duplicate.applyImportedValues(from: importedTask)
+                        importIndex.insert(duplicate)
                         importedCount += 1
                     }
                     continue
@@ -224,8 +230,7 @@ enum TaskBackupImporter {
                 }
 
                 modelContext.insert(importedTask)
-                existingByID[importedTask.id] = importedTask
-                existingByFingerprint[importedTask.importFingerprint] = importedTask
+                importIndex.insert(importedTask)
                 importedCount += 1
             }
 
@@ -235,6 +240,31 @@ enum TaskBackupImporter {
             modelContext.rollback()
             throw error
         }
+    }
+}
+
+private struct TaskImportIndex {
+    private var tasksByIdentity: [String: PlanoraTask] = [:]
+
+    init(tasks: [PlanoraTask]) {
+        for task in tasks {
+            insert(task)
+        }
+    }
+
+    mutating func insert(_ task: PlanoraTask) {
+        for identity in task.importIdentityKeys {
+            tasksByIdentity[identity] = task
+        }
+    }
+
+    func duplicate(of task: PlanoraTask) -> PlanoraTask? {
+        for identity in task.importIdentityKeys {
+            if let existing = tasksByIdentity[identity] {
+                return existing
+            }
+        }
+        return nil
     }
 }
 
@@ -428,14 +458,55 @@ private struct PlanoraTaskBackupItem: Codable {
 }
 
 private extension PlanoraTask {
+    var importIdentityKeys: [String] {
+        var keys = [
+            "id:\(id.uuidString)",
+            "task:\(importFingerprint)"
+        ]
+
+        if isRecurring, let occurrenceDayIdentifier {
+            keys.append(
+                [
+                    "recurring",
+                    normalizedImportText(title),
+                    normalizedImportText(subject),
+                    typeRawValue,
+                    occurrenceDayIdentifier
+                ].joined(separator: "|")
+            )
+        }
+
+        return keys
+    }
+
+    var occurrenceDayIdentifier: String? {
+        if let deadlineDayIdentifier {
+            return deadlineDayIdentifier
+        }
+        if let recurrenceOccurrenceDate {
+            return PlanoraCalendarDay(date: recurrenceOccurrenceDate).identifier
+        }
+        if let deadline {
+            return PlanoraCalendarDay(date: deadline).identifier
+        }
+        return nil
+    }
+
     var importFingerprint: String {
         [
-            title.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
-            subject.lowercased(),
+            normalizedImportText(title),
+            normalizedImportText(subject),
             typeRawValue,
             deadline.map { String(Int($0.timeIntervalSince1970 / 60)) } ?? "none",
             String(Int(createdDate.timeIntervalSince1970 / 60))
         ].joined(separator: "|")
+    }
+
+    func normalizedImportText(_ value: String) -> String {
+        value
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: .current)
+            .lowercased()
     }
 
     func applyImportedValues(from source: PlanoraTask) {
