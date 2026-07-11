@@ -134,8 +134,27 @@ struct WeekPlanningView: View {
 
     private var incompleteTasks: [PlanoraTask] { tasks.filter { !$0.isCompleted } }
 
+    private var scheduledTaskCount: Int {
+        days.reduce(0) { $0 + tasks(on: $1).count }
+    }
+
     private var busiestDay: Date? {
-        days.max { tasks(on: $0).count < tasks(on: $1).count }
+        guard scheduledTaskCount > 0 else { return nil }
+        return days.max { tasks(on: $0).count < tasks(on: $1).count }
+    }
+
+    private var summaryText: String {
+        if let busiestDay {
+            return LF(
+                "busiest_day_format",
+                busiestDay.formatted(.dateTime.weekday(.wide)),
+                tasks(on: busiestDay).count
+            )
+        }
+
+        return incompleteTasks.isEmpty
+            ? L("本周暂无任务", "No tasks this week")
+            : L("本周暂无已安排任务", "No scheduled tasks this week")
     }
 
     private var unscheduled: [PlanoraTask] {
@@ -147,20 +166,15 @@ struct WeekPlanningView: View {
             VStack(alignment: .leading, spacing: 18) {
                 PlanningHeader(
                     title: L("本周", "This Week"),
-                    subtitle: busiestDay.map {
-                        LF("busiest_day_format", $0.formatted(.dateTime.weekday(.wide)), tasks(on: $0).count)
-                    } ?? L("本周暂无任务", "No tasks this week")
+                    subtitle: summaryText
                 )
 
                 ForEach(days, id: \.self) { day in
                     let dayTasks = tasks(on: day)
-                    DashboardSection(title: day.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())) {
-                        if dayTasks.isEmpty {
-                            Text(L("无安排", "No tasks"))
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .padding(.vertical, 8)
-                        } else {
+                    if dayTasks.isEmpty {
+                        WeekDayEmptyState(day: day)
+                    } else {
+                        DashboardSection(title: day.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())) {
                             VStack(spacing: 10) {
                                 ForEach(dayTasks, id: \.id) { task in
                                     PlanningTaskRow(store: store, task: task, tint: task.type.tint)
@@ -194,6 +208,24 @@ struct WeekPlanningView: View {
             }
             return task.deadline.map { calendar.isDate($0, inSameDayAs: day) } == true
         }
+    }
+}
+
+private struct WeekDayEmptyState: View {
+    let day: Date
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            Text(day.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
+                .font(.headline)
+                .foregroundStyle(Color.planoraInk)
+
+            Text(L("无安排", "No tasks"))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 2)
     }
 }
 
@@ -277,20 +309,15 @@ private struct PlanningEmptyState: View {
     let message: String
 
     var body: some View {
-        GlassPanel {
-            VStack(spacing: 10) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.largeTitle)
-                    .foregroundStyle(Color.planoraGreen)
-                Text(title)
-                    .font(.headline.weight(.bold))
-                    .foregroundStyle(Color.planoraInk)
-                Text(message)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
+        VStack(alignment: .leading, spacing: 7) {
+            Text(title)
+                .font(.headline.weight(.bold))
+                .foregroundStyle(Color.planoraInk)
+            Text(message)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 4)
     }
 }

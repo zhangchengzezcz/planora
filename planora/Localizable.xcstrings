@@ -4158,6 +4158,28 @@
         }
       }
     },
+    "No scheduled tasks this week" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No scheduled tasks this week"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今週は予定されたタスクがありません"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本周暂无已安排任务"
+          }
+        }
+      }
+    },
     "No tasks" : {
       "localizations" : {
         "en" : {

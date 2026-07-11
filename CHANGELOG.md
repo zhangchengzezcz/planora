@@ -19,6 +19,8 @@
 - 导入预览现在也会统计同一备份文件内部的重复实例，选择“跳过重复”时只导入一份。
 - 合并“作业”与“课程作业”，IGCSE 创建入口不再重复显示课程作业；作业改用原课程作业图标。
 - 旧课程作业任务和备份会自动迁移为作业，搜索、编辑与再次导出保持兼容。
+- 修复空周仍显示“最忙”日期的问题；只有存在已安排任务时才计算最忙日。
+- 今日与本周的“无安排”状态移除玻璃卡片，改为直接嵌入背景的轻量文字。
 
 ### English
 
@@ -37,6 +39,8 @@
 - Import previews now count duplicate recurring occurrences inside the same backup, and Skip Duplicates imports only one copy.
 - Merged Assignment and Coursework so IGCSE creation no longer shows duplicate categories, and Assignment now uses the former Coursework icon.
 - Existing Coursework tasks and backups migrate to Assignment while remaining compatible with search, editing, and re-export.
+- Fixed empty weeks showing a misleading busiest day; busiest-day calculations now require scheduled tasks.
+- Removed glass cards from Today and This Week empty states in favor of lightweight text directly on the background.
 
 ## 1.4 - 2026-07-11
 
