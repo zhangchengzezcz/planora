@@ -454,6 +454,9 @@ private struct SettingsHomeView: View {
 
 private struct AppearanceSettingsView: View {
     let store: PlanoraStore
+    @State private var isShowingFontWarning = false
+    @State private var isShowingFontPreview = false
+    @State private var isShowingSystemFontPicker = false
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -508,18 +511,66 @@ private struct AppearanceSettingsView: View {
                         .font(.subheadline.weight(.semibold))
 
                         if store.appearanceSettings.usesChineseFont {
-                            LazyVGrid(columns: columns, spacing: 12) {
-                                ForEach(PlanoraFontStyle.chineseChoices) { style in
-                                    FontStyleButton(
-                                        style: style,
-                                        isSelected: store.appearanceSettings.fontStyle == style
-                                    ) {
-                                        store.updateAppearance { $0.fontStyle = style }
+                            HStack(spacing: 10) {
+                                Text(L("字体", "Font"))
+                                    .font(.subheadline.weight(.semibold))
+
+                                Menu {
+                                    ForEach(PlanoraChineseFontPreset.allCases) { preset in
+                                        Button {
+                                            selectFontPreset(preset)
+                                        } label: {
+                                            if store.appearanceSettings.chineseFontPreset == preset {
+                                                Label(preset.title, systemImage: "checkmark")
+                                            } else {
+                                                Text(preset.title)
+                                            }
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Text(store.appearanceSettings.selectedChineseFontTitle)
+                                            .lineLimit(1)
+                                        Image(systemName: "chevron.up.chevron.down")
+                                            .font(.caption2.weight(.bold))
+                                    }
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(Color.planoraInk)
+                                    .padding(.horizontal, 12)
+                                    .frame(maxWidth: .infinity, minHeight: 42, alignment: .leading)
+                                    .background(Color.planoraControlFill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                    .overlay {
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                            .stroke(Color.planoraControlStroke, lineWidth: 1)
                                     }
                                 }
+
+                                Button {
+                                    isShowingFontPreview = true
+                                } label: {
+                                    Image(systemName: "eye.fill")
+                                        .font(.headline)
+                                        .foregroundStyle(Color.planoraDeepGreen)
+                                        .frame(width: 42, height: 42)
+                                        .background(Color.planoraControlFill, in: Circle())
+                                        .overlay(Circle().stroke(Color.planoraControlStroke, lineWidth: 1))
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel(L("预览字体", "Preview Font"))
                             }
 
-                            Text(L("字体样式目前只应用于中文界面。", "Font styling currently applies to the Chinese interface only."))
+                            if store.appearanceSettings.chineseFontPreset == .custom {
+                                Button {
+                                    isShowingSystemFontPicker = true
+                                } label: {
+                                    Label(L("新增字体", "Add Font"), systemImage: "plus")
+                                        .font(.subheadline.weight(.semibold))
+                                        .frame(maxWidth: .infinity, minHeight: 44)
+                                }
+                                .buttonStyle(.bordered)
+                            }
+
+                            Text(L("字体选择仅保存在当前设备，不会写入任务备份。", "Font selection stays on this device and is not included in task backups."))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -568,6 +619,32 @@ private struct AppearanceSettingsView: View {
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
         .planoraDetailNavigationBar()
         .background(PlanoraBackground())
+        .alert(L("启用字体选择？", "Enable Font Selection?"), isPresented: $isShowingFontWarning) {
+            Button(L("取消", "Cancel"), role: .cancel) { }
+            Button(L("确认开启", "Enable")) {
+                store.updateAppearance { $0.usesChineseFont = true }
+            }
+        } message: {
+            Text(L(
+                "系统字体在不同设备和系统版本中的可用性可能不同。更换字体可能影响字形、换行与界面布局，少数文本可能出现截断或显示异常。你可以随时关闭此功能恢复默认苹方。",
+                "System font availability can vary by device and OS version. Changing fonts may affect glyphs, line wrapping, and layout, and some text may be clipped or displayed unexpectedly. You can turn this off at any time to restore the default font."
+            ))
+        }
+        .sheet(isPresented: $isShowingFontPreview) {
+            FontPreviewSheet(
+                title: store.appearanceSettings.selectedChineseFontTitle,
+                fontName: store.appearanceSettings.selectedChineseFontName
+            )
+        }
+        .sheet(isPresented: $isShowingSystemFontPicker) {
+            SystemFontPickerSheet(selectedFontName: store.appearanceSettings.customChineseFontName) { fontName in
+                store.updateAppearance {
+                    $0.chineseFontPreset = .custom
+                    $0.customChineseFontName = fontName
+                    $0.fontStyle = .system
+                }
+            }
+        }
     }
 
     private func binding<Value>(_ keyPath: WritableKeyPath<PlanoraAppearanceSettings, Value>) -> Binding<Value> {
@@ -583,14 +660,20 @@ private struct AppearanceSettingsView: View {
         Binding(
             get: { store.appearanceSettings.usesChineseFont },
             set: { isEnabled in
-                store.updateAppearance {
-                    $0.usesChineseFont = isEnabled
-                    if isEnabled, $0.fontStyle == .system {
-                        $0.fontStyle = .rounded
-                    }
+                if isEnabled {
+                    isShowingFontWarning = true
+                } else {
+                    store.updateAppearance { $0.usesChineseFont = false }
                 }
             }
         )
+    }
+
+    private func selectFontPreset(_ preset: PlanoraChineseFontPreset) {
+        store.updateAppearance {
+            $0.chineseFontPreset = preset
+            $0.fontStyle = preset.legacyStyle
+        }
     }
 }
 
@@ -756,41 +839,124 @@ private struct ColorThemeButton: View {
     }
 }
 
-private struct FontStyleButton: View {
-    let style: PlanoraFontStyle
-    let isSelected: Bool
-    let action: () -> Void
+private struct FontPreviewSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let title: String
+    let fontName: String?
+
+    private func previewFont(size: CGFloat, relativeTo style: Font.TextStyle) -> Font {
+        guard let fontName else {
+            return .system(size: size, weight: .regular)
+        }
+        return .custom(fontName, size: size, relativeTo: style)
+    }
 
     var body: some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("计划学习")
-                        .font(style.previewFont(size: 20))
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 28) {
+                    Text(title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    Text(verbatim: "今日学习计划")
+                        .font(previewFont(size: 34, relativeTo: .largeTitle))
                         .foregroundStyle(Color.planoraInk)
 
-                    Spacer(minLength: 6)
+                    Text(verbatim: "保持专注，完成下一个学习目标。清晰安排每一天，让长期项目稳步向前。")
+                        .font(previewFont(size: 21, relativeTo: .title3))
+                        .foregroundStyle(Color.planoraInk)
+                        .fixedSize(horizontal: false, vertical: true)
 
-                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.headline)
-                        .foregroundStyle(isSelected ? Color.planoraDeepGreen : .secondary)
-                }
-
-                Text(style.title)
-                    .font(.caption.weight(.semibold))
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(verbatim: "Physics HL · 研究方法")
+                        Text(verbatim: "数学作业 · 截止 9 月 18 日")
+                        Text(verbatim: "进度 72% · Priority High")
+                    }
+                    .font(previewFont(size: 17, relativeTo: .body))
                     .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(24)
             }
-            .padding(12)
-            .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
-            .background(Color.planoraControlFill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .stroke(isSelected ? Color.planoraDeepGreen : Color.planoraControlStroke, lineWidth: isSelected ? 2 : 1)
+            .background(PlanoraBackground())
+            .navigationTitle(L("字体预览", "Font Preview"))
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L("完成", "Done")) { dismiss() }
+                }
             }
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel(style.title)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+private struct SystemFontPickerSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let selectedFontName: String?
+    let onSelect: (String) -> Void
+    @State private var searchText = ""
+    @State private var fonts: [PlanoraSystemFontOption] = []
+
+    private var filteredFonts: [PlanoraSystemFontOption] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return fonts }
+        return fonts.filter {
+            $0.fontName.localizedCaseInsensitiveContains(query)
+                || $0.familyName.localizedCaseInsensitiveContains(query)
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List(filteredFonts) { option in
+                Button {
+                    onSelect(option.fontName)
+                    dismiss()
+                } label: {
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(option.familyName)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Color.planoraInk)
+
+                            Text(verbatim: "中文预览 Aa 123")
+                                .font(option.previewFont(size: 17))
+                                .foregroundStyle(.secondary)
+
+                            Text(option.fontName)
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                                .lineLimit(1)
+                        }
+
+                        Spacer()
+
+                        if selectedFontName == option.fontName {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(Color.planoraDeepGreen)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            .listStyle(.plain)
+            .searchable(text: $searchText, prompt: L("搜索系统字体", "Search System Fonts"))
+            .navigationTitle(L("系统字体", "System Fonts"))
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(L("取消", "Cancel")) { dismiss() }
+                }
+            }
+            .overlay {
+                if fonts.isEmpty {
+                    ProgressView()
+                }
+            }
+            .task {
+                fonts = PlanoraSystemFontCatalog.allFonts
+            }
+        }
     }
 }
 

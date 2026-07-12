@@ -45,6 +45,7 @@ private struct PlanoraRootView: View {
         }
         .environment(\.planoraAppearance, store.appearanceSettings)
         .environment(\.planoraTaskDisplay, store.taskDisplaySettings)
+        .font(store.appearanceSettings.appliedRootFont)
         .fontDesign(store.appearanceSettings.appliedFontDesign)
         .tint(store.appearanceSettings.accent.color)
         .preferredColorScheme(store.appearanceSettings.displayMode.colorScheme)

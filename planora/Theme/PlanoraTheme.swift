@@ -2,6 +2,8 @@ import Foundation
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
 #endif
 
 enum PlanoraTheme {
@@ -16,6 +18,8 @@ struct PlanoraAppearanceSettings: Codable, Equatable {
     var backgroundStyle: PlanoraBackgroundStyle = .aurora
     var accent: PlanoraAccent = .blue
     var usesChineseFont = false
+    var chineseFontPreset: PlanoraChineseFontPreset = .pingFang
+    var customChineseFontName: String?
 
     static let `default` = PlanoraAppearanceSettings()
 
@@ -23,9 +27,34 @@ struct PlanoraAppearanceSettings: Codable, Equatable {
         "\(displayMode.title) · \(backgroundStyle.title)"
     }
 
-    var appliedFontDesign: Font.Design? {
+    @MainActor var appliedFontDesign: Font.Design? {
         guard usesChineseFont, PlanoraLocalization.usesChineseLocalization else { return nil }
-        return fontStyle.design
+        return chineseFontPreset.design
+    }
+
+    @MainActor var appliedRootFont: Font? {
+        guard usesChineseFont,
+              PlanoraLocalization.usesChineseLocalization,
+              let fontName = selectedChineseFontName else {
+            return nil
+        }
+        return .custom(fontName, size: 17, relativeTo: .body)
+    }
+
+    @MainActor var selectedChineseFontName: String? {
+        switch chineseFontPreset {
+        case .custom:
+            customChineseFontName
+        default:
+            chineseFontPreset.resolvedFontName
+        }
+    }
+
+    @MainActor var selectedChineseFontTitle: String {
+        if chineseFontPreset == .custom, let customChineseFontName {
+            return customChineseFontName
+        }
+        return chineseFontPreset.title
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -34,6 +63,8 @@ struct PlanoraAppearanceSettings: Codable, Equatable {
         case backgroundStyle
         case accent
         case usesChineseFont
+        case chineseFontPreset
+        case customChineseFontName
     }
 
     init(
@@ -41,13 +72,17 @@ struct PlanoraAppearanceSettings: Codable, Equatable {
         fontStyle: PlanoraFontStyle = .system,
         backgroundStyle: PlanoraBackgroundStyle = .aurora,
         accent: PlanoraAccent = .blue,
-        usesChineseFont: Bool = false
+        usesChineseFont: Bool = false,
+        chineseFontPreset: PlanoraChineseFontPreset = .pingFang,
+        customChineseFontName: String? = nil
     ) {
         self.displayMode = displayMode
         self.fontStyle = fontStyle
         self.backgroundStyle = backgroundStyle
         self.accent = accent
         self.usesChineseFont = usesChineseFont
+        self.chineseFontPreset = chineseFontPreset
+        self.customChineseFontName = customChineseFontName
     }
 
     init(from decoder: Decoder) throws {
@@ -57,6 +92,9 @@ struct PlanoraAppearanceSettings: Codable, Equatable {
         backgroundStyle = try container.decodeIfPresent(PlanoraBackgroundStyle.self, forKey: .backgroundStyle) ?? .aurora
         accent = try container.decodeIfPresent(PlanoraAccent.self, forKey: .accent) ?? .blue
         usesChineseFont = try container.decodeIfPresent(Bool.self, forKey: .usesChineseFont) ?? false
+        chineseFontPreset = try container.decodeIfPresent(PlanoraChineseFontPreset.self, forKey: .chineseFontPreset)
+            ?? PlanoraChineseFontPreset.migrated(from: fontStyle)
+        customChineseFontName = try container.decodeIfPresent(String.self, forKey: .customChineseFontName)
     }
 }
 
@@ -110,10 +148,148 @@ enum PlanoraFontStyle: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    static var chineseChoices: [PlanoraFontStyle] { [.rounded, .serif, .monospaced] }
+}
 
-    func previewFont(size: CGFloat) -> Font {
-        .system(size: size, weight: .semibold, design: design ?? .default)
+enum PlanoraChineseFontPreset: String, Codable, CaseIterable, Identifiable {
+    case pingFang
+    case songti
+    case kaiti
+    case heiti
+    case yuanti
+    case wawati
+    case hanziPen
+    case libian
+    case xingkai
+    case custom
+
+    var id: String { rawValue }
+
+    @MainActor var title: String {
+        switch self {
+        case .pingFang: L("苹方", "PingFang")
+        case .songti: L("宋体", "Songti")
+        case .kaiti: L("楷体", "Kaiti")
+        case .heiti: L("黑体", "Heiti")
+        case .yuanti: L("圆体", "Yuanti")
+        case .wawati: L("娃娃体", "Wawati")
+        case .hanziPen: L("翩翩体", "HanziPen")
+        case .libian: L("隶变", "Libian")
+        case .xingkai: L("行楷", "Xingkai")
+        case .custom: L("自定义", "Custom")
+        }
+    }
+
+    var design: Font.Design? {
+        switch self {
+        case .songti, .kaiti, .libian, .xingkai:
+            .serif
+        case .yuanti, .wawati, .hanziPen:
+            .rounded
+        case .pingFang, .heiti, .custom:
+            nil
+        }
+    }
+
+    var legacyStyle: PlanoraFontStyle {
+        switch self {
+        case .pingFang, .heiti, .custom: .system
+        case .yuanti, .wawati, .hanziPen: .rounded
+        case .songti, .kaiti, .libian, .xingkai: .serif
+        }
+    }
+
+    @MainActor var resolvedFontName: String? {
+        PlanoraSystemFontCatalog.firstAvailableName(from: candidateNames)
+            ?? PlanoraSystemFontCatalog.firstAvailableName(from: ["PingFangSC-Regular"])
+    }
+
+    @MainActor func previewFont(size: CGFloat, relativeTo style: Font.TextStyle = .body) -> Font {
+        guard let resolvedFontName else {
+            return .system(size: size, weight: .regular, design: design ?? .default)
+        }
+        return .custom(resolvedFontName, size: size, relativeTo: style)
+    }
+
+    private var candidateNames: [String] {
+        switch self {
+        case .pingFang:
+            ["PingFangSC-Regular", "PingFang SC"]
+        case .songti:
+            ["STSongti-SC-Regular", "Songti-SC-Regular", "Songti SC"]
+        case .kaiti:
+            ["STKaitiSC-Regular", "Kaiti-SC-Regular", "Kaiti SC"]
+        case .heiti:
+            ["STHeitiSC-Medium", "STHeitiSC-Light", "Heiti SC"]
+        case .yuanti:
+            ["Yuanti-SC-Regular", "Yuanti SC"]
+        case .wawati:
+            ["WawatiSC-Regular", "Wawati SC"]
+        case .hanziPen:
+            ["HanziPenSC-W3", "HanziPen SC"]
+        case .libian:
+            ["LibianSC-Regular", "Libian SC"]
+        case .xingkai:
+            ["XingkaiSC-Light", "Xingkai SC"]
+        case .custom:
+            []
+        }
+    }
+
+    static func migrated(from style: PlanoraFontStyle) -> PlanoraChineseFontPreset {
+        switch style {
+        case .system: .pingFang
+        case .rounded: .yuanti
+        case .serif: .songti
+        case .monospaced: .heiti
+        }
+    }
+}
+
+struct PlanoraSystemFontOption: Identifiable, Hashable {
+    let fontName: String
+    let familyName: String
+
+    var id: String { fontName }
+
+    var displayName: String {
+        familyName == fontName ? fontName : "\(familyName) · \(fontName)"
+    }
+
+    func previewFont(size: CGFloat, relativeTo style: Font.TextStyle = .body) -> Font {
+        .custom(fontName, size: size, relativeTo: style)
+    }
+}
+
+enum PlanoraSystemFontCatalog {
+    @MainActor static var allFonts: [PlanoraSystemFontOption] {
+        #if canImport(UIKit)
+        return UIFont.familyNames
+            .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+            .flatMap { familyName in
+                UIFont.fontNames(forFamilyName: familyName).map {
+                    PlanoraSystemFontOption(fontName: $0, familyName: familyName)
+                }
+            }
+        #elseif canImport(AppKit)
+        return NSFontManager.shared.availableFonts
+            .sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+            .map { fontName in
+                let familyName = NSFont(name: fontName, size: 17)?.familyName ?? fontName
+                return PlanoraSystemFontOption(fontName: fontName, familyName: familyName)
+            }
+        #else
+        return []
+        #endif
+    }
+
+    @MainActor static func firstAvailableName(from candidates: [String]) -> String? {
+        #if canImport(UIKit)
+        return candidates.first { UIFont(name: $0, size: 17) != nil }
+        #elseif canImport(AppKit)
+        return candidates.first { NSFont(name: $0, size: 17) != nil }
+        #else
+        return candidates.first
+        #endif
     }
 }
 

@@ -253,10 +253,12 @@ final class BackupPerformanceTests: XCTestCase {
     func testAppearanceSettingsRoundTripPreservesEveryChoice() throws {
         let settings = PlanoraAppearanceSettings(
             displayMode: .dark,
-            fontStyle: .monospaced,
+            fontStyle: .system,
             backgroundStyle: .rose,
             accent: .amber,
-            usesChineseFont: true
+            usesChineseFont: true,
+            chineseFontPreset: .custom,
+            customChineseFontName: "AvenirNext-Regular"
         )
 
         let data = try JSONEncoder().encode(settings)
@@ -273,6 +275,8 @@ final class BackupPerformanceTests: XCTestCase {
         XCTAssertEqual(settings.backgroundStyle, .aurora)
         XCTAssertEqual(settings.accent, .blue)
         XCTAssertFalse(settings.usesChineseFont)
+        XCTAssertEqual(settings.chineseFontPreset, .pingFang)
+        XCTAssertNil(settings.customChineseFontName)
     }
 
     func testAppearanceStoragePersistsSelection() {
@@ -299,6 +303,28 @@ final class BackupPerformanceTests: XCTestCase {
         XCTAssertEqual(settings.backgroundStyle, .rose)
         XCTAssertEqual(settings.accent, .pink)
         XCTAssertFalse(settings.usesChineseFont)
+        XCTAssertEqual(settings.chineseFontPreset, .songti)
+        XCTAssertNil(settings.customChineseFontName)
+    }
+
+    func testChineseFontPresetsContainNineCommonChoicesAndCustomLast() {
+        XCTAssertEqual(PlanoraChineseFontPreset.allCases.count, 10)
+        XCTAssertEqual(PlanoraChineseFontPreset.allCases.last, .custom)
+    }
+
+    func testSystemFontCatalogProvidesUniqueSelectableFonts() {
+        let fonts = PlanoraSystemFontCatalog.allFonts
+
+        XCTAssertFalse(fonts.isEmpty)
+        XCTAssertEqual(Set(fonts.map(\.id)).count, fonts.count)
+    }
+
+    func testTaskBackupDoesNotContainFontPreferences() throws {
+        let json = try TaskBackupCodec.json(for: [makeTask(index: 1)])
+
+        XCTAssertFalse(json.localizedCaseInsensitiveContains("font"))
+        XCTAssertFalse(json.contains("chineseFontPreset"))
+        XCTAssertFalse(json.contains("customChineseFontName"))
     }
 
     func testTaskDisplaySettingsRoundTripPreservesEveryChoice() throws {

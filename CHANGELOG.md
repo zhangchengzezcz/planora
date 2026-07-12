@@ -4,13 +4,19 @@
 
 ### 中文
 
-- 中文字体开关新增圆体、宋体与等宽体选择，关闭时继续使用系统苹方。
-- 字体选项改为带“计划学习”中文预览的选择卡片，便于比较后再应用。
+- 字体功能首次开启时显示排版风险提示，只有确认后才启用；取消不会改变当前设置。
+- 新增 9 种常用中文字体与第 10 项“自定义”，关闭开关时恢复系统苹方。
+- 自定义字体支持浏览和搜索设备完整系统字体列表，选择后仅保存字体名称到本机外观偏好。
+- 所有字体均提供独立中文 Demo 预览，便于检查字形、英文、数字与混排效果。
+- 字体设置明确不写入任务 JSON 备份，也不会随任务导入导出。
 
 ### English
 
-- Expanded the Chinese font switch with Rounded, Songti, and Monospaced choices while keeping system PingFang when disabled.
-- Replaced the segmented font picker with selectable cards that preview each style using Chinese sample text.
+- Added a layout-risk confirmation before font selection can be enabled; cancelling leaves the setting off.
+- Added nine common Chinese fonts plus a tenth Custom option, with system PingFang restored when disabled.
+- Custom fonts can be selected from the device's complete searchable system-font list and are stored only in local appearance preferences.
+- Added a dedicated Chinese demo preview for every selected font, including mixed Chinese, English, and numeric content.
+- Font preferences are explicitly excluded from task JSON backups and task import/export.
 
 ## 1.4.1 - 2026-07-11
 
