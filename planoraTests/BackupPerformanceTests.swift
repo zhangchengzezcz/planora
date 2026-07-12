@@ -253,7 +253,7 @@ final class BackupPerformanceTests: XCTestCase {
     func testAppearanceSettingsRoundTripPreservesEveryChoice() throws {
         let settings = PlanoraAppearanceSettings(
             displayMode: .dark,
-            fontStyle: .serif,
+            fontStyle: .monospaced,
             backgroundStyle: .rose,
             accent: .amber,
             usesChineseFont: true

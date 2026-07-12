@@ -508,12 +508,16 @@ private struct AppearanceSettingsView: View {
                         .font(.subheadline.weight(.semibold))
 
                         if store.appearanceSettings.usesChineseFont {
-                            Picker(L("中文字体", "Chinese Font"), selection: binding(\.fontStyle)) {
+                            LazyVGrid(columns: columns, spacing: 12) {
                                 ForEach(PlanoraFontStyle.chineseChoices) { style in
-                                    Text(style.title).tag(style)
+                                    FontStyleButton(
+                                        style: style,
+                                        isSelected: store.appearanceSettings.fontStyle == style
+                                    ) {
+                                        store.updateAppearance { $0.fontStyle = style }
+                                    }
                                 }
                             }
-                            .pickerStyle(.segmented)
 
                             Text(L("字体样式目前只应用于中文界面。", "Font styling currently applies to the Chinese interface only."))
                                 .font(.caption)
@@ -748,6 +752,44 @@ private struct ColorThemeButton: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(theme.title)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+private struct FontStyleButton: View {
+    let style: PlanoraFontStyle
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("计划学习")
+                        .font(style.previewFont(size: 20))
+                        .foregroundStyle(Color.planoraInk)
+
+                    Spacer(minLength: 6)
+
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .font(.headline)
+                        .foregroundStyle(isSelected ? Color.planoraDeepGreen : .secondary)
+                }
+
+                Text(style.title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
+            .background(Color.planoraControlFill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .stroke(isSelected ? Color.planoraDeepGreen : Color.planoraControlStroke, lineWidth: isSelected ? 2 : 1)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(style.title)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

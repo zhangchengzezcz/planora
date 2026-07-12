@@ -88,6 +88,7 @@ enum PlanoraFontStyle: String, Codable, CaseIterable, Identifiable {
     case system
     case rounded
     case serif
+    case monospaced
 
     var id: String { rawValue }
 
@@ -95,7 +96,8 @@ enum PlanoraFontStyle: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .system: L("系统", "System")
         case .rounded: L("圆体", "Rounded")
-        case .serif: L("衬线体", "Serif")
+        case .serif: L("宋体", "Songti")
+        case .monospaced: L("等宽体", "Monospaced")
         }
     }
 
@@ -104,10 +106,15 @@ enum PlanoraFontStyle: String, Codable, CaseIterable, Identifiable {
         case .system: nil
         case .rounded: .rounded
         case .serif: .serif
+        case .monospaced: .monospaced
         }
     }
 
-    static var chineseChoices: [PlanoraFontStyle] { [.rounded, .serif] }
+    static var chineseChoices: [PlanoraFontStyle] { [.rounded, .serif, .monospaced] }
+
+    func previewFont(size: CGFloat) -> Font {
+        .system(size: size, weight: .semibold, design: design ?? .default)
+    }
 }
 
 enum PlanoraColorTheme: String, CaseIterable, Identifiable {

@@ -1,5 +1,17 @@
 # Changelog / 更新说明
 
+## 1.4.2 - 2026-07-12
+
+### 中文
+
+- 中文字体开关新增圆体、宋体与等宽体选择，关闭时继续使用系统苹方。
+- 字体选项改为带“计划学习”中文预览的选择卡片，便于比较后再应用。
+
+### English
+
+- Expanded the Chinese font switch with Rounded, Songti, and Monospaced choices while keeping system PingFang when disabled.
+- Replaced the segmented font picker with selectable cards that preview each style using Chinese sample text.
+
 ## 1.4.1 - 2026-07-11
 
 ### 中文
