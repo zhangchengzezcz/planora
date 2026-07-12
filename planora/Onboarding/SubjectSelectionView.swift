@@ -15,11 +15,11 @@ struct SubjectSelectionView: View {
                 VStack(alignment: .leading, spacing: 22) {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(L("选择科目", "Choose Subjects"))
-                            .planoraFont(.system(size: 32, weight: .bold))
+                            .font(.system(size: 32, weight: .bold))
                             .foregroundStyle(Color.planoraInk)
 
                         Text(L("先选正在学习的内容。", "Select what you are studying now."))
-                            .planoraFont(.callout)
+                            .font(.callout)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -31,13 +31,13 @@ struct SubjectSelectionView: View {
                                     .foregroundStyle(store.curriculum.tint)
 
                                 Text(store.curriculum.title)
-                                    .planoraFont(.headline)
+                                    .font(.headline)
                                     .foregroundStyle(Color.planoraInk)
 
                                 Spacer()
 
                                 Text(store.curriculum.badge)
-                                    .planoraFont(.caption.weight(.bold))
+                                    .font(.caption.weight(.bold))
                                     .foregroundStyle(store.curriculum.tint)
                             }
 
@@ -47,7 +47,7 @@ struct SubjectSelectionView: View {
 
                     VStack(alignment: .leading, spacing: 12) {
                         Text(L("额外学习", "Extra Learning"))
-                            .planoraFont(.headline)
+                            .font(.headline)
                             .foregroundStyle(Color.planoraInk)
 
                         ExtraLearningPicker(store: store, columns: columns)

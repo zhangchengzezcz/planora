@@ -42,15 +42,15 @@ private struct PlanningDestinationLabel: View {
         GlassPanel(padding: 14, cornerRadius: PlanoraTheme.compactCornerRadius, tint: tint.opacity(0.1), interactive: true) {
             VStack(alignment: .leading, spacing: 9) {
                 Image(systemName: symbol)
-                    .planoraFont(.headline.weight(.bold))
+                    .font(.headline.weight(.bold))
                     .foregroundStyle(tint)
 
                 Text(title)
-                    .planoraFont(.headline.weight(.bold))
+                    .font(.headline.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(subtitle)
-                    .planoraFont(.caption)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
@@ -214,11 +214,11 @@ private struct WeekDayEmptyState: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             Text(day.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
-                .planoraFont(.headline)
+                .font(.headline)
                 .foregroundStyle(Color.planoraInk)
 
             Text(L("无安排", "No tasks"))
-                .planoraFont(.subheadline)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -233,10 +233,10 @@ private struct PlanningHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(title)
-                .planoraFont(.system(size: 34, weight: .bold))
+                .font(.system(size: 34, weight: .bold))
                 .foregroundStyle(Color.planoraInk)
             Text(subtitle)
-                .planoraFont(.callout.weight(.medium))
+                .font(.callout.weight(.medium))
                 .foregroundStyle(.secondary)
         }
     }
@@ -275,7 +275,7 @@ private struct PlanningTaskRow: View {
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(task.title)
-                        .planoraFont(.subheadline.weight(.semibold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Color.planoraInk)
                         .lineLimit(2)
                     HStack(spacing: 6) {
@@ -284,14 +284,14 @@ private struct PlanningTaskRow: View {
                             Image(systemName: "repeat")
                         }
                     }
-                    .planoraFont(.caption)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
                 }
 
                 Spacer()
                 PriorityPill(priority: task.priority)
                 Image(systemName: "chevron.right")
-                    .planoraFont(.caption.weight(.bold))
+                    .font(.caption.weight(.bold))
                     .foregroundStyle(.secondary)
             }
             .padding(14)
@@ -306,7 +306,7 @@ private struct PlanningEmptyState: View {
 
     var body: some View {
         Text(title)
-            .planoraFont(.headline.weight(.bold))
+            .font(.headline.weight(.bold))
             .foregroundStyle(Color.planoraInk)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 4)

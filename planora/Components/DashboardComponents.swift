@@ -15,14 +15,14 @@ struct DashboardSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(title)
-                    .planoraFont(.headline)
+                    .font(.headline)
                     .foregroundStyle(Color.planoraInk)
 
                 Spacer()
 
                 if let trailing {
                     Text(trailing)
-                        .planoraFont(.caption.weight(.semibold))
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
             }
@@ -43,7 +43,7 @@ struct ProgressSubjectRow: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(title)
-                    .planoraFont(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
                     .lineLimit(1)
                     .minimumScaleFactor(0.78)
@@ -51,7 +51,7 @@ struct ProgressSubjectRow: View {
                 Spacer()
 
                 Text(PlanoraFormat.percent(value))
-                    .planoraFont(.caption.weight(.bold))
+                    .font(.caption.weight(.bold))
                     .foregroundStyle(tint)
             }
 
@@ -70,26 +70,26 @@ struct SettingsRow: View {
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
-                .planoraFont(.headline)
+                .font(.headline)
                 .foregroundStyle(Color.planoraBlue)
                 .frame(width: 38, height: 38)
                 .background(Color.planoraBlue.opacity(0.1), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
 
             Text(title)
-                .planoraFont(.subheadline.weight(.semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Color.planoraInk)
 
             Spacer()
 
             Text(value)
-                .planoraFont(.caption.weight(.semibold))
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.76)
 
             if showsChevron {
                 Image(systemName: "chevron.right")
-                    .planoraFont(.caption.weight(.bold))
+                    .font(.caption.weight(.bold))
                     .foregroundStyle(.secondary)
             }
         }

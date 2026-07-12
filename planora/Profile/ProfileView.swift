@@ -77,7 +77,7 @@ struct ProfileView: View {
     private var profileHeader: some View {
         VStack(alignment: .leading, spacing: 18) {
             Text(L("我的", "Me"))
-                .planoraFont(.system(size: 34, weight: .bold))
+                .font(.system(size: 34, weight: .bold))
                 .foregroundStyle(Color.planoraInk)
                 .padding(.top, 18)
 
@@ -87,11 +87,11 @@ struct ProfileView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(store.userName)
-                            .planoraFont(.title3.weight(.bold))
+                            .font(.title3.weight(.bold))
                             .foregroundStyle(Color.planoraInk)
 
                         Text("\(store.curriculum.badge) \(L("学习空间", "Learning Space"))")
-                            .planoraFont(.subheadline)
+                            .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
 
@@ -296,27 +296,27 @@ private struct SubjectProfileRow: View {
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: "book.closed.fill")
-                .planoraFont(.headline)
+                .font(.headline)
                 .foregroundStyle(Color.planoraDeepGreen)
                 .frame(width: 38, height: 38)
                 .background(Color.planoraGreen.opacity(0.12), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(PlanoraFormat.subjectDisplayName(subject))
-                    .planoraFont(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
                     .lineLimit(1)
                     .minimumScaleFactor(0.78)
 
                 Text(LF("subject_task_count_format", taskCount))
-                    .planoraFont(.caption.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
             Image(systemName: "chevron.right")
-                .planoraFont(.caption.weight(.bold))
+                .font(.caption.weight(.bold))
                 .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 18)
@@ -351,11 +351,11 @@ private struct NameEditView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("编辑姓名", "Edit Name"))
-                        .planoraFont(.system(size: 34, weight: .bold))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("修改后，主页问候和个人资料会同步更新。", "Update your name here. The home greeting and profile will stay in sync."))
-                        .planoraFont(.callout.weight(.medium))
+                        .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -363,7 +363,7 @@ private struct NameEditView: View {
 
                 DashboardSection(title: L("显示名称", "Display Name")) {
                     TextField(L("输入你的姓名", "Enter your name"), text: $nameDraft)
-                        .planoraFont(.title3.weight(.semibold))
+                        .font(.title3.weight(.semibold))
                         .foregroundStyle(Color.planoraInk)
                         .textFieldStyle(.plain)
                         .focused($isNameFocused)
@@ -405,11 +405,11 @@ private struct SettingsHomeView: View {
             VStack(alignment: .leading, spacing: 22) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("设置", "Settings"))
-                        .planoraFont(.system(size: 34, weight: .bold))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("调整 Planora 的显示方式和任务列表偏好。", "Manage Planora appearance and task-list preferences."))
-                        .planoraFont(.callout.weight(.medium))
+                        .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, 18)
@@ -454,9 +454,6 @@ private struct SettingsHomeView: View {
 
 private struct AppearanceSettingsView: View {
     let store: PlanoraStore
-    @State private var isShowingFontWarning = false
-    @State private var isShowingFontPreview = false
-    @State private var isShowingSystemFontPicker = false
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -468,11 +465,11 @@ private struct AppearanceSettingsView: View {
             VStack(alignment: .leading, spacing: 26) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("外观", "Appearance"))
-                        .planoraFont(.system(size: 34, weight: .bold))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("调整 Planora 在这台设备上的显示方式。", "Customize how Planora looks on this device."))
-                        .planoraFont(.callout.weight(.medium))
+                        .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, 18)
@@ -500,81 +497,6 @@ private struct AppearanceSettingsView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                }
-
-                AppearanceControlSection(title: L("字体", "Font")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Toggle(
-                            L("启用自定义字体", "Enable Custom Font"),
-                            isOn: chineseFontBinding
-                        )
-                        .planoraFont(.subheadline.weight(.semibold))
-
-                        if store.appearanceSettings.usesChineseFont {
-                            HStack(spacing: 10) {
-                                Text(L("字体", "Font"))
-                                    .planoraFont(.subheadline.weight(.semibold))
-
-                                Menu {
-                                    ForEach(PlanoraChineseFontPreset.allCases) { preset in
-                                        Button {
-                                            selectFontPreset(preset)
-                                        } label: {
-                                            if store.appearanceSettings.chineseFontPreset == preset {
-                                                Label(preset.title, systemImage: "checkmark")
-                                            } else {
-                                                Text(preset.title)
-                                            }
-                                        }
-                                    }
-                                } label: {
-                                    HStack(spacing: 6) {
-                                        Text(store.appearanceSettings.selectedChineseFontTitle)
-                                            .lineLimit(1)
-                                        Image(systemName: "chevron.up.chevron.down")
-                                            .planoraFont(.caption2.weight(.bold))
-                                    }
-                                    .planoraFont(.subheadline.weight(.semibold))
-                                    .foregroundStyle(Color.planoraInk)
-                                    .padding(.horizontal, 12)
-                                    .frame(maxWidth: .infinity, minHeight: 42, alignment: .leading)
-                                    .background(Color.planoraControlFill, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                            .stroke(Color.planoraControlStroke, lineWidth: 1)
-                                    }
-                                }
-
-                                Button {
-                                    isShowingFontPreview = true
-                                } label: {
-                                    Image(systemName: "eye.fill")
-                                        .planoraFont(.headline)
-                                        .foregroundStyle(Color.planoraDeepGreen)
-                                        .frame(width: 42, height: 42)
-                                        .background(Color.planoraControlFill, in: Circle())
-                                        .overlay(Circle().stroke(Color.planoraControlStroke, lineWidth: 1))
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityLabel(L("预览字体", "Preview Font"))
-                            }
-
-                            if store.appearanceSettings.chineseFontPreset == .custom {
-                                Button {
-                                    isShowingSystemFontPicker = true
-                                } label: {
-                                    Label(L("新增字体", "Add Font"), systemImage: "plus")
-                                        .planoraFont(.subheadline.weight(.semibold))
-                                        .frame(maxWidth: .infinity, minHeight: 44)
-                                }
-                                .buttonStyle(.bordered)
-                            }
-
-                            Text(L("字体选择仅保存在当前设备，不会写入任务备份。", "Font selection stays on this device and is not included in task backups."))
-                                .planoraFont(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
                 }
 
                 AppearanceControlSection(title: L("背景", "Background")) {
@@ -608,7 +530,7 @@ private struct AppearanceSettingsView: View {
                     store.resetAppearance()
                 } label: {
                     Label(L("恢复默认外观", "Reset Appearance"), systemImage: "arrow.counterclockwise")
-                        .planoraFont(.headline)
+                        .font(.headline)
                         .frame(maxWidth: .infinity, minHeight: 48)
                 }
                 .buttonStyle(.bordered)
@@ -619,35 +541,6 @@ private struct AppearanceSettingsView: View {
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
         .planoraDetailNavigationBar()
         .background(PlanoraBackground())
-        .alert(L("启用字体选择？", "Enable Font Selection?"), isPresented: $isShowingFontWarning) {
-            Button(L("取消", "Cancel"), role: .cancel) { }
-            Button(L("确认开启", "Enable")) {
-                store.updateAppearance {
-                    $0.hasAcknowledgedChineseFontWarning = true
-                    $0.usesChineseFont = true
-                }
-            }
-        } message: {
-            Text(L(
-                "系统字体在不同设备和系统版本中的可用性可能不同。更换界面字体可能影响字形、换行与布局，少数文本可能出现截断或显示异常。你可以随时关闭此功能恢复系统默认字体。",
-                "System font availability can vary by device and OS version. Changing the interface font may affect glyphs, line wrapping, and layout, and some text may be clipped or displayed unexpectedly. You can turn this off at any time to restore the system font."
-            ))
-        }
-        .sheet(isPresented: $isShowingFontPreview) {
-            FontPreviewSheet(
-                title: store.appearanceSettings.selectedChineseFontTitle,
-                fontName: store.appearanceSettings.selectedChineseFontName
-            )
-        }
-        .sheet(isPresented: $isShowingSystemFontPicker) {
-            SystemFontPickerSheet(selectedFontName: store.appearanceSettings.customChineseFontName) { fontName in
-                store.updateAppearance {
-                    $0.chineseFontPreset = .custom
-                    $0.customChineseFontName = fontName
-                    $0.fontStyle = .system
-                }
-            }
-        }
     }
 
     private func binding<Value>(_ keyPath: WritableKeyPath<PlanoraAppearanceSettings, Value>) -> Binding<Value> {
@@ -659,29 +552,6 @@ private struct AppearanceSettingsView: View {
         )
     }
 
-    private var chineseFontBinding: Binding<Bool> {
-        Binding(
-            get: { store.appearanceSettings.usesChineseFont },
-            set: { isEnabled in
-                if isEnabled {
-                    if store.appearanceSettings.hasAcknowledgedChineseFontWarning {
-                        store.updateAppearance { $0.usesChineseFont = true }
-                    } else {
-                        isShowingFontWarning = true
-                    }
-                } else {
-                    store.updateAppearance { $0.usesChineseFont = false }
-                }
-            }
-        )
-    }
-
-    private func selectFontPreset(_ preset: PlanoraChineseFontPreset) {
-        store.updateAppearance {
-            $0.chineseFontPreset = preset
-            $0.fontStyle = preset.legacyStyle
-        }
-    }
 }
 
 private struct TaskDisplaySettingsView: View {
@@ -692,11 +562,11 @@ private struct TaskDisplaySettingsView: View {
             VStack(alignment: .leading, spacing: 26) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("任务显示", "Task Display"))
-                        .planoraFont(.system(size: 34, weight: .bold))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("这些选项只改变任务列表，不会修改任务内容。", "These options change the task list without editing task data."))
-                        .planoraFont(.callout.weight(.medium))
+                        .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, 18)
@@ -728,14 +598,14 @@ private struct TaskDisplaySettingsView: View {
                         Divider()
                         Toggle(L("显示任务备注", "Show Task Notes"), isOn: binding(\.showsNotes))
                     }
-                    .planoraFont(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                 }
 
                 Button {
                     store.resetTaskDisplay()
                 } label: {
                     Label(L("恢复默认任务显示", "Reset Task Display"), systemImage: "arrow.counterclockwise")
-                        .planoraFont(.headline)
+                        .font(.headline)
                         .frame(maxWidth: .infinity, minHeight: 48)
                 }
                 .buttonStyle(.bordered)
@@ -769,7 +639,7 @@ private struct AppearanceControlSection<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
-                .planoraFont(.headline)
+                .font(.headline)
                 .foregroundStyle(Color.planoraInk)
             content
         }
@@ -789,7 +659,7 @@ private struct BackgroundStyleButton: View {
                     .overlay(alignment: .topTrailing) {
                         if isSelected {
                             Image(systemName: "checkmark.circle.fill")
-                                .planoraFont(.title3)
+                                .font(.title3)
                                 .foregroundStyle(Color.planoraOnAccent)
                                 .padding(8)
                         }
@@ -801,7 +671,7 @@ private struct BackgroundStyleButton: View {
                     }
 
                 Text(style.title)
-                    .planoraFont(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
             }
         }
@@ -824,7 +694,7 @@ private struct ColorThemeButton: View {
                     .overlay(alignment: .topTrailing) {
                         if isSelected {
                             Image(systemName: "checkmark.circle.fill")
-                                .planoraFont(.title3)
+                                .font(.title3)
                                 .foregroundStyle(Color.planoraOnAccent)
                                 .padding(8)
                         }
@@ -836,127 +706,13 @@ private struct ColorThemeButton: View {
                     }
 
                 Text(theme.title)
-                    .planoraFont(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
             }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(theme.title)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-}
-
-private struct FontPreviewSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    let title: String
-    let fontName: String?
-
-    var body: some View {
-        NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 28) {
-                    Text(title)
-                        .planoraFont(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-
-                    Text(verbatim: "今日学习计划")
-                        .planoraFont(.system(size: 34, weight: .bold), chineseFontName: fontName)
-                        .foregroundStyle(Color.planoraInk)
-
-                    Text(verbatim: "保持专注，完成下一个学习目标。清晰安排每一天，让长期项目稳步向前。")
-                        .planoraFont(.system(size: 21), chineseFontName: fontName)
-                        .foregroundStyle(Color.planoraInk)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(verbatim: "Physics HL · 研究方法")
-                        Text(verbatim: "数学作业 · 截止 9 月 18 日")
-                        Text(verbatim: "进度 72% · Priority High")
-                    }
-                    .planoraFont(.body, chineseFontName: fontName)
-                    .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(24)
-            }
-            .background(PlanoraBackground())
-            .navigationTitle(L("字体预览", "Font Preview"))
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(L("完成", "Done")) { dismiss() }
-                }
-            }
-        }
-    }
-}
-
-private struct SystemFontPickerSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    let selectedFontName: String?
-    let onSelect: (String) -> Void
-    @State private var searchText = ""
-    @State private var fonts: [PlanoraSystemFontOption] = []
-
-    private var filteredFonts: [PlanoraSystemFontOption] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return fonts }
-        return fonts.filter {
-            $0.fontName.localizedCaseInsensitiveContains(query)
-                || $0.familyName.localizedCaseInsensitiveContains(query)
-        }
-    }
-
-    var body: some View {
-        NavigationStack {
-            List(filteredFonts) { option in
-                Button {
-                    onSelect(option.fontName)
-                    dismiss()
-                } label: {
-                    HStack(spacing: 12) {
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(option.familyName)
-                                .planoraFont(.subheadline.weight(.semibold))
-                                .foregroundStyle(Color.planoraInk)
-
-                            Text(verbatim: "中文预览 Aa 123")
-                                .planoraFont(.body, chineseFontName: option.fontName)
-                                .foregroundStyle(.secondary)
-
-                            Text(option.fontName)
-                                .planoraFont(.caption2)
-                                .foregroundStyle(.tertiary)
-                                .lineLimit(1)
-                        }
-
-                        Spacer()
-
-                        if selectedFontName == option.fontName {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(Color.planoraDeepGreen)
-                        }
-                    }
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-            .listStyle(.plain)
-            .searchable(text: $searchText, prompt: L("搜索系统字体", "Search System Fonts"))
-            .navigationTitle(L("系统字体", "System Fonts"))
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(L("取消", "Cancel")) { dismiss() }
-                }
-            }
-            .overlay {
-                if fonts.isEmpty {
-                    ProgressView()
-                }
-            }
-            .task {
-                fonts = PlanoraSystemFontCatalog.allFonts
-            }
-        }
     }
 }
 
@@ -974,13 +730,13 @@ private struct AccentColorButton: View {
                         .frame(width: 38, height: 38)
                     if isSelected {
                         Image(systemName: "checkmark")
-                            .planoraFont(.caption.weight(.black))
+                            .font(.caption.weight(.black))
                             .foregroundStyle(Color.planoraOnAccent)
                     }
                 }
 
                 Text(accent.title)
-                    .planoraFont(.caption.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
             }
             .frame(minWidth: 48)
@@ -1003,11 +759,11 @@ private struct CurriculumEditView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("课程体系", "Curriculum"))
-                        .planoraFont(.system(size: 34, weight: .bold))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("选择与你当前学习内容匹配的课程体系。", "Choose the curriculum that matches your current study plan."))
-                        .planoraFont(.callout.weight(.medium))
+                        .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -1078,11 +834,11 @@ private struct SubjectEditView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("编辑科目", "Edit Subjects"))
-                        .planoraFont(.system(size: 34, weight: .bold))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(LF("curriculum_subjects_format", store.curriculum.title))
-                        .planoraFont(.callout.weight(.medium))
+                        .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, 18)
@@ -1116,14 +872,14 @@ private struct ChangeCurriculumCard: View {
                         .foregroundStyle(Color.planoraAmber)
 
                     Text(L("切换课程体系前请注意", "Before Changing Curriculum"))
-                        .planoraFont(.headline)
+                        .font(.headline)
                         .foregroundStyle(Color.planoraInk)
 
                     Spacer()
                 }
 
                 Text(L("切换后，科目会根据新的课程体系重置为默认必选项；已创建的任务将不会保留。", "Changing curriculum resets subjects to the new curriculum defaults; existing tasks will not be kept."))
-                    .planoraFont(.subheadline)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -1148,18 +904,18 @@ private struct TaskBackupCard: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 12) {
                 Image(systemName: "externaldrive.badge.icloud")
-                    .planoraFont(.headline.weight(.bold))
+                    .font(.headline.weight(.bold))
                     .foregroundStyle(Color.planoraBlue)
                     .frame(width: 40, height: 40)
                     .background(Color.planoraBlue.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(L("任务备份", "Task Backup"))
-                        .planoraFont(.headline)
+                        .font(.headline)
                         .foregroundStyle(Color.planoraInk)
 
                     Text(LF("task_backup_count_format", taskCount))
-                        .planoraFont(.caption.weight(.semibold))
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
 
@@ -1167,7 +923,7 @@ private struct TaskBackupCard: View {
             }
 
             Text(L("保存为 JSON 备份文件，或导入并选择如何处理重复任务。", "Save a JSON backup file, or import one and choose how matching tasks are handled."))
-                .planoraFont(.subheadline)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -1192,7 +948,7 @@ private struct TaskBackupCard: View {
 
             Button(action: onRestoreAutomatic) {
                 Label(L("恢复最近自动备份", "Restore Latest Automatic Backup"), systemImage: "clock.arrow.circlepath")
-                    .planoraFont(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity, minHeight: 42)
             }
             .buttonStyle(.bordered)
@@ -1206,12 +962,12 @@ private struct BackupShareHint: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "square.and.arrow.up")
-                .planoraFont(.subheadline.weight(.bold))
+                .font(.subheadline.weight(.bold))
                 .foregroundStyle(Color.planoraAmber)
                 .frame(width: 24, height: 24)
 
             Text(L("也可以把 JSON 文件直接通过系统分享给 Planora，App 会自动打开并导入 JSON 备份。", "You can also share the JSON file directly to Planora from the system share sheet. The app opens and imports the JSON backup automatically."))
-                .planoraFont(.caption.weight(.semibold))
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(Color.planoraInk)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -1235,10 +991,10 @@ private struct BackupActionButton: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: systemImage)
-                    .planoraFont(.subheadline.weight(.bold))
+                    .font(.subheadline.weight(.bold))
 
                 Text(title)
-                    .planoraFont(.subheadline.weight(.bold))
+                    .font(.subheadline.weight(.bold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
             }
@@ -1263,7 +1019,7 @@ private struct FlowTagList: View {
         LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
             ForEach(items, id: \.self) { item in
                 Text(PlanoraFormat.subjectDisplayName(item))
-                    .planoraFont(.caption.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
                     .lineLimit(1)
                     .minimumScaleFactor(0.78)

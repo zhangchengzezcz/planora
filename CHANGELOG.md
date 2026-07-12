@@ -4,19 +4,17 @@
 
 ### 中文
 
-- 字体功能仅在首次开启时显示排版风险提示，确认后再次开关不再重复询问；取消不会改变当前设置。
-- 新增 9 种常用字体与第 10 项“自定义”，启用后整套界面的文字统一响应所选字体，关闭时恢复系统字体。
-- 自定义字体列表只展示设备上实际支持中文字形的字体，避免误选仅支持英文的字体；选择结果仅保存到本机外观偏好。
-- 所有字体均提供独立 Demo 预览，便于检查中文、英文、数字与混排效果；未安装的预设使用轻量系统字族近似，不打包额外字体文件。
-- 字体设置明确不写入任务 JSON 备份，也不会随任务导入导出。
+- 移除实验性的字体自定义功能，所有界面统一恢复 SwiftUI 系统字体。
+- 删除字体扫描、字形检测、字体偏好、预览、警告和相关本地化资源，减少运行时代码与资源占用。
+- 将各页面字体调用恢复为系统原生修饰器，同时保留原有字号、字重和信息层级。
+- 颜色主题、显示模式、背景、任务显示与全部核心任务功能保持不变。
 
 ### English
 
-- Added a one-time layout-risk confirmation before font selection is first enabled; later toggles do not repeat it, and cancelling leaves the setting off.
-- Added nine common font presets plus a tenth Custom option; the selected font now applies across the interface and disabling it restores the system font.
-- The custom picker now lists only fonts that actually provide Chinese glyphs, preventing English-only choices; selections remain local appearance preferences.
-- Added a mixed Chinese, English, and numeric preview. Unavailable presets use lightweight system-family approximations instead of bundling font files.
-- Font preferences are explicitly excluded from task JSON backups and task import/export.
+- Removed the experimental custom-font feature and restored the SwiftUI system font throughout the app.
+- Removed font discovery, glyph inspection, preferences, previews, warnings, and related localization resources to reduce runtime and resource overhead.
+- Restored native system font modifiers while preserving existing sizes, weights, and information hierarchy.
+- Color themes, display modes, backgrounds, task-display preferences, and all core task features remain unchanged.
 
 ## 1.4.1 - 2026-07-11
 
@@ -39,11 +37,11 @@
 - 修复空周仍显示“最忙”日期的问题；只有存在已安排任务时才计算最忙日。
 - 今日与本周的“无安排”状态移除玻璃卡片，改为直接嵌入背景的轻量文字。
 - 今日空状态只保留“今天没有安排”，移除计划日期操作说明。
-- 设置页新增外观自定义，可选择跟随系统、浅色或深色模式，以及系统、圆体或衬线字体。
+- 设置页新增外观自定义，可选择跟随系统、浅色或深色模式。
 - 新增极光、天空、薄荷与玫瑰背景，并支持蓝色、绿色、琥珀与粉色强调色；选择会在设备本地保存并即时应用。
-- 新增一键恢复默认外观，品牌 Logo 保持固定字形，避免全局字体影响品牌识别。
+- 新增一键恢复默认外观。
 - 恢复独立“设置”入口，并将外观与任务显示作为两个互不影响的设置页面。
-- 外观新增经典、海洋、森林与日落颜色主题，以及仅作用于中文界面的字体开关。
+- 外观新增经典、海洋、森林与日落颜色主题。
 - 任务显示新增舒适/紧凑外观、默认排序、已完成任务、进度百分比和任务备注开关。
 - 搜索栏改为独立胶囊输入框与圆形关闭按钮，点击关闭按钮可收起键盘并保留搜索内容。
 
@@ -66,11 +64,11 @@
 - Fixed empty weeks showing a misleading busiest day; busiest-day calculations now require scheduled tasks.
 - Removed glass cards from Today and This Week empty states in favor of lightweight text directly on the background.
 - Reduced the Today empty state to “Nothing Planned Today” and removed the Planned Date instruction.
-- Added Appearance settings for system, light, or dark display modes and system, rounded, or serif typography.
+- Added Appearance settings for system, light, or dark display modes.
 - Added Aurora, Sky, Mint, and Rose backgrounds plus blue, green, amber, and pink accents, saved locally and applied immediately.
-- Added one-tap appearance reset while keeping the Planora logo typography stable.
+- Added one-tap appearance reset.
 - Restored a dedicated Settings entry with separate Appearance and Task Display pages.
-- Added Classic, Ocean, Forest, and Sunset color themes plus a Chinese-interface-only font switch.
+- Added Classic, Ocean, Forest, and Sunset color themes.
 - Added comfortable/compact task layouts, default sorting, and toggles for completed tasks, progress percentages, and notes.
 - Reworked search into a capsule field with a separate circular close button that dismisses the keyboard without clearing the query.
 

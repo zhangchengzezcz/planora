@@ -89,20 +89,20 @@ struct SubjectDetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .center, spacing: 14) {
                 Image(systemName: "book.closed.fill")
-                    .planoraFont(.title2.weight(.bold))
+                    .font(.title2.weight(.bold))
                     .foregroundStyle(tint)
                     .frame(width: 52, height: 52)
                     .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(PlanoraFormat.subjectDisplayName(subject))
-                        .planoraFont(.system(size: 30, weight: .bold))
+                        .font(.system(size: 30, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
                         .lineLimit(2)
                         .minimumScaleFactor(0.72)
 
                     Text(L("科目学习空间", "Subject Workspace"))
-                        .planoraFont(.callout.weight(.medium))
+                        .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
             }
@@ -123,13 +123,13 @@ struct SubjectDetailView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text(L("学习进度", "Learning Progress"))
-                            .planoraFont(.subheadline.weight(.semibold))
+                            .font(.subheadline.weight(.semibold))
                             .foregroundStyle(Color.planoraInk)
 
                         Spacer()
 
                         Text(PlanoraFormat.percent(learningProgress))
-                            .planoraFont(.caption.weight(.bold))
+                            .font(.caption.weight(.bold))
                             .foregroundStyle(tint)
                     }
 
@@ -142,13 +142,13 @@ struct SubjectDetailView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text(L("任务完成率", "Task Completion Rate"))
-                            .planoraFont(.subheadline.weight(.semibold))
+                            .font(.subheadline.weight(.semibold))
                             .foregroundStyle(Color.planoraInk)
 
                         Spacer()
 
                         Text(PlanoraFormat.percent(completionRate))
-                            .planoraFont(.caption.weight(.bold))
+                            .font(.caption.weight(.bold))
                             .foregroundStyle(Color.planoraGreen)
                     }
 
@@ -183,18 +183,18 @@ struct SubjectDetailView: View {
         GlassPanel {
             HStack(alignment: .top, spacing: 16) {
                 Image(systemName: "tray")
-                    .planoraFont(.title2.weight(.bold))
+                    .font(.title2.weight(.bold))
                     .foregroundStyle(tint)
                     .frame(width: 48, height: 48)
                     .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("这个科目还没有任务", "No Tasks for This Subject"))
-                        .planoraFont(.headline)
+                        .font(.headline)
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("为这个科目创建任务后，它会显示在这里。", "Create a task for this subject and it will appear here."))
-                        .planoraFont(.subheadline)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -213,12 +213,12 @@ private struct SubjectMetric: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(label)
-                .planoraFont(.caption2.weight(.bold))
+                .font(.caption2.weight(.bold))
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
 
             Text(value)
-                .planoraFont(.title2.weight(.bold))
+                .font(.title2.weight(.bold))
                 .foregroundStyle(tint)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -231,14 +231,14 @@ private struct SubjectTaskRow: View {
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: task.isCompleted ? "checkmark.circle.fill" : task.type.symbol)
-                .planoraFont(.headline)
+                .font(.headline)
                 .foregroundStyle(task.isCompleted ? Color.planoraGreen : task.type.tint)
                 .frame(width: 42, height: 42)
                 .background(task.type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(task.title)
-                    .planoraFont(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
                     .lineLimit(1)
                     .minimumScaleFactor(0.78)
@@ -250,7 +250,7 @@ private struct SubjectTaskRow: View {
 
                     Text(deadlineText)
                 }
-                .planoraFont(.caption.weight(.semibold))
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             }
@@ -259,12 +259,12 @@ private struct SubjectTaskRow: View {
 
             if task.tracksProgress {
                 Text(PlanoraFormat.percent(task.progressFraction))
-                    .planoraFont(.caption.weight(.bold))
+                    .font(.caption.weight(.bold))
                     .foregroundStyle(task.type.tint)
             }
 
             Image(systemName: "chevron.right")
-                .planoraFont(.caption.weight(.bold))
+                .font(.caption.weight(.bold))
                 .foregroundStyle(.secondary)
         }
         .padding(16)

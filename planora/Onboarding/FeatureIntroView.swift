@@ -15,13 +15,13 @@ struct FeatureIntroView: View {
 
                         VStack(spacing: 10) {
                             Text(L("欢迎使用 Planora", "Welcome to Planora"))
-                                .planoraFont(.system(size: 34, weight: .bold))
+                                .font(.system(size: 34, weight: .bold))
                                 .foregroundStyle(Color.planoraInk)
                                 .multilineTextAlignment(.center)
                                 .fixedSize(horizontal: false, vertical: true)
 
                             Text(L("为 IB 与 IGCSE 学生准备的学习规划工具。先选择课程和科目，之后主页会帮你看清任务、进度与重要日期。", "A study planner for IB and IGCSE students. Choose your curriculum and subjects first, then the home page helps you see tasks, progress, and important dates clearly."))
-                                .planoraFont(.body)
+                                .font(.body)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
                                 .lineSpacing(3)
@@ -58,18 +58,18 @@ private struct IntroFeatureRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             Image(systemName: feature.symbol)
-                .planoraFont(.title3.weight(.semibold))
+                .font(.title3.weight(.semibold))
                 .foregroundStyle(feature.tint)
                 .frame(width: 46, height: 46)
                 .background(feature.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(feature.title)
-                    .planoraFont(.headline)
+                    .font(.headline)
                     .foregroundStyle(Color.planoraInk)
 
                 Text(feature.description)
-                    .planoraFont(.subheadline)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)

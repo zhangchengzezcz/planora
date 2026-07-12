@@ -28,12 +28,12 @@ struct UserNameEntryView: View {
 
                 VStack(spacing: 8) {
                     Text(L("怎么称呼你？", "What should we call you?"))
-                        .planoraFont(.system(size: 34, weight: .bold))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
                         .multilineTextAlignment(.center)
 
                     Text(L("这个名字会显示在主页。", "This name will appear on your home page."))
-                        .planoraFont(.callout)
+                        .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -42,7 +42,7 @@ struct UserNameEntryView: View {
 
             GlassPanel(padding: 18) {
                 TextField(L("你的名字", "Your name"), text: $nameDraft)
-                    .planoraFont(.title3.weight(.semibold))
+                    .font(.title3.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
                     .textFieldStyle(.plain)
                     .focused($isNameFocused)

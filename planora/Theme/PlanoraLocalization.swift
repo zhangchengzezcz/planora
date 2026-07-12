@@ -6,10 +6,6 @@ enum PlanoraLocalization {
         return Locale(identifier: identifier)
     }
 
-    static var usesChineseLocalization: Bool {
-        preferredLocale.identifier.lowercased().hasPrefix("zh")
-    }
-
     static func string(_ key: String) -> String {
         String(localized: String.LocalizationValue(key))
     }

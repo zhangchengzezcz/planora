@@ -253,13 +253,8 @@ final class BackupPerformanceTests: XCTestCase {
     func testAppearanceSettingsRoundTripPreservesEveryChoice() throws {
         let settings = PlanoraAppearanceSettings(
             displayMode: .dark,
-            fontStyle: .system,
             backgroundStyle: .rose,
-            accent: .amber,
-            usesChineseFont: true,
-            hasAcknowledgedChineseFontWarning: true,
-            chineseFontPreset: .custom,
-            customChineseFontName: "PingFangSC-Semibold"
+            accent: .amber
         )
 
         let data = try JSONEncoder().encode(settings)
@@ -272,13 +267,8 @@ final class BackupPerformanceTests: XCTestCase {
         let settings = PlanoraAppearanceSettings.default
 
         XCTAssertEqual(settings.displayMode, .system)
-        XCTAssertEqual(settings.fontStyle, .system)
         XCTAssertEqual(settings.backgroundStyle, .aurora)
         XCTAssertEqual(settings.accent, .blue)
-        XCTAssertFalse(settings.usesChineseFont)
-        XCTAssertFalse(settings.hasAcknowledgedChineseFontWarning)
-        XCTAssertEqual(settings.chineseFontPreset, .pingFang)
-        XCTAssertNil(settings.customChineseFontName)
     }
 
     func testAppearanceStoragePersistsSelection() {
@@ -286,7 +276,6 @@ final class BackupPerformanceTests: XCTestCase {
         defer { PlanoraAppearanceStorage.save(original) }
         let settings = PlanoraAppearanceSettings(
             displayMode: .light,
-            fontStyle: .rounded,
             backgroundStyle: .mint,
             accent: .green
         )
@@ -294,41 +283,6 @@ final class BackupPerformanceTests: XCTestCase {
         PlanoraAppearanceStorage.save(settings)
 
         XCTAssertEqual(PlanoraAppearanceStorage.load(), settings)
-    }
-
-    func testPreviousAppearancePayloadDefaultsChineseFontSwitchToOff() throws {
-        let data = Data(#"{"displayMode":"dark","fontStyle":"serif","backgroundStyle":"rose","accent":"pink"}"#.utf8)
-        let settings = try JSONDecoder().decode(PlanoraAppearanceSettings.self, from: data)
-
-        XCTAssertEqual(settings.displayMode, .dark)
-        XCTAssertEqual(settings.fontStyle, .serif)
-        XCTAssertEqual(settings.backgroundStyle, .rose)
-        XCTAssertEqual(settings.accent, .pink)
-        XCTAssertFalse(settings.usesChineseFont)
-        XCTAssertFalse(settings.hasAcknowledgedChineseFontWarning)
-        XCTAssertEqual(settings.chineseFontPreset, .songti)
-        XCTAssertNil(settings.customChineseFontName)
-    }
-
-    func testChineseFontPresetsContainNineCommonChoicesAndCustomLast() {
-        XCTAssertEqual(PlanoraChineseFontPreset.allCases.count, 10)
-        XCTAssertEqual(PlanoraChineseFontPreset.allCases.last, .custom)
-    }
-
-    func testSystemFontCatalogProvidesUniqueSelectableFonts() {
-        let fonts = PlanoraSystemFontCatalog.allFonts
-
-        XCTAssertFalse(fonts.isEmpty)
-        XCTAssertEqual(Set(fonts.map(\.id)).count, fonts.count)
-        XCTAssertTrue(fonts.allSatisfy { PlanoraSystemFontCatalog.supportsChinese($0.fontName) })
-    }
-
-    func testTaskBackupDoesNotContainFontPreferences() throws {
-        let json = try TaskBackupCodec.json(for: [makeTask(index: 1)])
-
-        XCTAssertFalse(json.localizedCaseInsensitiveContains("font"))
-        XCTAssertFalse(json.contains("chineseFontPreset"))
-        XCTAssertFalse(json.contains("customChineseFontName"))
     }
 
     func testTaskDisplaySettingsRoundTripPreservesEveryChoice() throws {

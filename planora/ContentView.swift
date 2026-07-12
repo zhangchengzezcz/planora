@@ -43,7 +43,6 @@ private struct PlanoraRootView: View {
             }
             .transition(.opacity.combined(with: .scale(scale: 0.985)))
         }
-        .planoraFont(.body)
         .environment(\.planoraAppearance, store.appearanceSettings)
         .environment(\.planoraTaskDisplay, store.taskDisplaySettings)
         .tint(store.appearanceSettings.accent.color)

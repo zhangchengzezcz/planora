@@ -311,11 +311,11 @@ private struct HomeHeader: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(LF("home_hello_user_format", store.userName))
-                    .planoraFont(.system(size: 34, weight: .bold))
+                    .font(.system(size: 34, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(L("现在应该关注什么？", "What needs attention now?"))
-                    .planoraFont(.callout.weight(.medium))
+                    .font(.callout.weight(.medium))
                     .foregroundStyle(.secondary)
             }
 
@@ -332,10 +332,10 @@ private struct HomeHeader: View {
             } label: {
                 HStack(spacing: 6) {
                     Text(store.curriculum.badge)
-                        .planoraFont(.subheadline.weight(.bold))
+                        .font(.subheadline.weight(.bold))
 
                     Image(systemName: "chevron.down")
-                        .planoraFont(.caption.weight(.bold))
+                        .font(.caption.weight(.bold))
                 }
                 .foregroundStyle(store.curriculum.tint)
                 .padding(.horizontal, 14)
@@ -363,16 +363,16 @@ private struct TodayFocusCard: View {
 
                     VStack(alignment: .leading, spacing: 6) {
                         Text(L("当前重点", "Current Focus"))
-                            .planoraFont(.caption.weight(.bold))
+                            .font(.caption.weight(.bold))
                             .foregroundStyle(Color.planoraBlue)
                             .textCase(.uppercase)
 
                         Text(task.title)
-                            .planoraFont(.title2.weight(.bold))
+                            .font(.title2.weight(.bold))
                             .foregroundStyle(Color.planoraInk)
 
                         Text(task.subject.planoraDisplaySubjectName)
-                            .planoraFont(.callout.weight(.semibold))
+                            .font(.callout.weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
 
@@ -385,7 +385,7 @@ private struct TodayFocusCard: View {
                             TaskDetailView(store: store, task: task)
                         } label: {
                             Image(systemName: "chevron.right")
-                                .planoraFont(.headline.weight(.bold))
+                                .font(.headline.weight(.bold))
                                 .foregroundStyle(Color.planoraBlue)
                                 .frame(width: 36, height: 36)
                                 .background(Color.planoraBlue.opacity(0.12), in: Circle())
@@ -395,7 +395,7 @@ private struct TodayFocusCard: View {
                 }
 
                 Text(focusText)
-                    .planoraFont(.subheadline)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -468,18 +468,18 @@ private struct TaskRow: View {
                 TaskCompletionButton(task: task)
 
                 Image(systemName: "doc.text.magnifyingglass")
-                    .planoraFont(.headline)
+                    .font(.headline)
                     .foregroundStyle(task.type.tint)
                     .frame(width: 42, height: 42)
                     .background(task.type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(task.title)
-                        .planoraFont(.headline)
+                        .font(.headline)
                         .foregroundStyle(Color.planoraInk)
 
                     Text(task.subject.planoraDisplaySubjectName)
-                        .planoraFont(.caption.weight(.semibold))
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
 
@@ -492,7 +492,7 @@ private struct TaskRow: View {
                         TaskDetailView(store: store, task: task)
                     } label: {
                         Image(systemName: "chevron.right")
-                            .planoraFont(.caption.weight(.bold))
+                            .font(.caption.weight(.bold))
                             .foregroundStyle(.secondary)
                             .frame(width: 30, height: 30)
                     }
@@ -550,12 +550,12 @@ private struct TaskStatusTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
-                .planoraFont(.caption2.weight(.bold))
+                .font(.caption2.weight(.bold))
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
 
             Text(value)
-                .planoraFont(.subheadline.weight(.bold))
+                .font(.subheadline.weight(.bold))
                 .foregroundStyle(isPrimary ? Color.planoraInk : tint)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
@@ -576,7 +576,7 @@ private struct ProgressGroupTitle: View {
 
     var body: some View {
         Text(title)
-            .planoraFont(.caption.weight(.bold))
+            .font(.caption.weight(.bold))
             .foregroundStyle(.secondary)
             .textCase(.uppercase)
     }
@@ -590,19 +590,19 @@ private struct EmptyTasksCard: View {
             GlassPanel(interactive: true) {
                 VStack(alignment: .leading, spacing: 12) {
                     Image(systemName: "plus.circle.fill")
-                        .planoraFont(.title.weight(.bold))
+                        .font(.title.weight(.bold))
                         .foregroundStyle(LinearGradient.planoraAccent)
 
                     Text(L("还没有任务", "No Tasks Yet"))
-                        .planoraFont(.title2.weight(.bold))
+                        .font(.title2.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("开始规划你的学习旅程。", "Start planning your learning journey."))
-                        .planoraFont(.subheadline)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
 
                     Text(L("点击这里创建第一个任务。", "Tap here to create your first task."))
-                        .planoraFont(.caption.weight(.semibold))
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(Color.planoraDeepGreen)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -618,18 +618,18 @@ private struct AllTasksCompletedCard: View {
         GlassPanel {
             HStack(spacing: 16) {
                 Image(systemName: "checkmark.circle.fill")
-                    .planoraFont(.title.weight(.bold))
+                    .font(.title.weight(.bold))
                     .foregroundStyle(Color.planoraGreen)
                     .frame(width: 50, height: 50)
                     .background(Color.planoraGreen.opacity(0.12), in: Circle())
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("全部完成", "All Caught Up"))
-                        .planoraFont(.title2.weight(.bold))
+                        .font(.title2.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("所有任务都已完成。准备好时，再开始下一段计划。", "Every task is complete. Start your next plan whenever you are ready."))
-                        .planoraFont(.subheadline)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -646,13 +646,13 @@ private struct TaskCompletionRow: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(snapshot.title)
-                    .planoraFont(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
 
                 Spacer()
 
                 Text(snapshot.valueText)
-                    .planoraFont(.caption.weight(.bold))
+                    .font(.caption.weight(.bold))
                     .foregroundStyle(snapshot.tint)
             }
 
@@ -738,17 +738,17 @@ private struct LearningInsight: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Image(systemName: systemImage)
-                .planoraFont(.headline.weight(.bold))
+                .font(.headline.weight(.bold))
                 .foregroundStyle(tint)
 
             Text(value)
-                .planoraFont(.headline.weight(.bold))
+                .font(.headline.weight(.bold))
                 .foregroundStyle(Color.planoraInk)
                 .lineLimit(2)
                 .minimumScaleFactor(0.72)
 
             Text(title)
-                .planoraFont(.caption.weight(.semibold))
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -811,11 +811,11 @@ private struct CalendarPreview: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(PlanoraFormat.monthYear(monthDate))
-                    .planoraFont(.title3.weight(.bold))
+                    .font(.title3.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(LF("calendar_item_count_format", monthTasks.count))
-                    .planoraFont(.caption.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
 
@@ -826,7 +826,7 @@ private struct CalendarPreview: View {
                 selectedDate = Date()
             } label: {
                 Text(L("今天", "Today"))
-                    .planoraFont(.caption.weight(.bold))
+                    .font(.caption.weight(.bold))
                     .foregroundStyle(Color.planoraDeepGreen)
                     .frame(minHeight: 34)
                     .padding(.horizontal, 9)
@@ -853,7 +853,7 @@ private struct CalendarPreview: View {
     private var weekdayHeaders: some View {
         ForEach(Array(weekdays.enumerated()), id: \.offset) { _, weekday in
             Text(weekday)
-                .planoraFont(.caption2.weight(.bold))
+                .font(.caption2.weight(.bold))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
         }
@@ -884,19 +884,19 @@ private struct CalendarPreview: View {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Text(PlanoraFormat.monthDay(selectedDate))
-                        .planoraFont(.subheadline.weight(.bold))
+                        .font(.subheadline.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Spacer()
 
                     Text(LF("task_count_short_format", selectedTasks.count))
-                        .planoraFont(.caption.weight(.semibold))
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
 
                 if selectedTasks.isEmpty {
                     Text(L("这一天没有截止任务。", "No deadlines on this day."))
-                        .planoraFont(.subheadline)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                 } else {
@@ -972,7 +972,7 @@ private struct CalendarNavigationButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .planoraFont(.caption.weight(.bold))
+                .font(.caption.weight(.bold))
                 .foregroundStyle(Color.planoraInk)
                 .frame(width: 34, height: 34)
                 .background(Color.planoraControlFill, in: Circle())
@@ -995,7 +995,7 @@ private struct CalendarDateButton: View {
         Button(action: action) {
             VStack(spacing: 2) {
                 Text("\(Calendar.current.component(.day, from: date))")
-                    .planoraFont(.caption.weight(taskTints.isEmpty ? .medium : .bold))
+                    .font(.caption.weight(taskTints.isEmpty ? .medium : .bold))
                     .foregroundStyle(isSelected ? Color.white : Color.planoraInk)
 
                 HStack(spacing: 2) {
@@ -1026,18 +1026,18 @@ private struct CalendarTaskRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: task.isCompleted ? "checkmark.circle.fill" : task.type.symbol)
-                .planoraFont(.subheadline.weight(.bold))
+                .font(.subheadline.weight(.bold))
                 .foregroundStyle(task.isCompleted ? Color.planoraGreen : task.type.tint)
                 .frame(width: 32, height: 32)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(task.title)
-                    .planoraFont(.subheadline.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
                     .lineLimit(1)
 
                 Text(task.subject.planoraDisplaySubjectName)
-                    .planoraFont(.caption.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
 
@@ -1046,7 +1046,7 @@ private struct CalendarTaskRow: View {
             PriorityPill(priority: task.priority)
 
             Image(systemName: "chevron.right")
-                .planoraFont(.caption2.weight(.bold))
+                .font(.caption2.weight(.bold))
                 .foregroundStyle(.secondary)
         }
         .padding(.vertical, 9)

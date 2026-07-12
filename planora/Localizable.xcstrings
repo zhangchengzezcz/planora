@@ -109,28 +109,6 @@
         }
       }
     },
-    "Add Font" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Font"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "フォントを追加"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新增字体"
-          }
-        }
-      }
-    },
     "Add Milestone" : {
       "localizations" : {
         "en" : {
@@ -2575,50 +2553,6 @@
         }
       }
     },
-    "Enable Custom Font" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enable Custom Font"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "カスタムフォントを有効にする"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "启用自定义字体"
-          }
-        }
-      }
-    },
-    "Enable Font Selection?" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enable Font Selection?"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "フォント選択を有効にしますか？"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "启用字体选择？"
-          }
-        }
-      }
-    },
     "Enable Notifications" : {
       "localizations" : {
         "en" : {
@@ -3389,96 +3323,6 @@
         }
       }
     },
-    "Font" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Font"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "フォント"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "字体"
-          }
-        }
-      }
-    },
-    "Font Preview" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Font Preview"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "フォントプレビュー"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "字体预览"
-          }
-        }
-      }
-    },
-    "Font selection stays on this device and is not included in task backups." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Font selection stays on this device and is not included in task backups."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "フォント設定はこのデバイスにのみ保存され、タスクのバックアップには含まれません。"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "字体选择仅保存在当前设备，不会写入任务备份。"
-          }
-        }
-      }
-    },
-    "Font styling currently applies to the Chinese interface only." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Font styling currently applies to the Chinese interface only."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "フォントスタイルは現在、中国語の画面にのみ適用されます。"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "字体样式目前只应用于中文界面。"
-          }
-        }
-      }
-    },
     "For example: Art Portfolio" : {
       "localizations" : {
         "en" : {
@@ -3651,50 +3495,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "绿色"
-          }
-        }
-      }
-    },
-    "HanziPen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "HanziPen"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "HanziPen"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "翩翩体"
-          }
-        }
-      }
-    },
-    "Heiti" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Heiti"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "黒体"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "黑体"
           }
         }
       }
@@ -3963,28 +3763,6 @@
         }
       }
     },
-    "Kaiti" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kaiti"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "楷体"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "楷体"
-          }
-        }
-      }
-    },
     "Keep subjects, language learning, competitions, and extras in one place." : {
       "localizations" : {
         "en" : {
@@ -4091,28 +3869,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "学习空间"
-          }
-        }
-      }
-    },
-    "Libian" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Libian"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "隷変"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "隶变"
           }
         }
       }
@@ -4465,28 +4221,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "中等"
-          }
-        }
-      }
-    },
-    "Monospaced" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Monospaced"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "等幅"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "等宽体"
           }
         }
       }
@@ -5617,28 +5351,6 @@
         }
       }
     },
-    "PingFang" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PingFang"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PingFang"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "苹方"
-          }
-        }
-      }
-    },
     "Pink" : {
       "localizations" : {
         "en" : {
@@ -5925,28 +5637,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已准备"
-          }
-        }
-      }
-    },
-    "Preview Font" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preview Font"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "フォントをプレビュー"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "预览字体"
           }
         }
       }
@@ -6722,28 +6412,6 @@
         }
       }
     },
-    "Rounded" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rounded"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "丸ゴシック"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "圆体"
-          }
-        }
-      }
-    },
     "Save" : {
       "localizations" : {
         "en" : {
@@ -6961,28 +6629,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "搜索结果"
-          }
-        }
-      }
-    },
-    "Search System Fonts" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Search System Fonts"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "システムフォントを検索"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "搜索系统字体"
           }
         }
       }
@@ -7225,28 +6871,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "智能排序"
-          }
-        }
-      }
-    },
-    "Songti" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Songti"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "宋体"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "宋体"
           }
         }
       }
@@ -7665,50 +7289,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "系统"
-          }
-        }
-      }
-    },
-    "System font availability can vary by device and OS version. Changing the interface font may affect glyphs, line wrapping, and layout, and some text may be clipped or displayed unexpectedly. You can turn this off at any time to restore the system font." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "System font availability can vary by device and OS version. Changing the interface font may affect glyphs, line wrapping, and layout, and some text may be clipped or displayed unexpectedly. You can turn this off at any time to restore the system font."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "システムフォントの利用状況はデバイスやOSのバージョンによって異なります。画面全体のフォントを変更すると、字形、改行、レイアウトに影響し、一部のテキストが切れたり正しく表示されない場合があります。いつでも無効にしてシステムフォントへ戻せます。"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "系统字体在不同设备和系统版本中的可用性可能不同。更换界面字体可能影响字形、换行与布局，少数文本可能出现截断或显示异常。你可以随时关闭此功能恢复系统默认字体。"
-          }
-        }
-      }
-    },
-    "System Fonts" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "System Fonts"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "システムフォント"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "系统字体"
           }
         }
       }
@@ -8813,28 +8393,6 @@
         }
       }
     },
-    "Wawati" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wawati"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wawati"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "娃娃体"
-          }
-        }
-      }
-    },
     "Weak Areas" : {
       "localizations" : {
         "en" : {
@@ -9033,28 +8591,6 @@
         }
       }
     },
-    "Xingkai" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Xingkai"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "行楷"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "行楷"
-          }
-        }
-      }
-    },
     "You can add multiple custom dates and times." : {
       "localizations" : {
         "en" : {
@@ -9183,28 +8719,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "任务备份已经保存到你选择的位置。"
-          }
-        }
-      }
-    },
-    "Yuanti" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yuanti"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "丸ゴシック"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "圆体"
           }
         }
       }
