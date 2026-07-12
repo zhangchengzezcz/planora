@@ -946,28 +946,6 @@
         }
       }
     },
-    "Chinese Font" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chinese Font"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "中国語フォント"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "中文字体"
-          }
-        }
-      }
-    },
     "Choose Curriculum" : {
       "localizations" : {
         "en" : {
