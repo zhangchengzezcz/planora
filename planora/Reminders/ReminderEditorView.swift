@@ -97,7 +97,7 @@ private struct ReminderConfigurationView: View {
                             L("没有 Deadline 的任务只能使用自定义提醒。", "Tasks without a deadline can only use custom reminders."),
                             systemImage: "info.circle"
                         )
-                        .font(.subheadline)
+                        .planoraFont(.subheadline)
                         .foregroundStyle(.secondary)
                     }
                 }
@@ -126,11 +126,11 @@ private struct ReminderConfigurationView: View {
             case .denied:
                 VStack(alignment: .leading, spacing: 10) {
                     Label(L("通知权限已关闭", "Notifications Are Off"), systemImage: "bell.slash.fill")
-                        .font(.headline)
+                        .planoraFont(.headline)
                         .foregroundStyle(.red)
 
                     Text(L("请在系统设置中允许 Planora 发送通知。", "Allow Planora notifications in System Settings to use reminders."))
-                        .font(.subheadline)
+                        .planoraFont(.subheadline)
                         .foregroundStyle(.secondary)
 
                     Button(L("打开系统设置", "Open Settings"), action: openSettings)
@@ -140,7 +140,7 @@ private struct ReminderConfigurationView: View {
             case .notDetermined:
                 VStack(alignment: .leading, spacing: 10) {
                     Text(L("启用通知后，Planora 会在你选择的时间提醒任务。", "Enable notifications so Planora can remind you at the times you choose."))
-                        .font(.subheadline)
+                        .planoraFont(.subheadline)
                         .foregroundStyle(.secondary)
 
                     Button {

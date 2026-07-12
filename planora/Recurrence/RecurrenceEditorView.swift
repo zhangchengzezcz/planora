@@ -107,7 +107,7 @@ struct RecurrenceDraftEditorView: View {
                     }
                 } label: {
                     Text(weekdaySymbol(weekday))
-                        .font(.caption.weight(.bold))
+                        .planoraFont(.caption.weight(.bold))
                         .frame(maxWidth: .infinity)
                         .frame(height: 34)
                         .foregroundStyle(draft.weekdays.contains(weekday) ? Color.white : Color.planoraInk)

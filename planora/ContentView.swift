@@ -43,10 +43,9 @@ private struct PlanoraRootView: View {
             }
             .transition(.opacity.combined(with: .scale(scale: 0.985)))
         }
+        .planoraFont(.body)
         .environment(\.planoraAppearance, store.appearanceSettings)
         .environment(\.planoraTaskDisplay, store.taskDisplaySettings)
-        .font(store.appearanceSettings.appliedRootFont)
-        .fontDesign(store.appearanceSettings.appliedFontDesign)
         .tint(store.appearanceSettings.accent.color)
         .preferredColorScheme(store.appearanceSettings.displayMode.colorScheme)
         .animation(.smooth(duration: 0.35), value: store.phase)

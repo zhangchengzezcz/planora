@@ -257,8 +257,9 @@ final class BackupPerformanceTests: XCTestCase {
             backgroundStyle: .rose,
             accent: .amber,
             usesChineseFont: true,
+            hasAcknowledgedChineseFontWarning: true,
             chineseFontPreset: .custom,
-            customChineseFontName: "AvenirNext-Regular"
+            customChineseFontName: "PingFangSC-Semibold"
         )
 
         let data = try JSONEncoder().encode(settings)
@@ -275,6 +276,7 @@ final class BackupPerformanceTests: XCTestCase {
         XCTAssertEqual(settings.backgroundStyle, .aurora)
         XCTAssertEqual(settings.accent, .blue)
         XCTAssertFalse(settings.usesChineseFont)
+        XCTAssertFalse(settings.hasAcknowledgedChineseFontWarning)
         XCTAssertEqual(settings.chineseFontPreset, .pingFang)
         XCTAssertNil(settings.customChineseFontName)
     }
@@ -303,6 +305,7 @@ final class BackupPerformanceTests: XCTestCase {
         XCTAssertEqual(settings.backgroundStyle, .rose)
         XCTAssertEqual(settings.accent, .pink)
         XCTAssertFalse(settings.usesChineseFont)
+        XCTAssertFalse(settings.hasAcknowledgedChineseFontWarning)
         XCTAssertEqual(settings.chineseFontPreset, .songti)
         XCTAssertNil(settings.customChineseFontName)
     }
@@ -317,6 +320,7 @@ final class BackupPerformanceTests: XCTestCase {
 
         XCTAssertFalse(fonts.isEmpty)
         XCTAssertEqual(Set(fonts.map(\.id)).count, fonts.count)
+        XCTAssertTrue(fonts.allSatisfy { PlanoraSystemFontCatalog.supportsChinese($0.fontName) })
     }
 
     func testTaskBackupDoesNotContainFontPreferences() throws {

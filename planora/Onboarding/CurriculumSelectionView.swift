@@ -9,12 +9,12 @@ struct CurriculumSelectionView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 Text(L("选择课程体系", "Choose Curriculum"))
-                    .font(.system(size: 32, weight: .bold))
+                    .planoraFont(.system(size: 32, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(L("之后可以随时调整。", "You can change this later."))
-                    .font(.callout)
+                    .planoraFont(.callout)
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -53,26 +53,26 @@ struct CurriculumCard: View {
             GlassPanel(interactive: true) {
                 HStack(spacing: 16) {
                     Image(systemName: curriculum.symbol)
-                        .font(.title2.weight(.semibold))
+                        .planoraFont(.title2.weight(.semibold))
                         .foregroundStyle(curriculum.tint)
                         .frame(width: 54, height: 54)
                         .background(curriculum.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
                     VStack(alignment: .leading, spacing: 6) {
                         Text(curriculum.title)
-                            .font(.headline)
+                            .planoraFont(.headline)
                             .foregroundStyle(Color.planoraInk)
                             .fixedSize(horizontal: false, vertical: true)
 
                         Text(curriculum.subtitle)
-                            .font(.subheadline)
+                            .planoraFont(.subheadline)
                             .foregroundStyle(.secondary)
                     }
 
                     Spacer()
 
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.title3.weight(.semibold))
+                        .planoraFont(.title3.weight(.semibold))
                         .foregroundStyle(isSelected ? curriculum.tint : Color.secondary.opacity(0.45))
                 }
             }

@@ -74,19 +74,19 @@ struct TaskDetailView: View {
     private var detailHeader: some View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: task.type.symbol)
-                .font(.title2.weight(.bold))
+                .planoraFont(.title2.weight(.bold))
                 .foregroundStyle(task.type.tint)
                 .frame(width: 54, height: 54)
                 .background(task.type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(task.title)
-                    .font(.system(size: 30, weight: .bold))
+                    .planoraFont(.system(size: 30, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(PlanoraFormat.subjectDisplayName(task.subject))
-                    .font(.callout.weight(.semibold))
+                    .planoraFont(.callout.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
 
@@ -133,18 +133,18 @@ struct TaskDetailView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(L("学习进度", "Learning Progress"))
-                            .font(.headline.weight(.bold))
+                            .planoraFont(.headline.weight(.bold))
                             .foregroundStyle(Color.planoraInk)
 
                         Text(task.progressState.label)
-                            .font(.caption.weight(.semibold))
+                            .planoraFont(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
 
                     Spacer()
 
                     Text(task.progressState.valueText)
-                        .font(.headline.weight(.bold))
+                        .planoraFont(.headline.weight(.bold))
                         .foregroundStyle(task.type.tint)
 
                     if task.progressState.kind == .stage {
@@ -152,7 +152,7 @@ struct TaskDetailView: View {
                             TimelineEditorView(task: task)
                         } label: {
                             Image(systemName: "slider.horizontal.3")
-                                .font(.subheadline.weight(.bold))
+                                .planoraFont(.subheadline.weight(.bold))
                                 .foregroundStyle(task.type.tint)
                                 .frame(width: 34, height: 34)
                                 .background(task.type.tint.opacity(0.12), in: Circle())
@@ -202,11 +202,11 @@ struct TaskDetailView: View {
         GlassPanel {
             VStack(alignment: .leading, spacing: 10) {
                 Label(L("备注", "Notes"), systemImage: "note.text")
-                    .font(.headline.weight(.bold))
+                    .planoraFont(.headline.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(task.notes.isEmpty ? L("没有备注", "No Notes") : task.notes)
-                    .font(.subheadline)
+                    .planoraFont(.subheadline)
                     .foregroundStyle(task.notes.isEmpty ? .secondary : Color.planoraInk)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -230,7 +230,7 @@ struct TaskDetailView: View {
             isShowingDeleteConfirmation = true
         } label: {
             Label(L("删除任务", "Delete Task"), systemImage: "trash")
-                .font(.headline.weight(.semibold))
+                .planoraFont(.headline.weight(.semibold))
                 .frame(maxWidth: .infinity, minHeight: 50)
         }
         .buttonStyle(.plain)
@@ -302,7 +302,7 @@ struct TaskCompletionButton: View {
             Task { await TaskReminderScheduler.synchronize(task: task) }
         } label: {
             Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                .font(.title3.weight(.semibold))
+                .planoraFont(.title3.weight(.semibold))
                 .foregroundStyle(task.isCompleted ? Color.planoraGreen : Color.gray)
                 .frame(width: 36, height: 36)
                 .contentShape(Circle())
@@ -322,7 +322,7 @@ private struct TimelineMilestoneRow: View {
         HStack(alignment: .top, spacing: 12) {
             VStack(spacing: 0) {
                 Image(systemName: milestone.isCompleted ? "checkmark.circle.fill" : isCurrent ? "circle.inset.filled" : "circle")
-                    .font(.headline)
+                    .planoraFont(.headline)
                     .foregroundStyle(milestone.isCompleted || isCurrent ? tint : Color.gray)
 
                 if !isLast {
@@ -334,12 +334,12 @@ private struct TimelineMilestoneRow: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(milestone.localizedTitle)
-                    .font(.subheadline.weight(isCurrent ? .bold : .semibold))
+                    .planoraFont(.subheadline.weight(isCurrent ? .bold : .semibold))
                     .foregroundStyle(milestone.isCompleted || isCurrent ? Color.planoraInk : .secondary)
 
                 if let targetDate = milestone.targetDate {
                     Text(PlanoraFormat.monthDay(targetDate))
-                        .font(.caption.weight(.semibold))
+                        .planoraFont(.caption.weight(.semibold))
                         .foregroundStyle(isCurrent ? tint : .secondary)
                 }
             }
@@ -501,7 +501,7 @@ private struct MilestoneEditorRow: View {
                     .foregroundStyle(milestone.isCompleted ? Color.planoraGreen : .secondary)
 
                 TextField(L("阶段名称", "Milestone Name"), text: $milestone.title)
-                    .font(.headline)
+                    .planoraFont(.headline)
             }
 
             Toggle(L("目标日期", "Target Date"), isOn: hasTargetDate)
@@ -525,7 +525,7 @@ struct PriorityPill: View {
 
     var body: some View {
         Label(priority.title, systemImage: priority.symbol)
-            .font(.caption.weight(.bold))
+            .planoraFont(.caption.weight(.bold))
             .foregroundStyle(priority.tint)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
@@ -543,25 +543,25 @@ private struct DetailRow: View {
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
-                .font(.headline)
+                .planoraFont(.headline)
                 .foregroundStyle(tint)
                 .frame(width: 36, height: 36)
                 .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             Text(title)
-                .font(.subheadline.weight(.semibold))
+                .planoraFont(.subheadline.weight(.semibold))
                 .foregroundStyle(Color.planoraInk)
 
             Spacer(minLength: 12)
 
             Text(value)
-                .font(.subheadline.weight(.semibold))
+                .planoraFont(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.trailing)
 
             if showsChevron {
                 Image(systemName: "chevron.right")
-                    .font(.caption.weight(.bold))
+                    .planoraFont(.caption.weight(.bold))
                     .foregroundStyle(.secondary)
             }
         }
@@ -732,7 +732,7 @@ private struct EditTaskView: View {
                     if progressKind == .percentage {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(PlanoraFormat.percent(percentageProgress))
-                                .font(.headline.weight(.bold))
+                                .planoraFont(.headline.weight(.bold))
                                 .foregroundStyle(selectedType.tint)
                             Slider(value: $percentageProgress, in: 0...1, step: 0.05)
                                 .tint(selectedType.tint)

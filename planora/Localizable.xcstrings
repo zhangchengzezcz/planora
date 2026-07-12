@@ -2597,24 +2597,24 @@
         }
       }
     },
-    "Enable Chinese Font Style" : {
+    "Enable Custom Font" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enable Chinese Font Style"
+            "value" : "Enable Custom Font"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "中国語フォントスタイルを有効にする"
+            "value" : "カスタムフォントを有効にする"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "启用中文字体样式"
+            "value" : "启用自定义字体"
           }
         }
       }
@@ -7691,24 +7691,24 @@
         }
       }
     },
-    "System font availability can vary by device and OS version. Changing fonts may affect glyphs, line wrapping, and layout, and some text may be clipped or displayed unexpectedly. You can turn this off at any time to restore the default font." : {
+    "System font availability can vary by device and OS version. Changing the interface font may affect glyphs, line wrapping, and layout, and some text may be clipped or displayed unexpectedly. You can turn this off at any time to restore the system font." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "System font availability can vary by device and OS version. Changing fonts may affect glyphs, line wrapping, and layout, and some text may be clipped or displayed unexpectedly. You can turn this off at any time to restore the default font."
+            "value" : "System font availability can vary by device and OS version. Changing the interface font may affect glyphs, line wrapping, and layout, and some text may be clipped or displayed unexpectedly. You can turn this off at any time to restore the system font."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "システムフォントの利用状況はデバイスやOSのバージョンによって異なります。フォントを変更すると、字形、改行、レイアウトに影響し、一部のテキストが切れたり正しく表示されない場合があります。いつでも無効にして標準フォントへ戻せます。"
+            "value" : "システムフォントの利用状況はデバイスやOSのバージョンによって異なります。画面全体のフォントを変更すると、字形、改行、レイアウトに影響し、一部のテキストが切れたり正しく表示されない場合があります。いつでも無効にしてシステムフォントへ戻せます。"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "系统字体在不同设备和系统版本中的可用性可能不同。更换字体可能影响字形、换行与界面布局，少数文本可能出现截断或显示异常。你可以随时关闭此功能恢复默认苹方。"
+            "value" : "系统字体在不同设备和系统版本中的可用性可能不同。更换界面字体可能影响字形、换行与布局，少数文本可能出现截断或显示异常。你可以随时关闭此功能恢复系统默认字体。"
           }
         }
       }

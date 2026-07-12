@@ -32,7 +32,7 @@ struct QuickCreateTaskView: View {
         Form {
             Section {
                 TextField(L("任务标题", "Task Title"), text: $title)
-                    .font(.title3.weight(.semibold))
+                    .planoraFont(.title3.weight(.semibold))
             }
 
             Section(L("科目", "Subject")) {
@@ -57,7 +57,7 @@ struct QuickCreateTaskView: View {
                     LF("quick_create_defaults_format", taskType.title, QuickCreatePreferences.reminderSummary),
                     systemImage: "bolt.fill"
                 )
-                .font(.caption)
+                .planoraFont(.caption)
                 .foregroundStyle(.secondary)
             }
         }

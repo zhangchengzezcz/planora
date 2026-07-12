@@ -12,12 +12,12 @@ struct PlanoraPrimaryButton: View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Text(title)
-                    .font(.headline.weight(.bold))
+                    .planoraFont(.headline.weight(.bold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
 
                 Image(systemName: systemImage)
-                    .font(.headline.weight(.bold))
+                    .planoraFont(.headline.weight(.bold))
             }
             .foregroundStyle(Color.planoraOnAccent)
             .frame(maxWidth: .infinity, minHeight: 56)
@@ -55,18 +55,18 @@ struct SelectableChip: View {
             HStack(spacing: 7) {
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.caption.weight(.bold))
+                        .planoraFont(.caption.weight(.bold))
                 }
 
                 Text(title)
-                    .font(.subheadline.weight(.semibold))
+                    .planoraFont(.subheadline.weight(.semibold))
                     .lineLimit(2)
                     .minimumScaleFactor(0.78)
                     .multilineTextAlignment(.center)
 
                 if isLocked {
                     Image(systemName: "lock.fill")
-                        .font(.caption2.weight(.bold))
+                        .planoraFont(.caption2.weight(.bold))
                 }
             }
             .foregroundStyle(isSelected ? Color.planoraOnAccent : Color.planoraInk)
@@ -88,7 +88,7 @@ struct MiniStatusPill: View {
 
     var body: some View {
         Text(title)
-            .font(.caption.weight(.bold))
+            .planoraFont(.caption.weight(.bold))
             .foregroundStyle(tint)
             .lineLimit(1)
             .minimumScaleFactor(0.82)

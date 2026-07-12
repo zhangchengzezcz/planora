@@ -121,13 +121,13 @@ private struct DeletedTaskUndoBanner: View {
                 .foregroundStyle(.secondary)
 
             Text(LF("tasks_deleted_format", count))
-                .font(.subheadline.weight(.semibold))
+                .planoraFont(.subheadline.weight(.semibold))
                 .foregroundStyle(Color.planoraInk)
 
             Spacer()
 
             Button(L("撤销", "Undo"), action: undo)
-                .font(.subheadline.weight(.bold))
+                .planoraFont(.subheadline.weight(.bold))
                 .foregroundStyle(Color.planoraBlue)
         }
         .padding(.horizontal, 16)

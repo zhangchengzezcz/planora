@@ -4,18 +4,18 @@
 
 ### 中文
 
-- 字体功能首次开启时显示排版风险提示，只有确认后才启用；取消不会改变当前设置。
-- 新增 9 种常用中文字体与第 10 项“自定义”，关闭开关时恢复系统苹方。
-- 自定义字体支持浏览和搜索设备完整系统字体列表，选择后仅保存字体名称到本机外观偏好。
-- 所有字体均提供独立中文 Demo 预览，便于检查字形、英文、数字与混排效果。
+- 字体功能仅在首次开启时显示排版风险提示，确认后再次开关不再重复询问；取消不会改变当前设置。
+- 新增 9 种常用字体与第 10 项“自定义”，启用后整套界面的文字统一响应所选字体，关闭时恢复系统字体。
+- 自定义字体列表只展示设备上实际支持中文字形的字体，避免误选仅支持英文的字体；选择结果仅保存到本机外观偏好。
+- 所有字体均提供独立 Demo 预览，便于检查中文、英文、数字与混排效果；未安装的预设使用轻量系统字族近似，不打包额外字体文件。
 - 字体设置明确不写入任务 JSON 备份，也不会随任务导入导出。
 
 ### English
 
-- Added a layout-risk confirmation before font selection can be enabled; cancelling leaves the setting off.
-- Added nine common Chinese fonts plus a tenth Custom option, with system PingFang restored when disabled.
-- Custom fonts can be selected from the device's complete searchable system-font list and are stored only in local appearance preferences.
-- Added a dedicated Chinese demo preview for every selected font, including mixed Chinese, English, and numeric content.
+- Added a one-time layout-risk confirmation before font selection is first enabled; later toggles do not repeat it, and cancelling leaves the setting off.
+- Added nine common font presets plus a tenth Custom option; the selected font now applies across the interface and disabling it restores the system font.
+- The custom picker now lists only fonts that actually provide Chinese glyphs, preventing English-only choices; selections remain local appearance preferences.
+- Added a mixed Chinese, English, and numeric preview. Unavailable presets use lightweight system-family approximations instead of bundling font files.
 - Font preferences are explicitly excluded from task JSON backups and task import/export.
 
 ## 1.4.1 - 2026-07-11

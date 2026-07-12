@@ -18,11 +18,11 @@ struct WelcomeView: View {
 
             VStack(spacing: 8) {
                 Text(L("欢迎使用", "Welcome to"))
-                    .font(.title3.weight(.medium))
+                    .planoraFont(.title3.weight(.medium))
                     .foregroundStyle(.secondary)
 
                 Text("Planora")
-                    .font(.system(size: 48, weight: .bold))
+                    .planoraFont(.system(size: 48, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
             }
             .opacity(textVisible ? 1 : 0)
@@ -31,7 +31,7 @@ struct WelcomeView: View {
             Spacer()
 
             Text(L("学习计划，简单清晰。", "Study planning, simple and clear."))
-                .font(.footnote.weight(.medium))
+                .planoraFont(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)
                 .opacity(textVisible ? 0.75 : 0)
                 .padding(.bottom, 36)

@@ -23,7 +23,7 @@ struct CreateTaskView: View {
             VStack(alignment: .leading, spacing: 20) {
                 HStack(alignment: .top) {
                     Text(L("新建任务", "New Task"))
-                        .font(.system(size: 34, weight: .bold))
+                        .planoraFont(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Spacer(minLength: 12)
@@ -44,17 +44,17 @@ struct CreateTaskView: View {
                     ) {
                         HStack(spacing: 14) {
                             Image(systemName: "bolt.fill")
-                                .font(.title3.weight(.bold))
+                                .planoraFont(.title3.weight(.bold))
                                 .foregroundStyle(Color.planoraAmber)
                                 .frame(width: 44, height: 44)
                                 .background(Color.planoraAmber.opacity(0.14), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(L("快速新建", "Quick Create"))
-                                    .font(.headline.weight(.bold))
+                                    .planoraFont(.headline.weight(.bold))
                                     .foregroundStyle(Color.planoraInk)
                                 Text(L("只填写标题、科目和日期。", "Just add a title, subject, and date."))
-                                    .font(.caption)
+                                    .planoraFont(.caption)
                                     .foregroundStyle(.secondary)
                             }
 
@@ -95,7 +95,7 @@ private struct CloseCreateButton: View {
 
         Button(action: action) {
             Image(systemName: "xmark")
-                .font(.headline.weight(.bold))
+                .planoraFont(.headline.weight(.bold))
                 .foregroundStyle(Color.planoraInk)
                 .frame(width: 42, height: 42)
                 .background(Color.planoraGlassFill, in: shape)
@@ -114,13 +114,13 @@ private struct CreateTypeCard: View {
         GlassPanel(padding: 16, cornerRadius: PlanoraTheme.compactCornerRadius, tint: type.tint.opacity(0.12), interactive: true) {
             VStack(alignment: .leading, spacing: 14) {
                 Image(systemName: type.symbol)
-                    .font(.title3.weight(.bold))
+                    .planoraFont(.title3.weight(.bold))
                     .foregroundStyle(type.tint)
                     .frame(width: 42, height: 42)
                     .background(type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                 Text(type.title)
-                    .font(.headline.weight(.bold))
+                    .planoraFont(.headline.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
                     .lineLimit(1)
                     .minimumScaleFactor(0.78)
@@ -194,7 +194,7 @@ private struct CreateTaskFormView: View {
                         PlanoraFieldLabel(L("标题", "Title"))
                         TextField(taskType.titlePlaceholder, text: titleBinding)
                             .textFieldStyle(.plain)
-                            .font(.title3.weight(.semibold))
+                            .planoraFont(.title3.weight(.semibold))
 
                         Divider()
 
@@ -217,7 +217,7 @@ private struct CreateTaskFormView: View {
                         Divider()
 
                         Toggle(L("截止日期", "Deadline"), isOn: $hasDeadline)
-                            .font(.headline)
+                            .planoraFont(.headline)
                             .tint(taskType.tint)
                             .disabled(recurrenceRule != nil)
 
@@ -227,7 +227,7 @@ private struct CreateTaskFormView: View {
                         }
 
                         Toggle(L("计划完成日期", "Planned Date"), isOn: $hasPlannedDate)
-                            .font(.headline)
+                            .planoraFont(.headline)
                             .tint(taskType.tint)
 
                         if hasPlannedDate {
@@ -244,17 +244,17 @@ private struct CreateTaskFormView: View {
                         } label: {
                             HStack {
                                 Label(L("提醒", "Reminders"), systemImage: "bell.badge")
-                                    .font(.headline)
+                                    .planoraFont(.headline)
                                     .foregroundStyle(Color.planoraInk)
 
                                 Spacer()
 
                                 Text(reminderSummary)
-                                    .font(.caption.weight(.semibold))
+                                    .planoraFont(.caption.weight(.semibold))
                                     .foregroundStyle(.secondary)
 
                                 Image(systemName: "chevron.right")
-                                    .font(.caption.weight(.bold))
+                                    .planoraFont(.caption.weight(.bold))
                                     .foregroundStyle(.secondary)
                             }
                             .contentShape(Rectangle())
@@ -272,17 +272,17 @@ private struct CreateTaskFormView: View {
                         } label: {
                             HStack {
                                 Label(L("重复", "Repeat"), systemImage: "repeat")
-                                    .font(.headline)
+                                    .planoraFont(.headline)
                                     .foregroundStyle(Color.planoraInk)
 
                                 Spacer()
 
                                 Text(recurrenceRule?.summary ?? L("不重复", "Does Not Repeat"))
-                                    .font(.caption.weight(.semibold))
+                                    .planoraFont(.caption.weight(.semibold))
                                     .foregroundStyle(.secondary)
 
                                 Image(systemName: "chevron.right")
-                                    .font(.caption.weight(.bold))
+                                    .planoraFont(.caption.weight(.bold))
                                     .foregroundStyle(.secondary)
                             }
                             .contentShape(Rectangle())
@@ -302,7 +302,7 @@ private struct CreateTaskFormView: View {
                         Divider()
 
                         Toggle(L("跟踪进度", "Track Progress"), isOn: $tracksProgress)
-                            .font(.headline)
+                            .planoraFont(.headline)
                             .tint(taskType.tint)
 
                         if tracksProgress {
@@ -419,18 +419,18 @@ private struct FormHeader: View {
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: type.symbol)
-                .font(.title2.weight(.bold))
+                .planoraFont(.title2.weight(.bold))
                 .foregroundStyle(type.tint)
                 .frame(width: 52, height: 52)
                 .background(type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(type.title)
-                    .font(.system(size: 32, weight: .bold))
+                    .planoraFont(.system(size: 32, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(L("新建任务", "New Task"))
-                    .font(.callout.weight(.medium))
+                    .planoraFont(.callout.weight(.medium))
                     .foregroundStyle(.secondary)
             }
 
@@ -448,7 +448,7 @@ private struct PlanoraFieldLabel: View {
 
     var body: some View {
         Text(title)
-            .font(.caption.weight(.bold))
+            .planoraFont(.caption.weight(.bold))
             .foregroundStyle(.secondary)
             .textCase(.uppercase)
     }
@@ -462,13 +462,13 @@ private struct PercentageProgressEditor: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(L("进度", "Progress"))
-                    .font(.subheadline.weight(.semibold))
+                    .planoraFont(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
 
                 Spacer()
 
                 Text(PlanoraFormat.percent(value))
-                    .font(.headline.weight(.bold))
+                    .planoraFont(.headline.weight(.bold))
                     .foregroundStyle(tint)
             }
 
@@ -494,7 +494,7 @@ private struct StageProgressEditor: View {
 
             TextField(L("自定义阶段", "Custom stage"), text: $stageName)
                 .textFieldStyle(.plain)
-                .font(.subheadline.weight(.semibold))
+                .planoraFont(.subheadline.weight(.semibold))
                 .foregroundStyle(tint)
         }
     }

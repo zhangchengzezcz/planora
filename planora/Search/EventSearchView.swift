@@ -81,11 +81,11 @@ struct EventSearchView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("搜索", "Search"))
-                        .font(.system(size: 34, weight: .bold))
+                        .planoraFont(.system(size: 34, weight: .bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("快速查找任务、事件和重要日期。", "Quickly find tasks, events, and important dates."))
-                        .font(.callout.weight(.medium))
+                        .planoraFont(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, 18)
@@ -238,7 +238,7 @@ struct EventSearchView: View {
                 if hasActiveFilters {
                     Button(action: clearFilters) {
                         Label(L("清除筛选", "Clear Filters"), systemImage: "xmark.circle.fill")
-                            .font(.caption.weight(.bold))
+                            .planoraFont(.caption.weight(.bold))
                             .foregroundStyle(Color.planoraDeepGreen)
                             .frame(minHeight: 36)
                             .padding(.horizontal, 10)
@@ -393,9 +393,9 @@ private struct SearchFilterChip: View {
             Text(title)
                 .lineLimit(1)
             Image(systemName: "chevron.down")
-                .font(.caption2.weight(.bold))
+                .planoraFont(.caption2.weight(.bold))
         }
-        .font(.caption.weight(.bold))
+        .planoraFont(.caption.weight(.bold))
         .foregroundStyle(isActive ? Color.white : Color.planoraInk)
         .frame(minHeight: 36)
         .padding(.horizontal, 12)
@@ -415,11 +415,11 @@ private struct EventSearchField: View {
 
             HStack(spacing: 12) {
                 Image(systemName: "magnifyingglass")
-                    .font(.title3.weight(.semibold))
+                    .planoraFont(.title3.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
 
                 TextField(L("搜索任务或事件", "Search tasks or events"), text: $text)
-                    .font(.title3)
+                    .planoraFont(.title3)
                     .foregroundStyle(Color.planoraInk)
                     .textFieldStyle(.plain)
                     .textInputAutocapitalization(.never)
@@ -431,7 +431,7 @@ private struct EventSearchField: View {
                     }
 
                 Image(systemName: "mic.fill")
-                    .font(.title3.weight(.medium))
+                    .planoraFont(.title3.weight(.medium))
                     .foregroundStyle(.secondary)
                     .accessibilityHidden(true)
             }
@@ -446,7 +446,7 @@ private struct EventSearchField: View {
                     isFocused.wrappedValue = false
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.title2.weight(.medium))
+                        .planoraFont(.title2.weight(.medium))
                         .foregroundStyle(Color.planoraInk)
                         .frame(width: 58, height: 58)
                         .background(Color.planoraGlassFill, in: Circle())
@@ -469,20 +469,20 @@ private struct EventSearchRow: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 14) {
                 Image(systemName: task.type.symbol)
-                    .font(.headline)
+                    .planoraFont(.headline)
                     .foregroundStyle(task.type.tint)
                     .frame(width: 42, height: 42)
                     .background(task.type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(task.title)
-                        .font(.headline)
+                        .planoraFont(.headline)
                         .foregroundStyle(Color.planoraInk)
                         .lineLimit(1)
                         .minimumScaleFactor(0.78)
 
                     Text(task.subject.planoraSearchDisplayName)
-                        .font(.caption.weight(.semibold))
+                        .planoraFont(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
 
@@ -491,7 +491,7 @@ private struct EventSearchRow: View {
                 PriorityPill(priority: task.priority)
 
                 Image(systemName: "chevron.right")
-                    .font(.caption.weight(.bold))
+                    .planoraFont(.caption.weight(.bold))
                     .foregroundStyle(.secondary)
             }
 
@@ -506,7 +506,7 @@ private struct EventSearchRow: View {
 
             if !task.notes.isEmpty {
                 Text(task.notes)
-                    .font(.caption)
+                    .planoraFont(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
@@ -522,12 +522,12 @@ private struct EventSearchStatusTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
-                .font(.caption2.weight(.bold))
+                .planoraFont(.caption2.weight(.bold))
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
 
             Text(value)
-                .font(.subheadline.weight(.bold))
+                .planoraFont(.subheadline.weight(.bold))
                 .foregroundStyle(Color.planoraInk)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
@@ -563,15 +563,15 @@ private struct EmptyEventSearchCard: View {
         GlassPanel {
             VStack(alignment: .leading, spacing: 12) {
                 Image(systemName: "magnifyingglass.circle.fill")
-                    .font(.title.weight(.bold))
+                    .planoraFont(.title.weight(.bold))
                     .foregroundStyle(LinearGradient.planoraAccent)
 
                 Text(title)
-                    .font(.title2.weight(.bold))
+                    .planoraFont(.title2.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(message)
-                    .font(.subheadline)
+                    .planoraFont(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

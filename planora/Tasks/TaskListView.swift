@@ -19,11 +19,11 @@ struct TaskListView: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(L("任务", "Tasks"))
-                    .font(.system(size: 34, weight: .bold))
+                    .planoraFont(.system(size: 34, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(L("根据设置显示和排序任务。", "Tasks are displayed and sorted using your settings."))
-                    .font(.callout.weight(.medium))
+                    .planoraFont(.callout.weight(.medium))
                     .foregroundStyle(.secondary)
             }
             .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
@@ -206,20 +206,20 @@ private struct TaskListRow: View {
             VStack(alignment: .leading, spacing: isCompact ? 9 : 13) {
                 HStack(spacing: isCompact ? 10 : 14) {
                     Image(systemName: task.type.symbol)
-                        .font(.headline)
+                        .planoraFont(.headline)
                         .foregroundStyle(task.type.tint)
                         .frame(width: isCompact ? 34 : 42, height: isCompact ? 34 : 42)
                         .background(task.type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: isCompact ? 10 : 14, style: .continuous))
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(task.title)
-                            .font(.headline)
+                            .planoraFont(.headline)
                             .foregroundStyle(Color.planoraInk)
                             .lineLimit(1)
                             .minimumScaleFactor(0.78)
 
                         Text(task.subject.planoraTaskListSubjectName)
-                            .font(.caption.weight(.semibold))
+                            .planoraFont(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
 
@@ -243,7 +243,7 @@ private struct TaskListRow: View {
 
                 if displaySettings.showsNotes && !task.notes.isEmpty {
                     Text(task.notes)
-                        .font(.caption)
+                        .planoraFont(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                 }
@@ -262,12 +262,12 @@ private struct TaskListMetric: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
-                .font(.caption2.weight(.bold))
+                .planoraFont(.caption2.weight(.bold))
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
 
             Text(value)
-                .font(.subheadline.weight(.bold))
+                .planoraFont(.subheadline.weight(.bold))
                 .foregroundStyle(isPrimary ? Color.planoraInk : tint)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
@@ -282,15 +282,15 @@ private struct EmptyTaskListCard: View {
         GlassPanel {
             VStack(alignment: .leading, spacing: 12) {
                 Image(systemName: "checklist")
-                    .font(.title.weight(.bold))
+                    .planoraFont(.title.weight(.bold))
                     .foregroundStyle(LinearGradient.planoraAccent)
 
                 Text(L("还没有任务", "No Tasks Yet"))
-                    .font(.title2.weight(.bold))
+                    .planoraFont(.title2.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(L("创建任务后，这里会按完成时间显示所有任务。", "After you create tasks, they will appear here by completion time."))
-                    .font(.subheadline)
+                    .planoraFont(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
