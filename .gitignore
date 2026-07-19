@@ -9,4 +9,5 @@ build/
 *.dSYM.zip
 *.dSYM
 xcuserdata/
+/planora/Build planora_*.txt
 !planora.xcodeproj/xcuserdata/zhangchengze.xcuserdatad/xcschemes/xcschememanagement.plist
