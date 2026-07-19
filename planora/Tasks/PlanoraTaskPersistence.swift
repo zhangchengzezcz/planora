@@ -24,6 +24,10 @@ enum PlanoraTaskPersistence {
         in modelContext: ModelContext
     ) {
         let refreshedTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? fallbackTasks
-        Task { await TaskReminderScheduler.reconcile(tasks: refreshedTasks) }
+        reconcile(tasks: refreshedTasks)
+    }
+
+    static func reconcile(tasks: [PlanoraTask]) {
+        Task { await TaskReminderScheduler.reconcile(tasks: tasks) }
     }
 }

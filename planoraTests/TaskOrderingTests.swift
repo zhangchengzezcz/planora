@@ -77,6 +77,65 @@ final class TaskOrderingTests: XCTestCase {
         XCTAssertEqual(sorted.map(\.title), ["Newer", "Older"])
     }
 
+    func testTaskListProjectionPreservesDisplayFilteringAndSorting() {
+        let completed = makeTask(
+            title: "A Completed",
+            priority: .high,
+            deadlineOffset: 0,
+            createdOffset: 3,
+            completed: true
+        )
+        let openLaterTitle = makeTask(
+            title: "Z Open",
+            priority: .medium,
+            deadlineOffset: 2,
+            createdOffset: 2
+        )
+        let openEarlierTitle = makeTask(
+            title: "B Open",
+            priority: .low,
+            deadlineOffset: 1,
+            createdOffset: 1
+        )
+        let settings = PlanoraTaskDisplaySettings(
+            density: .comfortable,
+            sortOrder: .title,
+            showsCompletedTasks: false,
+            showsProgressPercentage: true,
+            showsNotes: true
+        )
+
+        let projected = PlanoraTaskListProjection.tasks(
+            from: [completed, openLaterTitle, openEarlierTitle],
+            settings: settings
+        )
+
+        XCTAssertEqual(projected.map(\.title), ["B Open", "Z Open"])
+    }
+
+    func testCalendarDateNormalizationBecomesANoOpAfterFirstPass() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Shanghai")!
+        let deadline = calendar.date(from: DateComponents(year: 2026, month: 7, day: 20, hour: 18, minute: 30))!
+        let plannedDate = calendar.date(from: DateComponents(year: 2026, month: 7, day: 19, hour: 15))!
+        let task = PlanoraTask(
+            title: "Normalize once",
+            subject: "Physics HL",
+            type: .assignment,
+            deadline: deadline,
+            hasDeadline: true,
+            tracksProgress: false,
+            progressState: .percentage(0),
+            notes: "",
+            plannedDate: plannedDate
+        )
+
+        XCTAssertTrue(task.normalizeCalendarDates(calendar: calendar))
+        XCTAssertFalse(task.normalizeCalendarDates(calendar: calendar))
+        XCTAssertEqual(task.deadline, calendar.startOfDay(for: deadline))
+        XCTAssertEqual(task.plannedDate, calendar.startOfDay(for: plannedDate))
+    }
+
     func testSearchEngineHandlesTwoThousandTasksWithoutRepeatedWork() {
         let tasks = (0..<2_000).map { index in
             makeTask(
@@ -97,24 +156,78 @@ final class TaskOrderingTests: XCTestCase {
     }
 
     func testSearchViewRendersOneThousandTasksWithoutBlockingTheMainThread() throws {
-        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: PlanoraTask.self, configurations: configuration)
-        for index in 0..<1_000 {
-            container.mainContext.insert(
-                makeTask(
-                    title: "Search Task \(index)",
-                    priority: TaskPriority(rawValue: index % 3) ?? .medium,
-                    deadlineOffset: index % 30,
-                    createdOffset: TimeInterval(index)
-                )
-            )
-        }
-        try container.mainContext.save()
+        let container = try makeContainer(taskCount: 1_000)
 
         let rootView = NavigationStack {
             EventSearchView(store: .previewDashboard, isActive: false)
         }
         .modelContainer(container)
+        let duration = try render(rootView)
+        XCTAssertLessThan(duration, 3)
+    }
+
+    func testTaskListViewRendersOneThousandTasksWithoutBlockingTheMainThread() throws {
+        let container = try makeContainer(taskCount: 1_000)
+        let rootView = NavigationStack {
+            TaskListView(store: .previewDashboard)
+        }
+        .modelContainer(container)
+
+        let duration = try render(rootView)
+
+        XCTAssertLessThan(duration, 3)
+    }
+
+    func testHomeDashboardRendersOneThousandTasksWithoutBlockingTheMainThread() throws {
+        let container = try makeContainer(taskCount: 1_000)
+        let rootView = NavigationStack {
+            HomeDashboardView(store: .previewDashboard, onCreateRequested: {})
+        }
+        .modelContainer(container)
+
+        let duration = try render(rootView)
+
+        XCTAssertLessThan(duration, 3)
+    }
+
+    func testHomeDashboardRendersOneThousandAcademicTasksWithoutBlockingTheMainThread() throws {
+        let container = try makeContainer(taskCount: 1_000, includesAcademicProgress: true)
+        let rootView = NavigationStack {
+            HomeDashboardView(store: .previewDashboard, onCreateRequested: {})
+        }
+        .modelContainer(container)
+
+        let duration = try render(rootView)
+
+        XCTAssertLessThan(duration, 3)
+    }
+
+    private func makeContainer(
+        taskCount: Int,
+        includesAcademicProgress: Bool = false
+    ) throws -> ModelContainer {
+        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: PlanoraTask.self, configurations: configuration)
+        for index in 0..<taskCount {
+            let usesStageProgress = includesAcademicProgress && index.isMultiple(of: 5)
+            container.mainContext.insert(
+                makeTask(
+                    title: "Task \(index)",
+                    priority: TaskPriority(rawValue: index % 3) ?? .medium,
+                    deadlineOffset: index % 30,
+                    createdOffset: TimeInterval(index),
+                    tracksProgress: includesAcademicProgress,
+                    progressState: usesStageProgress
+                        ? .stage("Data Collection")
+                        : .percentage(Double(index % 101) / 100)
+                )
+            )
+        }
+        try container.mainContext.save()
+        return container
+    }
+
+    private func render<Content: View>(_ rootView: Content) throws -> TimeInterval {
         let controller = UIHostingController(rootView: rootView)
         let frame = CGRect(x: 0, y: 0, width: 393, height: 852)
         let windowScene = try XCTUnwrap(
@@ -136,7 +249,7 @@ final class TaskOrderingTests: XCTestCase {
         let duration = CFAbsoluteTimeGetCurrent() - start
 
         XCTAssertNotNil(controller.view.window)
-        XCTAssertLessThan(duration, 3)
+        return duration
     }
 
     private func makeTask(
@@ -144,7 +257,9 @@ final class TaskOrderingTests: XCTestCase {
         priority: TaskPriority,
         deadlineOffset: Int?,
         createdOffset: TimeInterval,
-        completed: Bool = false
+        completed: Bool = false,
+        tracksProgress: Bool = false,
+        progressState: ProgressState = .percentage(0)
     ) -> PlanoraTask {
         let baseDate = Date(timeIntervalSince1970: 1_800_000_000)
         let deadline = deadlineOffset.map { baseDate.addingTimeInterval(Double($0) * 86_400) }
@@ -154,8 +269,8 @@ final class TaskOrderingTests: XCTestCase {
             type: .assignment,
             deadline: deadline,
             hasDeadline: deadline != nil,
-            tracksProgress: false,
-            progressState: .percentage(0),
+            tracksProgress: tracksProgress,
+            progressState: progressState,
             notes: "",
             createdDate: baseDate.addingTimeInterval(createdOffset),
             isCompleted: completed,

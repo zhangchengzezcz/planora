@@ -12,128 +12,13 @@ struct HomeDashboardView: View {
     @State private var calendarMonthDate = Date()
     @State private var hasRefreshedScheduledWork = false
 
-    // MARK: - Task Queries
-
-    private var activeTasks: [PlanoraTask] {
-        sortedTasks.filter { !$0.isCompleted }
-    }
-
-    private var sortedTasks: [PlanoraTask] {
-        tasks.planoraSorted { lhs, rhs in
-            PlanoraTaskOrdering.areInDashboardOrder(lhs, rhs)
-        }
-    }
-
-    private var focusTask: PlanoraTask? {
-        activeTasks.first
-    }
-
-    private var upcomingProgressTasks: [PlanoraTask] {
-        Array(activeTasks.filter(\.tracksProgress).prefix(4))
-    }
-
-    private var upcomingTimelineItems: [PlanoraTask] {
-        Array(activeTasks.filter { !$0.tracksProgress }.prefix(4))
-    }
-
-    private var taskCompletionSnapshot: TaskCompletionSnapshot {
-        TaskCompletionSnapshot(
-            title: L("本周", "This Week"),
-            completed: weeklyTasks.filter { task in
-                guard task.isCompleted else { return false }
-                if let completedDate = task.completedDate {
-                    return currentWeek.contains(completedDate)
-                }
-                return currentWeek.contains(task.deadline ?? task.createdDate)
-            }.count,
-            total: weeklyTasks.count,
-            tint: .planoraGreen
-        )
-    }
-
-    private var currentWeek: DateInterval {
-        Calendar.current.dateInterval(of: .weekOfYear, for: Date())
-            ?? DateInterval(start: Calendar.current.startOfDay(for: Date()), duration: 7 * 86_400)
-    }
-
-    private var weeklyTasks: [PlanoraTask] {
-        tasks.filter { task in
-            currentWeek.contains(task.deadline ?? task.createdDate)
-                || task.completedDate.map(currentWeek.contains) == true
-        }
-    }
-
-    private var completedThisWeekCount: Int {
-        tasks.filter { task in
-            guard task.isCompleted else { return false }
-            if let completedDate = task.completedDate {
-                return currentWeek.contains(completedDate)
-            }
-            return currentWeek.contains(task.deadline ?? task.createdDate)
-        }.count
-    }
-
-    private var mostActiveSubject: String {
-        let relevantTasks = tasks.filter { task in
-            !task.isCompleted || task.completedDate.map(currentWeek.contains) == true
-        }
-        let counts = Dictionary(grouping: relevantTasks, by: \.subject).mapValues(\.count)
-        return counts.max { lhs, rhs in
-            if lhs.value != rhs.value { return lhs.value < rhs.value }
-            return PlanoraFormat.subjectDisplayName(lhs.key) > PlanoraFormat.subjectDisplayName(rhs.key)
-        }?.key ?? L("暂无", "None Yet")
-    }
-
-    private var upcomingSevenDayCount: Int {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        guard let end = calendar.date(byAdding: .day, value: 7, to: today) else { return 0 }
-
-        return tasks.filter { task in
-            guard !task.isCompleted, task.hasDeadline, let deadline = task.deadline else { return false }
-            return deadline >= today && deadline < end
-        }.count
-    }
-
-    private var overdueCount: Int {
-        let today = Calendar.current.startOfDay(for: Date())
-        return tasks.filter { task in
-            guard !task.isCompleted, task.hasDeadline, let deadline = task.deadline else { return false }
-            return deadline < today
-        }.count
-    }
-
-    private var upcomingWorkloadLevel: LearningWorkloadLevel {
-        switch upcomingSevenDayCount {
-        case 0...2: .low
-        case 3...5: .moderate
-        default: .high
-        }
-    }
-
-    private var subjectProgressSnapshots: [SubjectProgressSnapshot] {
-        let grouped = Dictionary(grouping: tasks.filter(\.tracksProgress).map { task -> (String, Double, Color) in
-            (task.subject.planoraDisplaySubjectName, task.progressFraction, task.type.tint)
-        }, by: \.0)
-
-        return grouped
-            .map { subject, values in
-                let average = values.map(\.1).reduce(0, +) / Double(values.count)
-                let tint = values.first?.2 ?? .planoraBlue
-                return SubjectProgressSnapshot(title: subject, value: average, tint: tint)
-            }
-            .sorted { $0.title < $1.title }
-    }
-
-    private var deadlineTasks: [PlanoraTask] {
-        sortedTasks.filter { $0.hasDeadline && $0.deadline != nil }
-    }
-
     // MARK: - View
 
     var body: some View {
+        let snapshot = HomeDashboardSnapshot(tasks: tasks)
+
         ScrollView(showsIndicators: false) {
-            contentStack
+            contentStack(snapshot: snapshot)
         }
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
         .planoraHiddenNavigationBar()
@@ -167,15 +52,22 @@ struct HomeDashboardView: View {
     }
 
     private func refreshScheduledWork() {
+        var didNormalizeDates = false
         for task in tasks {
-            task.normalizeCalendarDates()
+            didNormalizeDates = task.normalizeCalendarDates() || didNormalizeDates
         }
-        PlanoraTaskPersistence.save(modelContext)
-        RecurringTaskEngine.ensureRollingSeries(tasks: tasks, in: modelContext)
-        PlanoraTaskPersistence.reconcile(fallbackTasks: tasks, in: modelContext)
+        if didNormalizeDates {
+            PlanoraTaskPersistence.save(modelContext)
+        }
+        let didExtendSeries = RecurringTaskEngine.ensureRollingSeries(tasks: tasks, in: modelContext)
+        if didExtendSeries {
+            PlanoraTaskPersistence.reconcile(fallbackTasks: tasks, in: modelContext)
+        } else {
+            PlanoraTaskPersistence.reconcile(tasks: tasks)
+        }
     }
 
-    private var contentStack: some View {
+    private func contentStack(snapshot: HomeDashboardSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 18) {
             HomeHeader(store: store) { curriculum in
                 requestCurriculumSwitch(to: curriculum)
@@ -183,21 +75,21 @@ struct HomeDashboardView: View {
 
             PlanningDestinationStrip(store: store)
 
-            taskOverviewSection
-            learningProgressSection
-            calendarPreviewSection
+            taskOverviewSection(snapshot: snapshot)
+            learningProgressSection(snapshot: snapshot)
+            calendarPreviewSection(snapshot: snapshot)
         }
         .padding(.top, 18)
         .padding(.bottom, 32)
     }
 
     @ViewBuilder
-    private var taskOverviewSection: some View {
-        if let focusTask {
+    private func taskOverviewSection(snapshot: HomeDashboardSnapshot) -> some View {
+        if let focusTask = snapshot.focusTask {
             TodayFocusCard(store: store, task: focusTask)
-            upcomingProgressSection
-            upcomingTimelineSection
-        } else if !tasks.isEmpty {
+            upcomingProgressSection(tasks: snapshot.upcomingProgressTasks)
+            upcomingTimelineSection(tasks: snapshot.upcomingTimelineItems)
+        } else if snapshot.hasTasks {
             AllTasksCompletedCard()
         } else {
             EmptyTasksCard(action: onCreateRequested)
@@ -205,49 +97,49 @@ struct HomeDashboardView: View {
     }
 
     @ViewBuilder
-    private var upcomingProgressSection: some View {
-        if !upcomingProgressTasks.isEmpty {
-            DashboardSection(title: L("即将到来的任务", "Upcoming Tasks")) {
-                TaskList(store: store, tasks: upcomingProgressTasks)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var upcomingTimelineSection: some View {
-        if !upcomingTimelineItems.isEmpty {
-            DashboardSection(title: L("时间与事件", "Dates and Events")) {
-                TaskList(store: store, tasks: upcomingTimelineItems)
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var learningProgressSection: some View {
+    private func upcomingProgressSection(tasks: [PlanoraTask]) -> some View {
         if !tasks.isEmpty {
+            DashboardSection(title: L("即将到来的任务", "Upcoming Tasks")) {
+                TaskList(store: store, tasks: tasks)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func upcomingTimelineSection(tasks: [PlanoraTask]) -> some View {
+        if !tasks.isEmpty {
+            DashboardSection(title: L("时间与事件", "Dates and Events")) {
+                TaskList(store: store, tasks: tasks)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func learningProgressSection(snapshot: HomeDashboardSnapshot) -> some View {
+        if snapshot.hasTasks {
             DashboardSection(title: L("学习进度", "Learning Progress")) {
                 VStack(alignment: .leading, spacing: 18) {
-                    if !subjectProgressSnapshots.isEmpty {
+                    if !snapshot.subjectProgress.isEmpty {
                         ProgressGroupTitle(L("科目进度", "Subject Progress"))
 
-                        ForEach(subjectProgressSnapshots) { snapshot in
-                            ProgressSubjectRow(title: snapshot.title, value: snapshot.value, tint: snapshot.tint)
+                        ForEach(snapshot.subjectProgress) { subject in
+                            ProgressSubjectRow(title: subject.title, value: subject.value, tint: subject.tint)
                         }
 
                         Divider()
                     }
 
                     ProgressGroupTitle(L("任务完成", "Task Completion"))
-                    TaskCompletionRow(snapshot: taskCompletionSnapshot)
+                    TaskCompletionRow(snapshot: snapshot.taskCompletion)
 
                     Divider()
 
                     LearningInsightsGrid(
-                        completedThisWeek: completedThisWeekCount,
-                        mostActiveSubject: PlanoraFormat.subjectDisplayName(mostActiveSubject),
-                        upcomingWorkload: "\(upcomingWorkloadLevel.title) · \(LF("task_count_short_format", upcomingSevenDayCount))",
-                        workloadTint: upcomingWorkloadLevel.tint,
-                        overdueCount: overdueCount
+                        completedThisWeek: snapshot.completedThisWeek,
+                        mostActiveSubject: snapshot.mostActiveSubject,
+                        upcomingWorkload: "\(snapshot.workloadLevel.title) · \(LF("task_count_short_format", snapshot.upcomingSevenDayCount))",
+                        workloadTint: snapshot.workloadLevel.tint,
+                        overdueCount: snapshot.overdueCount
                     )
                 }
                 .padding(20)
@@ -256,12 +148,12 @@ struct HomeDashboardView: View {
     }
 
     @ViewBuilder
-    private var calendarPreviewSection: some View {
-        if !deadlineTasks.isEmpty {
+    private func calendarPreviewSection(snapshot: HomeDashboardSnapshot) -> some View {
+        if !snapshot.deadlineTasks.isEmpty {
             DashboardSection(title: L("日历预览", "Calendar Preview")) {
                 CalendarPreview(
                     store: store,
-                    tasks: deadlineTasks,
+                    tasks: snapshot.deadlineTasks,
                     monthDate: $calendarMonthDate
                 )
                     .padding(18)
@@ -286,6 +178,146 @@ struct HomeDashboardView: View {
         )
         pendingCurriculum = nil
     }
+}
+
+private struct HomeDashboardSnapshot {
+    let hasTasks: Bool
+    let focusTask: PlanoraTask?
+    let upcomingProgressTasks: [PlanoraTask]
+    let upcomingTimelineItems: [PlanoraTask]
+    let taskCompletion: TaskCompletionSnapshot
+    let completedThisWeek: Int
+    let mostActiveSubject: String
+    let upcomingSevenDayCount: Int
+    let overdueCount: Int
+    let workloadLevel: LearningWorkloadLevel
+    let subjectProgress: [SubjectProgressSnapshot]
+    let deadlineTasks: [PlanoraTask]
+
+    init(tasks: [PlanoraTask], now: Date = Date(), calendar: Calendar = .current) {
+        hasTasks = !tasks.isEmpty
+
+        let sortedTasks = tasks.planoraSorted { lhs, rhs in
+            PlanoraTaskOrdering.areInDashboardOrder(lhs, rhs)
+        }
+        var focusTask: PlanoraTask?
+        var upcomingProgressTasks: [PlanoraTask] = []
+        var upcomingTimelineItems: [PlanoraTask] = []
+        var deadlineTasks: [PlanoraTask] = []
+
+        for task in sortedTasks {
+            if task.hasDeadline, task.deadline != nil {
+                deadlineTasks.append(task)
+            }
+
+            guard !task.isCompleted else { continue }
+            if focusTask == nil {
+                focusTask = task
+            }
+            if task.tracksProgress, upcomingProgressTasks.count < 4 {
+                upcomingProgressTasks.append(task)
+            } else if !task.tracksProgress, upcomingTimelineItems.count < 4 {
+                upcomingTimelineItems.append(task)
+            }
+        }
+
+        self.focusTask = focusTask
+        self.upcomingProgressTasks = upcomingProgressTasks
+        self.upcomingTimelineItems = upcomingTimelineItems
+        self.deadlineTasks = deadlineTasks
+
+        let currentWeek = calendar.dateInterval(of: .weekOfYear, for: now)
+            ?? DateInterval(start: calendar.startOfDay(for: now), duration: 7 * 86_400)
+        let today = calendar.startOfDay(for: now)
+        let sevenDayEnd = calendar.date(byAdding: .day, value: 7, to: today) ?? today
+        var weeklyTotal = 0
+        var completedThisWeek = 0
+        var subjectCounts: [String: Int] = [:]
+        var upcomingSevenDayCount = 0
+        var overdueCount = 0
+        var progressBySubject: [String: SubjectProgressAccumulator] = [:]
+
+        for task in tasks {
+            let schedulingDate = task.deadline ?? task.createdDate
+            let completionFallsInWeek = task.completedDate.map(currentWeek.contains) == true
+            let schedulingFallsInWeek = currentWeek.contains(schedulingDate)
+            if schedulingFallsInWeek || completionFallsInWeek {
+                weeklyTotal += 1
+            }
+
+            let completedInWeek: Bool
+            if task.isCompleted, let completedDate = task.completedDate {
+                completedInWeek = currentWeek.contains(completedDate)
+            } else {
+                completedInWeek = task.isCompleted && schedulingFallsInWeek
+            }
+            if completedInWeek {
+                completedThisWeek += 1
+            }
+
+            if !task.isCompleted || completionFallsInWeek {
+                subjectCounts[task.subject, default: 0] += 1
+            }
+
+            if !task.isCompleted, task.hasDeadline, let deadline = task.deadline {
+                if deadline < today {
+                    overdueCount += 1
+                } else if deadline < sevenDayEnd {
+                    upcomingSevenDayCount += 1
+                }
+            }
+
+            if task.tracksProgress {
+                let subject = PlanoraFormat.subjectDisplayName(task.subject)
+                var accumulator = progressBySubject[subject] ?? SubjectProgressAccumulator(
+                    total: 0,
+                    count: 0,
+                    tint: task.type.tint
+                )
+                accumulator.total += task.progressFraction
+                accumulator.count += 1
+                progressBySubject[subject] = accumulator
+            }
+        }
+
+        taskCompletion = TaskCompletionSnapshot(
+            title: L("本周", "This Week"),
+            completed: completedThisWeek,
+            total: weeklyTotal,
+            tint: .planoraGreen
+        )
+        self.completedThisWeek = completedThisWeek
+        self.upcomingSevenDayCount = upcomingSevenDayCount
+        self.overdueCount = overdueCount
+
+        mostActiveSubject = subjectCounts.max { lhs, rhs in
+            if lhs.value != rhs.value { return lhs.value < rhs.value }
+            return PlanoraFormat.subjectDisplayName(lhs.key) > PlanoraFormat.subjectDisplayName(rhs.key)
+        }
+        .map { PlanoraFormat.subjectDisplayName($0.key) }
+        ?? L("暂无", "None Yet")
+
+        switch upcomingSevenDayCount {
+        case 0...2: workloadLevel = .low
+        case 3...5: workloadLevel = .moderate
+        default: workloadLevel = .high
+        }
+
+        subjectProgress = progressBySubject.map { subject, value in
+            SubjectProgressSnapshot(
+                title: subject,
+                value: value.total / Double(value.count),
+                tint: value.tint
+            )
+        }
+        .sorted { $0.title < $1.title }
+    }
+}
+
+private struct SubjectProgressAccumulator {
+    var total: Double
+    var count: Int
+    let tint: Color
 }
 
 // MARK: - Header
@@ -754,37 +786,24 @@ private struct CalendarPreview: View {
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 7)
     private var weekdays: [String] { PlanoraFormat.weekdays }
 
-    private var monthTasks: [PlanoraTask] {
-        tasks.filter { task in
-            guard let deadline = task.deadline else { return false }
-            return Calendar.current.isDate(deadline, equalTo: monthDate, toGranularity: .month)
-        }
-    }
-
-    private var selectedTasks: [PlanoraTask] {
-        guard let selectedDate else { return [] }
-        return monthTasks
-            .filter { task in
-                guard let deadline = task.deadline else { return false }
-                return Calendar.current.isDate(deadline, inSameDayAs: selectedDate)
-            }
-            .planoraSorted { lhs, rhs in
-                PlanoraTaskOrdering.areInCalendarDayOrder(lhs, rhs)
-            }
-    }
-
     var body: some View {
+        let snapshot = CalendarPreviewSnapshot(
+            tasks: tasks,
+            monthDate: monthDate,
+            selectedDate: selectedDate
+        )
+
         VStack(alignment: .leading, spacing: 16) {
-            calendarHeader
+            calendarHeader(snapshot: snapshot)
 
             LazyVGrid(columns: columns, spacing: 8) {
                 weekdayHeaders
-                calendarCells
+                calendarCells(snapshot: snapshot)
             }
 
             Divider()
 
-            selectedDaySection
+            selectedDaySection(snapshot: snapshot)
         }
         .onAppear(perform: selectInitialDate)
         .onChange(of: monthDate) { _, _ in
@@ -792,14 +811,14 @@ private struct CalendarPreview: View {
         }
     }
 
-    private var calendarHeader: some View {
+    private func calendarHeader(snapshot: CalendarPreviewSnapshot) -> some View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(PlanoraFormat.monthYear(monthDate))
                     .font(.title3.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
-                Text(LF("calendar_item_count_format", monthTasks.count))
+                Text(LF("calendar_item_count_format", snapshot.monthTaskCount))
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
@@ -845,14 +864,14 @@ private struct CalendarPreview: View {
     }
 
     @ViewBuilder
-    private var calendarCells: some View {
-        ForEach(Array(calendarDays.enumerated()), id: \.offset) { _, date in
+    private func calendarCells(snapshot: CalendarPreviewSnapshot) -> some View {
+        ForEach(Array(snapshot.calendarDays.enumerated()), id: \.offset) { _, date in
             if let date {
                 CalendarDateButton(
                     date: date,
                     isSelected: selectedDate.map { Calendar.current.isDate($0, inSameDayAs: date) } == true,
                     isToday: Calendar.current.isDateInToday(date),
-                    taskTints: taskTints(on: date)
+                    taskTints: snapshot.taskTints(on: date)
                 ) {
                     selectedDate = date
                 }
@@ -864,7 +883,7 @@ private struct CalendarPreview: View {
     }
 
     @ViewBuilder
-    private var selectedDaySection: some View {
+    private func selectedDaySection(snapshot: CalendarPreviewSnapshot) -> some View {
         if let selectedDate {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
@@ -874,19 +893,19 @@ private struct CalendarPreview: View {
 
                     Spacer()
 
-                    Text(LF("task_count_short_format", selectedTasks.count))
+                    Text(LF("task_count_short_format", snapshot.selectedTasks.count))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
 
-                if selectedTasks.isEmpty {
+                if snapshot.selectedTasks.isEmpty {
                     Text(L("这一天没有截止任务。", "No deadlines on this day."))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                 } else {
                     VStack(spacing: 0) {
-                        ForEach(Array(selectedTasks.enumerated()), id: \.element.id) { index, task in
+                        ForEach(Array(snapshot.selectedTasks.enumerated()), id: \.element.id) { index, task in
                             NavigationLink {
                                 TaskDetailView(store: store, task: task)
                             } label: {
@@ -894,7 +913,7 @@ private struct CalendarPreview: View {
                             }
                             .buttonStyle(.plain)
 
-                            if index != selectedTasks.indices.last {
+                            if index != snapshot.selectedTasks.indices.last {
                                 Divider().padding(.leading, 44)
                             }
                         }
@@ -904,32 +923,6 @@ private struct CalendarPreview: View {
         }
     }
 
-    private var calendarDays: [Date?] {
-        let calendar = Calendar.current
-        guard let monthInterval = calendar.dateInterval(of: .month, for: monthDate),
-              let dayRange = calendar.range(of: .day, in: .month, for: monthDate) else {
-            return []
-        }
-
-        let firstWeekday = calendar.component(.weekday, from: monthInterval.start)
-        let leadingEmptyCount = (firstWeekday + 5) % 7
-        let emptyDays = Array<Date?>(repeating: nil, count: leadingEmptyCount)
-        let dates = dayRange.compactMap { day -> Date? in
-            calendar.date(byAdding: .day, value: day - 1, to: monthInterval.start)
-        }
-        return emptyDays + dates.map(Optional.some)
-    }
-
-    private func taskTints(on date: Date) -> [Color] {
-        monthTasks
-            .filter { task in
-                guard let deadline = task.deadline else { return false }
-                return Calendar.current.isDate(deadline, inSameDayAs: date)
-            }
-            .prefix(3)
-            .map { $0.type.tint }
-    }
-
     private func selectInitialDate() {
         let calendar = Calendar.current
         if calendar.isDate(Date(), equalTo: monthDate, toGranularity: .month) {
@@ -937,15 +930,81 @@ private struct CalendarPreview: View {
             return
         }
 
-        selectedDate = monthTasks
-            .compactMap(\.deadline)
-            .sorted()
-            .first
+        selectedDate = CalendarPreviewSnapshot(
+            tasks: tasks,
+            monthDate: monthDate,
+            selectedDate: nil,
+            calendar: calendar
+        )
+            .firstDeadline
             ?? calendar.dateInterval(of: .month, for: monthDate)?.start
     }
 
     private func changeMonth(by value: Int) {
         monthDate = Calendar.current.date(byAdding: .month, value: value, to: monthDate) ?? monthDate
+    }
+}
+
+private struct CalendarPreviewSnapshot {
+    let monthTaskCount: Int
+    let selectedTasks: [PlanoraTask]
+    let calendarDays: [Date?]
+    let firstDeadline: Date?
+    private let taskTintsByDay: [Date: [Color]]
+    private let calendar: Calendar
+
+    init(
+        tasks: [PlanoraTask],
+        monthDate: Date,
+        selectedDate: Date?,
+        calendar: Calendar = .current
+    ) {
+        self.calendar = calendar
+        guard let monthInterval = calendar.dateInterval(of: .month, for: monthDate),
+              let dayRange = calendar.range(of: .day, in: .month, for: monthDate) else {
+            monthTaskCount = 0
+            selectedTasks = []
+            calendarDays = []
+            firstDeadline = nil
+            taskTintsByDay = [:]
+            return
+        }
+
+        var tasksByDay: [Date: [PlanoraTask]] = [:]
+        var taskTintsByDay: [Date: [Color]] = [:]
+        var monthTaskCount = 0
+        var firstDeadline: Date?
+
+        for task in tasks {
+            guard let deadline = task.deadline, monthInterval.contains(deadline) else { continue }
+            monthTaskCount += 1
+            firstDeadline = min(firstDeadline ?? deadline, deadline)
+            let day = calendar.startOfDay(for: deadline)
+            tasksByDay[day, default: []].append(task)
+            if taskTintsByDay[day, default: []].count < 3 {
+                taskTintsByDay[day, default: []].append(task.type.tint)
+            }
+        }
+
+        let selectedDay = selectedDate.map { calendar.startOfDay(for: $0) }
+        selectedTasks = selectedDay.flatMap { tasksByDay[$0] }?.planoraSorted { lhs, rhs in
+            PlanoraTaskOrdering.areInCalendarDayOrder(lhs, rhs)
+        } ?? []
+        self.monthTaskCount = monthTaskCount
+        self.firstDeadline = firstDeadline
+        self.taskTintsByDay = taskTintsByDay
+
+        let firstWeekday = calendar.component(.weekday, from: monthInterval.start)
+        let leadingEmptyCount = (firstWeekday + 5) % 7
+        let emptyDays = Array<Date?>(repeating: nil, count: leadingEmptyCount)
+        let dates = dayRange.compactMap { day -> Date? in
+            calendar.date(byAdding: .day, value: day - 1, to: monthInterval.start)
+        }
+        calendarDays = emptyDays + dates.map(Optional.some)
+    }
+
+    func taskTints(on date: Date) -> [Color] {
+        taskTintsByDay[calendar.startOfDay(for: date)] ?? []
     }
 }
 

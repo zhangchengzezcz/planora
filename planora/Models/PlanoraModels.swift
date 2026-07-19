@@ -106,10 +106,11 @@ struct PlanoraFeature: Identifiable, Hashable {
 }
 
 struct SubjectProgressSnapshot: Identifiable, Hashable {
-    let id = UUID()
     let title: String
     let value: Double
     let tint: Color
+
+    var id: String { title }
 }
 
 struct TaskCompletionSnapshot: Hashable {

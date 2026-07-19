@@ -178,25 +178,51 @@ final class PlanoraTask {
         plannedDayIdentifier = date.map { PlanoraCalendarDay(date: $0, calendar: calendar).identifier }
     }
 
-    func normalizeCalendarDates(calendar: Calendar = .current) {
+    @discardableResult
+    func normalizeCalendarDates(calendar: Calendar = .current) -> Bool {
+        var didChange = false
+
         if hasDeadline, let deadline {
             let day = deadlineDayIdentifier.flatMap { PlanoraCalendarDay(identifier: $0) }
                 ?? PlanoraCalendarDay(date: deadline, calendar: calendar)
-            deadlineDayIdentifier = day.identifier
-            self.deadline = day.date(calendar: calendar)
+            let normalizedDate = day.date(calendar: calendar)
+            if deadlineDayIdentifier != day.identifier {
+                deadlineDayIdentifier = day.identifier
+                didChange = true
+            }
+            if self.deadline != normalizedDate {
+                self.deadline = normalizedDate
+                didChange = true
+            }
         } else {
-            deadline = nil
-            deadlineDayIdentifier = nil
+            if deadline != nil {
+                deadline = nil
+                didChange = true
+            }
+            if deadlineDayIdentifier != nil {
+                deadlineDayIdentifier = nil
+                didChange = true
+            }
         }
 
         if let plannedDate {
             let day = plannedDayIdentifier.flatMap { PlanoraCalendarDay(identifier: $0) }
                 ?? PlanoraCalendarDay(date: plannedDate, calendar: calendar)
-            plannedDayIdentifier = day.identifier
-            self.plannedDate = day.date(calendar: calendar)
-        } else {
+            let normalizedDate = day.date(calendar: calendar)
+            if plannedDayIdentifier != day.identifier {
+                plannedDayIdentifier = day.identifier
+                didChange = true
+            }
+            if self.plannedDate != normalizedDate {
+                self.plannedDate = normalizedDate
+                didChange = true
+            }
+        } else if plannedDayIdentifier != nil {
             plannedDayIdentifier = nil
+            didChange = true
         }
+
+        return didChange
     }
 
     var progressFraction: Double {

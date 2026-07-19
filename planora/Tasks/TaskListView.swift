@@ -9,15 +9,12 @@ struct TaskListView: View {
     @State private var taskPendingDeletion: PlanoraTask?
     @State private var isShowingDeleteConfirmation = false
 
-    private var sortedTasks: [PlanoraTask] {
-        tasks
-            .filter { displaySettings.showsCompletedTasks || !$0.isCompleted }
-            .planoraSorted { lhs, rhs in
-                PlanoraTaskOrdering.areInListOrder(lhs, rhs, sortOrder: displaySettings.sortOrder)
-            }
-    }
-
     var body: some View {
+        let visibleTasks = PlanoraTaskListProjection.tasks(
+            from: tasks,
+            settings: displaySettings
+        )
+
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(L("任务", "Tasks"))
@@ -32,7 +29,7 @@ struct TaskListView: View {
             .padding(.top, 18)
             .padding(.bottom, 10)
 
-            if sortedTasks.isEmpty {
+            if visibleTasks.isEmpty {
                 ScrollView(showsIndicators: false) {
                     EmptyTaskListCard()
                         .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
@@ -40,7 +37,7 @@ struct TaskListView: View {
                 }
             } else {
                 List {
-                    ForEach(sortedTasks, id: \.id) { task in
+                    ForEach(visibleTasks, id: \.id) { task in
                         NavigationLink {
                             TaskDetailView(store: store, task: task)
                         } label: {
@@ -112,6 +109,19 @@ struct TaskListView: View {
             store: store
         )
         taskPendingDeletion = nil
+    }
+}
+
+enum PlanoraTaskListProjection {
+    static func tasks(
+        from tasks: [PlanoraTask],
+        settings: PlanoraTaskDisplaySettings
+    ) -> [PlanoraTask] {
+        tasks
+            .filter { settings.showsCompletedTasks || !$0.isCompleted }
+            .planoraSorted { lhs, rhs in
+                PlanoraTaskOrdering.areInListOrder(lhs, rhs, sortOrder: settings.sortOrder)
+            }
     }
 }
 

@@ -288,11 +288,13 @@ enum RecurringTaskEngine {
         return created
     }
 
-    static func ensureRollingSeries(tasks: [PlanoraTask], in modelContext: ModelContext) {
+    @discardableResult
+    static func ensureRollingSeries(tasks: [PlanoraTask], in modelContext: ModelContext) -> Bool {
         let series = Dictionary(grouping: tasks.compactMap { task -> (UUID, PlanoraTask)? in
             guard let seriesID = task.recurrenceSeriesID, task.recurrenceRule?.end == .never else { return nil }
             return (seriesID, task)
         }, by: { $0.0 })
+        var didCreateOccurrences = false
 
         for (_, entries) in series {
             let instances = entries.map(\.1)
@@ -313,9 +315,13 @@ enum RecurringTaskEngine {
                     rule: rule
                 )
                 modelContext.insert(occurrence)
+                didCreateOccurrences = true
             }
         }
-        try? modelContext.save()
+        if didCreateOccurrences {
+            try? modelContext.save()
+        }
+        return didCreateOccurrences
     }
 
     private static func copy(
