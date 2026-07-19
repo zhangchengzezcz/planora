@@ -1,3 +1,6 @@
+import SwiftData
+import SwiftUI
+import UIKit
 import XCTest
 @testable import planora
 
@@ -72,6 +75,68 @@ final class TaskOrderingTests: XCTestCase {
         }
 
         XCTAssertEqual(sorted.map(\.title), ["Newer", "Older"])
+    }
+
+    func testSearchEngineHandlesTwoThousandTasksWithoutRepeatedWork() {
+        let tasks = (0..<2_000).map { index in
+            makeTask(
+                title: index.isMultiple(of: 100) ? "Needle \(index)" : "Task \(index)",
+                priority: .medium,
+                deadlineOffset: index % 30,
+                createdOffset: TimeInterval(index)
+            )
+        }
+
+        let start = CFAbsoluteTimeGetCurrent()
+        let results = PlanoraTaskSearchEngine.results(in: tasks, query: "needle")
+        let duration = CFAbsoluteTimeGetCurrent() - start
+
+        XCTAssertEqual(results.count, 20)
+        XCTAssertTrue(results.allSatisfy { $0.title.hasPrefix("Needle") })
+        XCTAssertLessThan(duration, 2)
+    }
+
+    func testSearchViewRendersOneThousandTasksWithoutBlockingTheMainThread() throws {
+        let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: PlanoraTask.self, configurations: configuration)
+        for index in 0..<1_000 {
+            container.mainContext.insert(
+                makeTask(
+                    title: "Search Task \(index)",
+                    priority: TaskPriority(rawValue: index % 3) ?? .medium,
+                    deadlineOffset: index % 30,
+                    createdOffset: TimeInterval(index)
+                )
+            )
+        }
+        try container.mainContext.save()
+
+        let rootView = NavigationStack {
+            EventSearchView(store: .previewDashboard, isActive: false)
+        }
+        .modelContainer(container)
+        let controller = UIHostingController(rootView: rootView)
+        let frame = CGRect(x: 0, y: 0, width: 393, height: 852)
+        let windowScene = try XCTUnwrap(
+            UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first
+        )
+        let window = UIWindow(windowScene: windowScene)
+        window.frame = frame
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true }
+
+        let start = CFAbsoluteTimeGetCurrent()
+        controller.loadViewIfNeeded()
+        controller.view.frame = frame
+        controller.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
+        let duration = CFAbsoluteTimeGetCurrent() - start
+
+        XCTAssertNotNil(controller.view.window)
+        XCTAssertLessThan(duration, 3)
     }
 
     private func makeTask(

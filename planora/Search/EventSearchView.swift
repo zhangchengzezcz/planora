@@ -28,12 +28,6 @@ struct EventSearchView: View {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private var searchableTasks: [PlanoraTask] {
-        tasks.planoraSorted { lhs, rhs in
-            PlanoraTaskOrdering.areInSearchOrder(lhs, rhs)
-        }
-    }
-
     private var subjectOptions: [String] {
         Array(Set(tasks.map(\.subject))).sorted {
             PlanoraFormat.subjectDisplayName($0) < PlanoraFormat.subjectDisplayName($1)
@@ -58,30 +52,17 @@ struct EventSearchView: View {
     }
 
     private var filteredTasks: [PlanoraTask] {
-        let candidates = searchableTasks.filter(matchesFilters)
-        guard !trimmedSearchText.isEmpty else { return candidates }
-
-        // Search uses a score instead of a raw contains check so short queries like
-        // "ee" match EE-related tasks without matching "feedback" or "sheet".
-        return candidates
-            .compactMap { task -> (task: PlanoraTask, score: Int)? in
-                guard let score = task.searchScore(for: trimmedSearchText) else { return nil }
-                return (task, score)
-            }
-            .sorted { lhs, rhs in
-                if lhs.score != rhs.score {
-                    return lhs.score > rhs.score
-                }
-
-                return PlanoraTaskOrdering.areInSearchOrder(
-                    PlanoraTaskSortKey(task: lhs.task),
-                    PlanoraTaskSortKey(task: rhs.task)
-                )
-            }
-            .map(\.task)
+        PlanoraTaskSearchEngine.results(
+            in: tasks,
+            query: trimmedSearchText,
+            matching: matchesFilters
+        )
     }
 
     var body: some View {
+        let results = filteredTasks
+        let lastResultID = results.last?.id
+
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
@@ -98,15 +79,15 @@ struct EventSearchView: View {
                 EventSearchField(text: $searchText, isFocused: $isSearchFocused)
                 filterBar
 
-                if filteredTasks.isEmpty {
+                if results.isEmpty {
                     EmptyEventSearchCard(
                         isSearching: !trimmedSearchText.isEmpty || hasActiveFilters,
-                        hasTasks: !searchableTasks.isEmpty
+                        hasTasks: !tasks.isEmpty
                     )
                 } else {
                     DashboardSection(title: trimmedSearchText.isEmpty && !hasActiveFilters ? L("全部项目", "All Items") : L("搜索结果", "Search Results")) {
-                        VStack(spacing: 0) {
-                            ForEach(Array(filteredTasks.enumerated()), id: \.element.id) { index, task in
+                        LazyVStack(spacing: 0) {
+                            ForEach(results) { task in
                                 NavigationLink {
                                     TaskDetailView(store: store, task: task)
                                 } label: {
@@ -114,7 +95,7 @@ struct EventSearchView: View {
                                 }
                                 .buttonStyle(.plain)
 
-                                if index != filteredTasks.indices.last {
+                                if task.id != lastResultID {
                                     Divider().padding(.leading, 56)
                                 }
                             }
@@ -562,7 +543,38 @@ private struct EmptyEventSearchCard: View {
 
 // MARK: - Search Ranking
 
-private extension PlanoraTask {
+enum PlanoraTaskSearchEngine {
+    static func results(
+        in tasks: [PlanoraTask],
+        query: String,
+        matching matchesFilters: (PlanoraTask) -> Bool = { _ in true }
+    ) -> [PlanoraTask] {
+        let candidates = tasks.filter(matchesFilters)
+        guard !query.isEmpty else {
+            return candidates.planoraSorted { lhs, rhs in
+                PlanoraTaskOrdering.areInSearchOrder(lhs, rhs)
+            }
+        }
+
+        // Search uses a score instead of a raw contains check so short queries like
+        // "ee" match EE-related tasks without matching "feedback" or "sheet".
+        return candidates
+            .compactMap { task -> (task: PlanoraTask, score: Int, sortKey: PlanoraTaskSortKey)? in
+                guard let score = task.searchScore(for: query) else { return nil }
+                return (task, score, PlanoraTaskSortKey(task: task))
+            }
+            .sorted { lhs, rhs in
+                if lhs.score != rhs.score {
+                    return lhs.score > rhs.score
+                }
+
+                return PlanoraTaskOrdering.areInSearchOrder(lhs.sortKey, rhs.sortKey)
+            }
+            .map(\.task)
+    }
+}
+
+extension PlanoraTask {
     var deadlineText: String {
         guard hasDeadline, let deadline else {
             return L("无截止日期", "No deadline")

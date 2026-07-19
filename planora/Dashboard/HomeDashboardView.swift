@@ -10,6 +10,7 @@ struct HomeDashboardView: View {
     @State private var pendingCurriculum: Curriculum?
     @State private var isShowingCurriculumSwitchConfirmation = false
     @State private var calendarMonthDate = Date()
+    @State private var hasRefreshedScheduledWork = false
 
     // MARK: - Task Queries
 
@@ -138,10 +139,13 @@ struct HomeDashboardView: View {
         .planoraHiddenNavigationBar()
         .background(PlanoraBackground())
         .onAppear {
-            refreshScheduledWork()
+            refreshScheduledWorkIfNeeded()
         }
         .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active { refreshScheduledWork() }
+            if newPhase == .active {
+                refreshScheduledWork()
+                hasRefreshedScheduledWork = true
+            }
         }
         .alert(L("确认切换课程？", "Switch Curriculum?"), isPresented: $isShowingCurriculumSwitchConfirmation, presenting: pendingCurriculum) { curriculum in
             Button(L("确认切换", "Switch"), role: .destructive) {
@@ -154,6 +158,12 @@ struct HomeDashboardView: View {
         } message: { _ in
             Text(L("切换课程后会清空当前课程体系内已创建的任务，并将科目重置为新课程体系的默认必选项。", "Switching curriculum deletes existing tasks for the current curriculum and resets subjects to the new curriculum defaults."))
         }
+    }
+
+    private func refreshScheduledWorkIfNeeded() {
+        guard !hasRefreshedScheduledWork else { return }
+        refreshScheduledWork()
+        hasRefreshedScheduledWork = true
     }
 
     private func refreshScheduledWork() {
