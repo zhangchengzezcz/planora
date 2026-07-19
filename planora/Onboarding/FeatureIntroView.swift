@@ -15,7 +15,7 @@ struct FeatureIntroView: View {
 
                         VStack(spacing: 10) {
                             Text(L("欢迎使用 Planora", "Welcome to Planora"))
-                                .font(.system(size: 34, weight: .bold))
+                                .font(.largeTitle.weight(.bold))
                                 .foregroundStyle(Color.planoraInk)
                                 .multilineTextAlignment(.center)
                                 .fixedSize(horizontal: false, vertical: true)

@@ -104,10 +104,9 @@ struct MainAppView: View {
             RecurringTaskEngine.restoreSeriesRule(from: restoredTask, in: series)
             RecurringTaskEngine.includeOccurrence(restoredTask, in: series)
         }
-        try? modelContext.save()
+        PlanoraTaskPersistence.save(modelContext)
         store.clearDeletionUndo()
-        let refreshedTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? currentTasks
-        Task { await TaskReminderScheduler.reconcile(tasks: refreshedTasks) }
+        PlanoraTaskPersistence.reconcile(fallbackTasks: currentTasks, in: modelContext)
     }
 }
 

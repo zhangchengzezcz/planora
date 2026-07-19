@@ -12,25 +12,8 @@ struct SubjectDetailView: View {
     }
 
     private var sortedTasks: [PlanoraTask] {
-        subjectTasks.sorted { lhs, rhs in
-            if lhs.isCompleted != rhs.isCompleted {
-                return !lhs.isCompleted
-            }
-
-            if lhs.importance != rhs.importance {
-                return lhs.importance > rhs.importance
-            }
-
-            switch (lhs.deadline, rhs.deadline) {
-            case let (left?, right?) where left != right:
-                return left < right
-            case (_?, nil):
-                return true
-            case (nil, _?):
-                return false
-            default:
-                return lhs.createdDate > rhs.createdDate
-            }
+        subjectTasks.planoraSorted { lhs, rhs in
+            PlanoraTaskOrdering.areInSubjectDetailOrder(lhs, rhs)
         }
     }
 

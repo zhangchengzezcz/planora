@@ -28,7 +28,7 @@ struct UserNameEntryView: View {
 
                 VStack(spacing: 8) {
                     Text(L("怎么称呼你？", "What should we call you?"))
-                        .font(.system(size: 34, weight: .bold))
+                        .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
                         .multilineTextAlignment(.center)
 

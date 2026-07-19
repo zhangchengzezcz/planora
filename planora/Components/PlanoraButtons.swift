@@ -38,9 +38,11 @@ struct PlanoraPrimaryButton: View {
             )
             .shadow(color: Color.planoraBlue.opacity(isDisabled ? 0.08 : 0.22), radius: 18, x: 0, y: 10)
             .opacity(isDisabled ? 0.45 : 1)
+            .contentShape(shape)
         }
         .buttonStyle(.plain)
         .disabled(isDisabled)
+        .accessibilityLabel(title)
     }
 }
 
@@ -77,8 +79,11 @@ struct SelectableChip: View {
                 Capsule()
                     .stroke(isSelected ? Color.clear : Color.planoraControlStroke, lineWidth: 1)
             )
+            .contentShape(Capsule())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(title)
+        .accessibilityValue(isSelected ? L("已选择", "Selected") : L("未选择", "Not Selected"))
     }
 }
 

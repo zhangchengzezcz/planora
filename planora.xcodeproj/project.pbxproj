@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		51D1D39F300A5618002A466E /* PlanoraTaskOrdering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D1D39E300A5618002A466E /* PlanoraTaskOrdering.swift */; };
+		51D1D3A1300A578F002A466E /* TaskOrderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D1D3A0300A578F002A466E /* TaskOrderingTests.swift */; };
+		51D1D3A3300A5800002A466E /* PlanoraTaskOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D1D3A2300A5800002A466E /* PlanoraTaskOperations.swift */; };
+		51D1D3A5300A596D002A466E /* TaskOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D1D3A4300A596D002A466E /* TaskOperationTests.swift */; };
+		51D1D3A7300A5978002A466E /* PlanoraTaskPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D1D3A6300A5978002A466E /* PlanoraTaskPersistence.swift */; };
 		A00000000000000000000001 /* DashboardComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* DashboardComponents.swift */; };
 		A00000000000000000000002 /* GlassPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* GlassPanel.swift */; };
 		A00000000000000000000003 /* PlanoraBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000003 /* PlanoraBackground.swift */; };
@@ -58,6 +63,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		000000000000000000000120 /* planora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = planora.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		51D1D39E300A5618002A466E /* PlanoraTaskOrdering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraTaskOrdering.swift; sourceTree = "<group>"; };
+		51D1D3A0300A578F002A466E /* TaskOrderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskOrderingTests.swift; sourceTree = "<group>"; };
+		51D1D3A2300A5800002A466E /* PlanoraTaskOperations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraTaskOperations.swift; sourceTree = "<group>"; };
+		51D1D3A4300A596D002A466E /* TaskOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskOperationTests.swift; sourceTree = "<group>"; };
+		51D1D3A6300A5978002A466E /* PlanoraTaskPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraTaskPersistence.swift; sourceTree = "<group>"; };
 		B00000000000000000000001 /* DashboardComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardComponents.swift; sourceTree = "<group>"; };
 		B00000000000000000000002 /* GlassPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassPanel.swift; sourceTree = "<group>"; };
 		B00000000000000000000003 /* PlanoraBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraBackground.swift; sourceTree = "<group>"; };
@@ -97,7 +108,6 @@
 		B00000000000000000000037 /* PlanningViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanningViews.swift; sourceTree = "<group>"; };
 		B00000000000000000000038 /* RecurrenceReminderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceReminderTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000039 /* BackupPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPerformanceTests.swift; sourceTree = "<group>"; };
-		000000000000000000000120 /* planora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = planora.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00000000000000000000001 /* planoraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = planoraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -115,6 +125,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		000000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000010 /* planora */,
+				C00000000000000000000013 /* planoraTests */,
+				000000000000000000000020 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
 		000000000000000000000010 /* planora */ = {
 			isa = PBXGroup;
 			children = (
@@ -136,15 +155,6 @@
 				B00000000000000000000016 /* PlanoraApp.swift */,
 			);
 			path = planora;
-			sourceTree = "<group>";
-		};
-		000000000000000000000001 = {
-			isa = PBXGroup;
-			children = (
-				000000000000000000000010 /* planora */,
-				C00000000000000000000013 /* planoraTests */,
-				000000000000000000000020 /* Products */,
-			);
 			sourceTree = "<group>";
 		};
 		000000000000000000000020 /* Products */ = {
@@ -185,17 +195,9 @@
 				B00000000000000000000009 /* PlanoraModels.swift */,
 				B00000000000000000000021 /* PlanoraTask.swift */,
 				B00000000000000000000010 /* SubjectLibrary.swift */,
+				51D1D39E300A5618002A466E /* PlanoraTaskOrdering.swift */,
 			);
 			path = Models;
-			sourceTree = "<group>";
-		};
-		C00000000000000000000008 /* Create */ = {
-			isa = PBXGroup;
-			children = (
-				B00000000000000000000022 /* CreateTaskView.swift */,
-				B00000000000000000000036 /* QuickCreateTaskView.swift */,
-			);
-			path = Create;
 			sourceTree = "<group>";
 		};
 		C00000000000000000000004 /* Onboarding */ = {
@@ -219,6 +221,33 @@
 			path = Profile;
 			sourceTree = "<group>";
 		};
+		C00000000000000000000006 /* State */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000018 /* PlanoraStorage.swift */,
+				B00000000000000000000019 /* PlanoraStore.swift */,
+			);
+			path = State;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000007 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000025 /* PlanoraLocalization.swift */,
+				B00000000000000000000020 /* PlanoraTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000008 /* Create */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000022 /* CreateTaskView.swift */,
+				B00000000000000000000036 /* QuickCreateTaskView.swift */,
+			);
+			path = Create;
+			sourceTree = "<group>";
+		};
 		C00000000000000000000009 /* Search */ = {
 			isa = PBXGroup;
 			children = (
@@ -233,6 +262,8 @@
 				B00000000000000000000028 /* TaskBackupDocument.swift */,
 				B00000000000000000000030 /* TaskDetailView.swift */,
 				B00000000000000000000027 /* TaskListView.swift */,
+				51D1D3A2300A5800002A466E /* PlanoraTaskOperations.swift */,
+				51D1D3A6300A5978002A466E /* PlanoraTaskPersistence.swift */,
 			);
 			path = Tasks;
 			sourceTree = "<group>";
@@ -260,26 +291,10 @@
 			children = (
 				B00000000000000000000039 /* BackupPerformanceTests.swift */,
 				B00000000000000000000038 /* RecurrenceReminderTests.swift */,
+				51D1D3A0300A578F002A466E /* TaskOrderingTests.swift */,
+				51D1D3A4300A596D002A466E /* TaskOperationTests.swift */,
 			);
 			path = planoraTests;
-			sourceTree = "<group>";
-		};
-		C00000000000000000000006 /* State */ = {
-			isa = PBXGroup;
-			children = (
-				B00000000000000000000018 /* PlanoraStorage.swift */,
-				B00000000000000000000019 /* PlanoraStore.swift */,
-			);
-			path = State;
-			sourceTree = "<group>";
-		};
-		C00000000000000000000007 /* Theme */ = {
-			isa = PBXGroup;
-			children = (
-				B00000000000000000000025 /* PlanoraLocalization.swift */,
-				B00000000000000000000020 /* PlanoraTheme.swift */,
-			);
-			path = Theme;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -387,6 +402,7 @@
 				A00000000000000000000008 /* MainAppView.swift in Sources */,
 				A00000000000000000000009 /* PlanoraModels.swift in Sources */,
 				A00000000000000000000010 /* SubjectLibrary.swift in Sources */,
+				51D1D3A7300A5978002A466E /* PlanoraTaskPersistence.swift in Sources */,
 				A00000000000000000000011 /* CurriculumSelectionView.swift in Sources */,
 				A00000000000000000000012 /* FeatureIntroView.swift in Sources */,
 				A00000000000000000000013 /* SubjectSelectionView.swift in Sources */,
@@ -399,6 +415,7 @@
 				A00000000000000000000020 /* PlanoraTheme.swift in Sources */,
 				A00000000000000000000021 /* PlanoraTask.swift in Sources */,
 				A00000000000000000000022 /* CreateTaskView.swift in Sources */,
+				51D1D39F300A5618002A466E /* PlanoraTaskOrdering.swift in Sources */,
 				A00000000000000000000023 /* EventSearchView.swift in Sources */,
 				A00000000000000000000024 /* ExtraLearningPicker.swift in Sources */,
 				A00000000000000000000025 /* PlanoraLocalization.swift in Sources */,
@@ -407,6 +424,7 @@
 				A00000000000000000000030 /* TaskDetailView.swift in Sources */,
 				A00000000000000000000031 /* SubjectDetailView.swift in Sources */,
 				A00000000000000000000032 /* TaskReminderSystem.swift in Sources */,
+				51D1D3A3300A5800002A466E /* PlanoraTaskOperations.swift in Sources */,
 				A00000000000000000000033 /* ReminderEditorView.swift in Sources */,
 				A00000000000000000000034 /* TaskRecurrence.swift in Sources */,
 				A00000000000000000000035 /* RecurrenceEditorView.swift in Sources */,
@@ -417,7 +435,9 @@
 		D00000000000000000000002 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				51D1D3A1300A578F002A466E /* TaskOrderingTests.swift in Sources */,
 				A00000000000000000000039 /* BackupPerformanceTests.swift in Sources */,
+				51D1D3A5300A596D002A466E /* TaskOperationTests.swift in Sources */,
 				A00000000000000000000038 /* RecurrenceReminderTests.swift in Sources */,
 			);
 		};

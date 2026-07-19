@@ -67,8 +67,7 @@ private struct PlanoraRootView: View {
                 existingTasks: tasks,
                 into: modelContext
             )
-            let refreshedTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? tasks
-            Task { await TaskReminderScheduler.reconcile(tasks: refreshedTasks) }
+            PlanoraTaskPersistence.reconcile(fallbackTasks: tasks, in: modelContext)
             if store.phase == .dashboard {
                 store.selectedTab = .tasks
             }

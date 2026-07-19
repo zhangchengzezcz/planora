@@ -12,14 +12,16 @@ struct TaskListView: View {
     private var sortedTasks: [PlanoraTask] {
         tasks
             .filter { displaySettings.showsCompletedTasks || !$0.isCompleted }
-            .sorted(by: sortTasks)
+            .planoraSorted { lhs, rhs in
+                PlanoraTaskOrdering.areInListOrder(lhs, rhs, sortOrder: displaySettings.sortOrder)
+            }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(L("任务", "Tasks"))
-                    .font(.system(size: 34, weight: .bold))
+                    .font(.largeTitle.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(L("根据设置显示和排序任务。", "Tasks are displayed and sorted using your settings."))
@@ -59,8 +61,7 @@ struct TaskListView: View {
                             .swipeActions(edge: .leading, allowsFullSwipe: true) {
                                 Button {
                                     task.setCompleted(!task.isCompleted)
-                                    try? modelContext.save()
-                                    Task { await TaskReminderScheduler.synchronize(task: task) }
+                                    PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
                                 } label: {
                                     Label(
                                         task.isCompleted ? L("标记为未完成", "Mark Incomplete") : L("标记为完成", "Mark Complete"),
@@ -102,95 +103,14 @@ struct TaskListView: View {
         }
     }
 
-    private func sortTasks(_ lhs: PlanoraTask, _ rhs: PlanoraTask) -> Bool {
-        if lhs.isCompleted != rhs.isCompleted {
-            return !lhs.isCompleted
-        }
-
-        switch displaySettings.sortOrder {
-        case .smart:
-            if lhs.importance != rhs.importance {
-                return lhs.importance > rhs.importance
-            }
-            if deadlineComesFirst(lhs, rhs) != nil {
-                return deadlineComesFirst(lhs, rhs) ?? false
-            }
-            return lhs.createdDate > rhs.createdDate
-        case .deadline:
-            if deadlineComesFirst(lhs, rhs) != nil {
-                return deadlineComesFirst(lhs, rhs) ?? false
-            }
-            return lhs.createdDate > rhs.createdDate
-        case .priority:
-            if lhs.importance != rhs.importance {
-                return lhs.importance > rhs.importance
-            }
-            return lhs.createdDate > rhs.createdDate
-        case .createdDate:
-            return lhs.createdDate > rhs.createdDate
-        case .title:
-            let comparison = lhs.title.localizedStandardCompare(rhs.title)
-            if comparison != .orderedSame {
-                return comparison == .orderedAscending
-            }
-            return lhs.createdDate > rhs.createdDate
-        }
-    }
-
-    private func deadlineComesFirst(_ lhs: PlanoraTask, _ rhs: PlanoraTask) -> Bool? {
-        switch (lhs.hasDeadline, rhs.hasDeadline) {
-        case (true, true):
-            if lhs.deadline != rhs.deadline {
-                return (lhs.deadline ?? .distantFuture) < (rhs.deadline ?? .distantFuture)
-            }
-            return nil
-        case (true, false):
-            return true
-        case (false, true):
-            return false
-        case (false, false):
-            return nil
-        }
-    }
-
     private func delete(_ task: PlanoraTask, scope: RecurrenceEditScope) {
-        let targets: [PlanoraTask]
-        if let seriesID = task.recurrenceSeriesID {
-            let series = tasks.filter { $0.recurrenceSeriesID == seriesID }
-            switch scope {
-            case .occurrence:
-                targets = [task]
-            case .future:
-                targets = series.filter { $0.recurrenceSequence >= task.recurrenceSequence }
-            case .entireSeries:
-                targets = series
-            }
-        } else {
-            targets = [task]
-        }
-
-        let taskIDs = targets.map(\.id)
-        if scope == .occurrence,
-           let seriesID = task.recurrenceSeriesID {
-            RecurringTaskEngine.excludeOccurrence(
-                task,
-                from: tasks.filter { $0.recurrenceSeriesID == seriesID }
-            )
-        }
-        if let json = try? TaskBackupCodec.json(for: targets) {
-            store.stageDeletedTasks(json: json, count: targets.count)
-        }
-        AutomaticTaskBackup.save(tasks: tasks)
-        if scope == .future,
-           let seriesID = task.recurrenceSeriesID {
-            RecurringTaskEngine.truncateSeries(
-                before: task,
-                in: tasks.filter { $0.recurrenceSeriesID == seriesID }
-            )
-        }
-        for target in targets { modelContext.delete(target) }
-        try? modelContext.save()
-        Task { await TaskReminderScheduler.removeRequests(forTaskIDs: taskIDs) }
+        PlanoraTaskOperations.delete(
+            task,
+            scope: scope,
+            allTasks: tasks,
+            modelContext: modelContext,
+            store: store
+        )
         taskPendingDeletion = nil
     }
 }
@@ -249,6 +169,7 @@ private struct TaskListRow: View {
                 }
             }
         }
+        .contentShape(RoundedRectangle(cornerRadius: PlanoraTheme.compactCornerRadius, style: .continuous))
         .opacity(task.isCompleted ? 0.62 : 1)
     }
 }
@@ -270,7 +191,7 @@ private struct TaskListMetric: View {
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(isPrimary ? Color.planoraInk : tint)
                 .lineLimit(1)
-                .minimumScaleFactor(0.75)
+                .minimumScaleFactor(0.82)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 3)

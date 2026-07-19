@@ -77,7 +77,7 @@ struct ProfileView: View {
     private var profileHeader: some View {
         VStack(alignment: .leading, spacing: 18) {
             Text(L("我的", "Me"))
-                .font(.system(size: 34, weight: .bold))
+                .font(.largeTitle.weight(.bold))
                 .foregroundStyle(Color.planoraInk)
                 .padding(.top, 18)
 
@@ -251,8 +251,7 @@ struct ProfileView: View {
                 existingTasks: tasks,
                 into: modelContext
             )
-            let refreshedTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? tasks
-            Task { await TaskReminderScheduler.reconcile(tasks: refreshedTasks) }
+            PlanoraTaskPersistence.reconcile(fallbackTasks: tasks, in: modelContext)
             pendingImportPreview = nil
             presentBackupAlert(
                 title: L("导入完成", "Import Complete"),
@@ -351,7 +350,7 @@ private struct NameEditView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("编辑姓名", "Edit Name"))
-                        .font(.system(size: 34, weight: .bold))
+                        .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("修改后，主页问候和个人资料会同步更新。", "Update your name here. The home greeting and profile will stay in sync."))
@@ -405,7 +404,7 @@ private struct SettingsHomeView: View {
             VStack(alignment: .leading, spacing: 22) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("设置", "Settings"))
-                        .font(.system(size: 34, weight: .bold))
+                        .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("调整 Planora 的显示方式和任务列表偏好。", "Manage Planora appearance and task-list preferences."))
@@ -465,7 +464,7 @@ private struct AppearanceSettingsView: View {
             VStack(alignment: .leading, spacing: 26) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("外观", "Appearance"))
-                        .font(.system(size: 34, weight: .bold))
+                        .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("调整 Planora 在这台设备上的显示方式。", "Customize how Planora looks on this device."))
@@ -562,7 +561,7 @@ private struct TaskDisplaySettingsView: View {
             VStack(alignment: .leading, spacing: 26) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("任务显示", "Task Display"))
-                        .font(.system(size: 34, weight: .bold))
+                        .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("这些选项只改变任务列表，不会修改任务内容。", "These options change the task list without editing task data."))
@@ -759,7 +758,7 @@ private struct CurriculumEditView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("课程体系", "Curriculum"))
-                        .font(.system(size: 34, weight: .bold))
+                        .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("选择与你当前学习内容匹配的课程体系。", "Choose the curriculum that matches your current study plan."))
@@ -807,17 +806,12 @@ private struct CurriculumEditView: View {
     }
 
     private func switchCurriculum(to curriculum: Curriculum) {
-        // Switching curricula is destructive by product design: the new curriculum
-        // starts from its default required subjects, and existing tasks are removed.
-        let taskIDs = tasks.map(\.id)
-        AutomaticTaskBackup.save(tasks: tasks)
-        for task in tasks {
-            modelContext.delete(task)
-        }
-
-        try? modelContext.save()
-        Task { await TaskReminderScheduler.removeRequests(forTaskIDs: taskIDs) }
-        store.selectCurriculum(curriculum)
+        PlanoraTaskOperations.switchCurriculum(
+            to: curriculum,
+            tasks: tasks,
+            modelContext: modelContext,
+            store: store
+        )
         pendingCurriculum = nil
     }
 }
@@ -834,7 +828,7 @@ private struct SubjectEditView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("编辑科目", "Edit Subjects"))
-                        .font(.system(size: 34, weight: .bold))
+                        .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(LF("curriculum_subjects_format", store.curriculum.title))

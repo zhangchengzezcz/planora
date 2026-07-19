@@ -18,25 +18,8 @@ struct HomeDashboardView: View {
     }
 
     private var sortedTasks: [PlanoraTask] {
-        tasks.sorted { lhs, rhs in
-            if lhs.importance != rhs.importance {
-                return lhs.importance > rhs.importance
-            }
-
-            switch (lhs.hasDeadline, rhs.hasDeadline) {
-            case (true, true):
-                if lhs.deadline != rhs.deadline {
-                    return (lhs.deadline ?? .distantFuture) < (rhs.deadline ?? .distantFuture)
-                }
-            case (true, false):
-                return true
-            case (false, true):
-                return false
-            case (false, false):
-                break
-            }
-
-            return lhs.createdDate < rhs.createdDate
+        tasks.planoraSorted { lhs, rhs in
+            PlanoraTaskOrdering.areInDashboardOrder(lhs, rhs)
         }
     }
 
@@ -177,10 +160,9 @@ struct HomeDashboardView: View {
         for task in tasks {
             task.normalizeCalendarDates()
         }
-        try? modelContext.save()
+        PlanoraTaskPersistence.save(modelContext)
         RecurringTaskEngine.ensureRollingSeries(tasks: tasks, in: modelContext)
-        let refreshedTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? tasks
-        Task { await TaskReminderScheduler.reconcile(tasks: refreshedTasks) }
+        PlanoraTaskPersistence.reconcile(fallbackTasks: tasks, in: modelContext)
     }
 
     private var contentStack: some View {
@@ -286,17 +268,12 @@ struct HomeDashboardView: View {
     }
 
     private func switchCurriculum(to curriculum: Curriculum) {
-        // A curriculum switch starts from a clean task set so IB-only or IGCSE-only
-        // work cannot leak into the newly selected programme.
-        let taskIDs = tasks.map(\.id)
-        AutomaticTaskBackup.save(tasks: tasks)
-        for task in tasks {
-            modelContext.delete(task)
-        }
-
-        try? modelContext.save()
-        Task { await TaskReminderScheduler.removeRequests(forTaskIDs: taskIDs) }
-        store.selectCurriculum(curriculum)
+        PlanoraTaskOperations.switchCurriculum(
+            to: curriculum,
+            tasks: tasks,
+            modelContext: modelContext,
+            store: store
+        )
         pendingCurriculum = nil
     }
 }
@@ -311,7 +288,7 @@ private struct HomeHeader: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(LF("home_hello_user_format", store.userName))
-                    .font(.system(size: 34, weight: .bold))
+                    .font(.largeTitle.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
                 Text(L("现在应该关注什么？", "What needs attention now?"))
@@ -781,10 +758,8 @@ private struct CalendarPreview: View {
                 guard let deadline = task.deadline else { return false }
                 return Calendar.current.isDate(deadline, inSameDayAs: selectedDate)
             }
-            .sorted { lhs, rhs in
-                if lhs.isCompleted != rhs.isCompleted { return !lhs.isCompleted }
-                if lhs.importance != rhs.importance { return lhs.importance > rhs.importance }
-                return lhs.createdDate > rhs.createdDate
+            .planoraSorted { lhs, rhs in
+                PlanoraTaskOrdering.areInCalendarDayOrder(lhs, rhs)
             }
     }
 

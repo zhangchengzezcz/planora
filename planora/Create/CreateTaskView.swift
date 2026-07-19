@@ -23,7 +23,7 @@ struct CreateTaskView: View {
             VStack(alignment: .leading, spacing: 20) {
                 HStack(alignment: .top) {
                     Text(L("新建任务", "New Task"))
-                        .font(.system(size: 34, weight: .bold))
+                        .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Spacer(minLength: 12)
@@ -395,15 +395,14 @@ private struct CreateTaskFormView: View {
             task.recurrenceOccurrenceDate = task.deadline
             createdTasks = RecurringTaskEngine.materializeSeries(from: task, in: modelContext)
         }
-        try? modelContext.save()
+        PlanoraTaskPersistence.save(modelContext)
         QuickCreatePreferences.save(
             subject: selectedSubject,
             type: taskType,
             reminders: task.reminders,
             hasDeadline: hasDeadline
         )
-        let refreshedTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? createdTasks
-        Task { await TaskReminderScheduler.reconcile(tasks: refreshedTasks) }
+        PlanoraTaskPersistence.reconcile(fallbackTasks: createdTasks, in: modelContext)
         store.selectedTab = .home
         onComplete?()
     }

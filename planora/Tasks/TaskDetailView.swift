@@ -33,7 +33,7 @@ struct TaskDetailView: View {
         .background(PlanoraBackground())
         .onAppear {
             task.ensureTimeline()
-            try? modelContext.save()
+            PlanoraTaskPersistence.save(modelContext)
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -183,8 +183,7 @@ struct TaskDetailView: View {
             ForEach(Array(milestones.enumerated()), id: \.element.id) { index, milestone in
                 Button {
                     task.toggleMilestone(id: milestone.id)
-                    try? modelContext.save()
-                    Task { await TaskReminderScheduler.synchronize(task: task) }
+                    PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
                 } label: {
                     TimelineMilestoneRow(
                         milestone: milestone,
@@ -220,8 +219,7 @@ struct TaskDetailView: View {
             systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark.circle.fill"
         ) {
             task.setCompleted(!task.isCompleted)
-            try? modelContext.save()
-            Task { await TaskReminderScheduler.synchronize(task: task) }
+            PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
         }
     }
 
@@ -250,43 +248,13 @@ struct TaskDetailView: View {
     }
 
     private func delete(scope: RecurrenceEditScope) {
-        let targets: [PlanoraTask]
-        if let seriesID = task.recurrenceSeriesID {
-            let series = allTasks.filter { $0.recurrenceSeriesID == seriesID }
-            switch scope {
-            case .occurrence:
-                targets = [task]
-            case .future:
-                targets = series.filter { $0.recurrenceSequence >= task.recurrenceSequence }
-            case .entireSeries:
-                targets = series
-            }
-        } else {
-            targets = [task]
-        }
-
-        let taskIDs = targets.map(\.id)
-        if scope == .occurrence,
-           let seriesID = task.recurrenceSeriesID {
-            RecurringTaskEngine.excludeOccurrence(
-                task,
-                from: allTasks.filter { $0.recurrenceSeriesID == seriesID }
-            )
-        }
-        if let json = try? TaskBackupCodec.json(for: targets) {
-            store.stageDeletedTasks(json: json, count: targets.count)
-        }
-        AutomaticTaskBackup.save(tasks: allTasks)
-        if scope == .future,
-           let seriesID = task.recurrenceSeriesID {
-            RecurringTaskEngine.truncateSeries(
-                before: task,
-                in: allTasks.filter { $0.recurrenceSeriesID == seriesID }
-            )
-        }
-        for target in targets { modelContext.delete(target) }
-        try? modelContext.save()
-        Task { await TaskReminderScheduler.removeRequests(forTaskIDs: taskIDs) }
+        PlanoraTaskOperations.delete(
+            task,
+            scope: scope,
+            allTasks: allTasks,
+            modelContext: modelContext,
+            store: store
+        )
         dismiss()
     }
 }
@@ -298,8 +266,7 @@ struct TaskCompletionButton: View {
     var body: some View {
         Button {
             task.setCompleted(!task.isCompleted)
-            try? modelContext.save()
-            Task { await TaskReminderScheduler.synchronize(task: task) }
+            PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
         } label: {
             Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
                 .font(.title3.weight(.semibold))
@@ -463,8 +430,7 @@ private struct TimelineEditorView: View {
         }
 
         task.replaceTimeline(with: cleanedMilestones)
-        try? modelContext.save()
-        Task { await TaskReminderScheduler.synchronize(task: task) }
+        PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
         dismiss()
     }
 }
@@ -830,10 +796,10 @@ private struct EditTaskView: View {
             createdTasks = RecurringTaskEngine.materializeSeries(from: task, in: modelContext)
         }
 
-        try? modelContext.save()
-        let refreshedTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>()))
-            ?? (createdTasks.isEmpty ? allTasks : allTasks + createdTasks)
-        Task { await TaskReminderScheduler.reconcile(tasks: refreshedTasks) }
+        PlanoraTaskPersistence.saveAndReconcile(
+            fallbackTasks: createdTasks.isEmpty ? allTasks : allTasks + createdTasks,
+            in: modelContext
+        )
         dismiss()
     }
 

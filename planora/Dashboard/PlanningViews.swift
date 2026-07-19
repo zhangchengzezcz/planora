@@ -114,8 +114,10 @@ struct TodayPlanningView: View {
     }
 
     private func planningSort(_ lhs: PlanoraTask, _ rhs: PlanoraTask) -> Bool {
-        if lhs.importance != rhs.importance { return lhs.importance > rhs.importance }
-        return (lhs.deadline ?? lhs.plannedDate ?? .distantFuture) < (rhs.deadline ?? rhs.plannedDate ?? .distantFuture)
+        PlanoraTaskOrdering.areInPlanningOrder(
+            PlanoraTaskSortKey(task: lhs),
+            PlanoraTaskSortKey(task: rhs)
+        )
     }
 }
 
@@ -233,7 +235,7 @@ private struct PlanningHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(title)
-                .font(.system(size: 34, weight: .bold))
+                .font(.largeTitle.weight(.bold))
                 .foregroundStyle(Color.planoraInk)
             Text(subtitle)
                 .font(.callout.weight(.medium))

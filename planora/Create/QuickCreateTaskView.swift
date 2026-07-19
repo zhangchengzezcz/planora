@@ -98,14 +98,13 @@ struct QuickCreateTaskView: View {
             ? QuickCreatePreferences.relativeReminders
             : []
         modelContext.insert(task)
-        try? modelContext.save()
+        PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
         QuickCreatePreferences.save(
             subject: selectedSubject,
             type: taskType,
             reminders: task.reminders,
             hasDeadline: hasDeadline
         )
-        Task { await TaskReminderScheduler.synchronize(task: task) }
         store.selectedTab = .home
         onComplete?()
         dismiss()

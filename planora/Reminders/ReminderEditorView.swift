@@ -35,8 +35,7 @@ struct TaskReminderEditorView: View {
             ? reminders
             : reminders.filter { !$0.isRelativeToDeadline }
         task.replaceReminders(with: validReminders)
-        try? modelContext.save()
-        Task { await TaskReminderScheduler.synchronize(task: task) }
+        PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
         dismiss()
     }
 }

@@ -29,7 +29,9 @@ struct EventSearchView: View {
     }
 
     private var searchableTasks: [PlanoraTask] {
-        tasks.sorted(by: sortSearchResults)
+        tasks.planoraSorted { lhs, rhs in
+            PlanoraTaskOrdering.areInSearchOrder(lhs, rhs)
+        }
     }
 
     private var subjectOptions: [String] {
@@ -71,7 +73,10 @@ struct EventSearchView: View {
                     return lhs.score > rhs.score
                 }
 
-                return sortSearchResults(lhs.task, rhs.task)
+                return PlanoraTaskOrdering.areInSearchOrder(
+                    PlanoraTaskSortKey(task: lhs.task),
+                    PlanoraTaskSortKey(task: rhs.task)
+                )
             }
             .map(\.task)
     }
@@ -81,7 +86,7 @@ struct EventSearchView: View {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(L("搜索", "Search"))
-                        .font(.system(size: 34, weight: .bold))
+                        .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
                     Text(L("快速查找任务、事件和重要日期。", "Quickly find tasks, events, and important dates."))
@@ -311,31 +316,6 @@ struct EventSearchView: View {
         deadlineFilter = .all
         completionFilter = .all
         selectedPriority = nil
-    }
-
-    private func sortSearchResults(_ lhs: PlanoraTask, _ rhs: PlanoraTask) -> Bool {
-        if lhs.isCompleted != rhs.isCompleted {
-            return !lhs.isCompleted
-        }
-
-        if lhs.importance != rhs.importance {
-            return lhs.importance > rhs.importance
-        }
-
-        switch (lhs.hasDeadline, rhs.hasDeadline) {
-        case (true, true):
-            if lhs.deadline != rhs.deadline {
-                return (lhs.deadline ?? .distantFuture) < (rhs.deadline ?? .distantFuture)
-            }
-        case (true, false):
-            return true
-        case (false, true):
-            return false
-        case (false, false):
-            return lhs.createdDate > rhs.createdDate
-        }
-
-        return lhs.createdDate > rhs.createdDate
     }
 }
 
