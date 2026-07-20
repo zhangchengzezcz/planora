@@ -8,6 +8,7 @@ struct TaskListView: View {
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
     @State private var taskPendingDeletion: PlanoraTask?
     @State private var isShowingDeleteConfirmation = false
+    @State private var selectedTask: PlanoraTask?
 
     var body: some View {
         let visibleTasks = PlanoraTaskListProjection.tasks(
@@ -38,12 +39,13 @@ struct TaskListView: View {
             } else {
                 List {
                     ForEach(visibleTasks, id: \.id) { task in
-                        NavigationLink {
-                            TaskDetailView(store: store, task: task)
+                        Button {
+                            selectedTask = task
                         } label: {
                             TaskListRow(task: task)
                         }
                             .buttonStyle(.plain)
+                            .accessibilityHint(L("打开任务详情", "Open task details"))
                             .listRowInsets(EdgeInsets(top: 7, leading: PlanoraTheme.pageHorizontalPadding, bottom: 7, trailing: PlanoraTheme.pageHorizontalPadding))
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
@@ -75,6 +77,9 @@ struct TaskListView: View {
         }
         .planoraHiddenNavigationBar()
         .background(PlanoraBackground())
+        .navigationDestination(item: $selectedTask) { task in
+            TaskDetailView(store: store, task: task)
+        }
         .alert(L("删除任务？", "Delete Task?"), isPresented: $isShowingDeleteConfirmation, presenting: taskPendingDeletion) { task in
             if task.isRecurring {
                 Button(L("仅删除本次", "Delete This Occurrence"), role: .destructive) {
