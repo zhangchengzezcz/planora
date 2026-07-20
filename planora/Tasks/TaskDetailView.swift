@@ -28,7 +28,7 @@ struct TaskDetailView: View {
             .padding(.bottom, 32)
         }
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
-        .navigationTitle(L("任务详情", "Task Details"))
+        .navigationTitle(String(localized: "Task Details"))
         .planoraDetailNavigationBar()
         .background(PlanoraBackground())
         .onAppear {
@@ -40,34 +40,34 @@ struct TaskDetailView: View {
                 NavigationLink {
                     EditTaskView(store: store, task: task)
                 } label: {
-                    Text(L("编辑", "Edit"))
+                    Text(String(localized: "Edit"))
                         .fontWeight(.semibold)
                 }
             }
         }
         .confirmationDialog(
-            task.isRecurring ? L("删除重复任务", "Delete Repeating Task") : L("删除任务？", "Delete Task?"),
+            task.isRecurring ? String(localized: "Delete Repeating Task") : String(localized: "Delete Task?"),
             isPresented: $isShowingDeleteConfirmation,
             titleVisibility: .visible
         ) {
             if task.isRecurring {
-                Button(L("仅删除本次", "Delete This Occurrence"), role: .destructive) {
+                Button(String(localized: "Delete This Occurrence"), role: .destructive) {
                     delete(scope: .occurrence)
                 }
-                Button(L("删除本次及以后", "Delete This and Future"), role: .destructive) {
+                Button(String(localized: "Delete This and Future"), role: .destructive) {
                     delete(scope: .future)
                 }
-                Button(L("删除整个系列", "Delete Entire Series"), role: .destructive) {
+                Button(String(localized: "Delete Entire Series"), role: .destructive) {
                     delete(scope: .entireSeries)
                 }
             } else {
-                Button(L("删除", "Delete"), role: .destructive) {
+                Button(String(localized: "Delete"), role: .destructive) {
                     delete(scope: .occurrence)
                 }
             }
-            Button(L("取消", "Cancel"), role: .cancel) {}
+            Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
-            Text(LF("delete_task_confirmation_format", task.title))
+            Text(PlanoraLocalization.format(String(localized: "delete_task_confirmation_format"), task.title))
         }
     }
 
@@ -99,22 +99,22 @@ struct TaskDetailView: View {
     private var overviewPanel: some View {
         GlassPanel {
             VStack(spacing: 0) {
-                DetailRow(icon: "square.grid.2x2.fill", title: L("类型", "Type"), value: task.type.title, tint: task.type.tint)
+                DetailRow(icon: "square.grid.2x2.fill", title: String(localized: "Type"), value: task.type.title, tint: task.type.tint)
                 Divider().padding(.leading, 50)
-                DetailRow(icon: "calendar", title: L("截止日期", "Deadline"), value: deadlineText, tint: task.type.tint)
+                DetailRow(icon: "calendar", title: String(localized: "Deadline"), value: deadlineText, tint: task.type.tint)
                 Divider().padding(.leading, 50)
-                DetailRow(icon: "calendar.badge.clock", title: L("计划完成日期", "Planned Date"), value: plannedDateText, tint: .planoraDeepGreen)
+                DetailRow(icon: "calendar.badge.clock", title: String(localized: "Planned Date"), value: plannedDateText, tint: .planoraDeepGreen)
                 Divider().padding(.leading, 50)
-                DetailRow(icon: "repeat", title: L("重复", "Repeat"), value: task.recurrenceSummary, tint: .planoraBlue)
+                DetailRow(icon: "repeat", title: String(localized: "Repeat"), value: task.recurrenceSummary, tint: .planoraBlue)
                 Divider().padding(.leading, 50)
-                DetailRow(icon: "flag.fill", title: L("优先级", "Priority"), value: task.priority.title, tint: task.priority.tint)
+                DetailRow(icon: "flag.fill", title: String(localized: "Priority"), value: task.priority.title, tint: task.priority.tint)
                 Divider().padding(.leading, 50)
                 NavigationLink {
                     TaskReminderEditorView(task: task)
                 } label: {
                     DetailRow(
                         icon: "bell.badge.fill",
-                        title: L("提醒", "Reminders"),
+                        title: String(localized: "Reminders"),
                         value: task.reminderSummary,
                         tint: .planoraAmber,
                         showsChevron: true
@@ -122,7 +122,7 @@ struct TaskDetailView: View {
                 }
                 .buttonStyle(.plain)
                 Divider().padding(.leading, 50)
-                DetailRow(icon: "clock.fill", title: L("创建时间", "Created"), value: PlanoraFormat.monthDay(task.createdDate), tint: .planoraDeepGreen)
+                DetailRow(icon: "clock.fill", title: String(localized: "Created"), value: PlanoraFormat.monthDay(task.createdDate), tint: .planoraDeepGreen)
             }
         }
     }
@@ -132,7 +132,7 @@ struct TaskDetailView: View {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(L("学习进度", "Learning Progress"))
+                        Text(String(localized: "Learning Progress"))
                             .font(.headline.weight(.bold))
                             .foregroundStyle(Color.planoraInk)
 
@@ -158,8 +158,8 @@ struct TaskDetailView: View {
                                 .background(task.type.tint.opacity(0.12), in: Circle())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(L("编辑时间线", "Edit Timeline"))
-                        .help(L("编辑时间线", "Edit Timeline"))
+                        .accessibilityLabel(String(localized: "Edit Timeline"))
+                        .help(String(localized: "Edit Timeline"))
                     }
                 }
 
@@ -200,11 +200,11 @@ struct TaskDetailView: View {
     private var notesPanel: some View {
         GlassPanel {
             VStack(alignment: .leading, spacing: 10) {
-                Label(L("备注", "Notes"), systemImage: "note.text")
+                Label(String(localized: "Notes"), systemImage: "note.text")
                     .font(.headline.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
-                Text(task.notes.isEmpty ? L("没有备注", "No Notes") : task.notes)
+                Text(task.notes.isEmpty ? String(localized: "No Notes") : task.notes)
                     .font(.subheadline)
                     .foregroundStyle(task.notes.isEmpty ? .secondary : Color.planoraInk)
                     .fixedSize(horizontal: false, vertical: true)
@@ -215,7 +215,7 @@ struct TaskDetailView: View {
 
     private var completionButton: some View {
         PlanoraPrimaryButton(
-            title: task.isCompleted ? L("标记为未完成", "Mark Incomplete") : L("标记为完成", "Mark Complete"),
+            title: task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"),
             systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark.circle.fill"
         ) {
             task.setCompleted(!task.isCompleted)
@@ -227,7 +227,7 @@ struct TaskDetailView: View {
         Button(role: .destructive) {
             isShowingDeleteConfirmation = true
         } label: {
-            Label(L("删除任务", "Delete Task"), systemImage: "trash")
+            Label(String(localized: "Delete Task"), systemImage: "trash")
                 .font(.headline.weight(.semibold))
                 .frame(maxWidth: .infinity, minHeight: 50)
         }
@@ -237,14 +237,14 @@ struct TaskDetailView: View {
 
     private var deadlineText: String {
         guard task.hasDeadline, let deadline = task.deadline else {
-            return L("无截止日期", "No deadline")
+            return String(localized: "No deadline")
         }
 
         return deadline.formatted(date: .long, time: .omitted)
     }
 
     private var plannedDateText: String {
-        task.plannedDate?.formatted(date: .long, time: .omitted) ?? L("未安排", "Not Planned")
+        task.plannedDate?.formatted(date: .long, time: .omitted) ?? String(localized: "Not Planned")
     }
 
     private func delete(scope: RecurrenceEditScope) {
@@ -275,7 +275,7 @@ struct TaskCompletionButton: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(task.isCompleted ? L("标记为未完成", "Mark Incomplete") : L("标记为完成", "Mark Complete"))
+        .accessibilityLabel(task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"))
     }
 }
 
@@ -361,26 +361,26 @@ private struct TimelineEditorView: View {
                 .onDelete(perform: deleteMilestones)
                 .onMove(perform: moveMilestones)
             } header: {
-                Text(L("阶段", "Milestones"))
+                Text(String(localized: "Milestones"))
             } footer: {
                 if !datesFollowTimelineOrder {
-                    Text(L("阶段日期必须按照时间线顺序排列。", "Milestone dates must follow the timeline order."))
+                    Text(String(localized: "Milestone dates must follow the timeline order."))
                         .foregroundStyle(.red)
                 } else {
-                    Text(L("拖动可以调整阶段顺序。完成状态会与任务进度保持同步。", "Reorder milestones as needed. Completion stays synchronized with task progress."))
+                    Text(String(localized: "Reorder milestones as needed. Completion stays synchronized with task progress."))
                 }
             }
 
             Section {
                 Button(action: addMilestone) {
-                    Label(L("添加阶段", "Add Milestone"), systemImage: "plus.circle.fill")
+                    Label(String(localized: "Add Milestone"), systemImage: "plus.circle.fill")
                         .foregroundStyle(task.type.tint)
                 }
             }
         }
         .scrollContentBackground(.hidden)
         .background(PlanoraBackground())
-        .navigationTitle(L("编辑时间线", "Edit Timeline"))
+        .navigationTitle(String(localized: "Edit Timeline"))
         .planoraDetailNavigationBar()
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -388,7 +388,7 @@ private struct TimelineEditorView: View {
             }
 
             ToolbarItem(placement: .confirmationAction) {
-                Button(L("保存", "Save"), action: saveTimeline)
+                Button(String(localized: "Save"), action: saveTimeline)
                     .fontWeight(.semibold)
                     .disabled(!canSave)
             }
@@ -403,7 +403,7 @@ private struct TimelineEditorView: View {
 
         milestones.append(
             AcademicMilestone(
-                title: L("新阶段", "New Milestone"),
+                title: String(localized: "New Milestone"),
                 targetDate: task.hasDeadline ? clampedDate : nil
             )
         )
@@ -466,16 +466,16 @@ private struct MilestoneEditorRow: View {
                 Image(systemName: milestone.isCompleted ? "checkmark.circle.fill" : "circle")
                     .foregroundStyle(milestone.isCompleted ? Color.planoraGreen : .secondary)
 
-                TextField(L("阶段名称", "Milestone Name"), text: $milestone.title)
+                TextField(String(localized: "Milestone Name"), text: $milestone.title)
                     .font(.headline)
             }
 
-            Toggle(L("目标日期", "Target Date"), isOn: hasTargetDate)
+            Toggle(String(localized: "Target Date"), isOn: hasTargetDate)
                 .tint(Color.planoraDeepGreen)
 
             if milestone.targetDate != nil {
                 DatePicker(
-                    L("日期", "Date"),
+                    String(localized: "Date"),
                     selection: targetDate,
                     in: allowedDateRange,
                     displayedComponents: .date
@@ -610,39 +610,39 @@ private struct EditTaskView: View {
 
     var body: some View {
         Form {
-            Section(L("基本信息", "Details")) {
-                TextField(L("标题", "Title"), text: $title)
+            Section(String(localized: "Details")) {
+                TextField(String(localized: "Title"), text: $title)
 
-                Picker(L("类型", "Type"), selection: $selectedType) {
+                Picker(String(localized: "Type"), selection: $selectedType) {
                     ForEach(typeOptions) { type in
                         Label(type.title, systemImage: type.symbol).tag(type)
                     }
                 }
 
-                Picker(L("科目", "Subject"), selection: $selectedSubject) {
+                Picker(String(localized: "Subject"), selection: $selectedSubject) {
                     ForEach(subjectOptions, id: \.self) { subject in
                         Text(PlanoraFormat.subjectDisplayName(subject)).tag(subject)
                     }
                 }
             }
 
-            Section(L("安排", "Schedule")) {
-                Toggle(L("截止日期", "Deadline"), isOn: $hasDeadline)
+            Section(String(localized: "Schedule")) {
+                Toggle(String(localized: "Deadline"), isOn: $hasDeadline)
                     .tint(selectedType.tint)
                     .disabled(task.isRecurring || recurrenceRule != nil)
 
                 if hasDeadline {
-                    DatePicker(L("日期", "Date"), selection: $deadline, displayedComponents: .date)
+                    DatePicker(String(localized: "Date"), selection: $deadline, displayedComponents: .date)
                 }
 
-                Toggle(L("计划完成日期", "Planned Date"), isOn: $hasPlannedDate)
+                Toggle(String(localized: "Planned Date"), isOn: $hasPlannedDate)
                     .tint(selectedType.tint)
 
                 if hasPlannedDate {
-                    DatePicker(L("计划日期", "Plan For"), selection: $plannedDate, displayedComponents: .date)
+                    DatePicker(String(localized: "Plan For"), selection: $plannedDate, displayedComponents: .date)
                 }
 
-                Picker(L("优先级", "Priority"), selection: $priority) {
+                Picker(String(localized: "Priority"), selection: $priority) {
                     ForEach(TaskPriority.allCases) { priority in
                         Label(priority.title, systemImage: priority.symbol).tag(priority)
                     }
@@ -656,15 +656,15 @@ private struct EditTaskView: View {
                     )
                 } label: {
                     HStack {
-                        Label(L("提醒", "Reminders"), systemImage: "bell.badge")
+                        Label(String(localized: "Reminders"), systemImage: "bell.badge")
                         Spacer()
-                        Text(reminders.isEmpty ? L("未设置", "Not Set") : LF("reminder_count_format", reminders.count))
+                        Text(reminders.isEmpty ? String(localized: "Not Set") : PlanoraLocalization.format(String(localized: "reminder_count_format"), reminders.count))
                             .foregroundStyle(.secondary)
                     }
                 }
 
                 if task.isRecurring {
-                    LabeledContent(L("重复", "Repeat"), value: task.recurrenceSummary)
+                    LabeledContent(String(localized: "Repeat"), value: task.recurrenceSummary)
                 } else {
                     NavigationLink {
                         RecurrenceDraftEditorView(
@@ -674,21 +674,21 @@ private struct EditTaskView: View {
                         )
                     } label: {
                         HStack {
-                            Label(L("重复", "Repeat"), systemImage: "repeat")
+                            Label(String(localized: "Repeat"), systemImage: "repeat")
                             Spacer()
-                            Text(recurrenceRule?.summary ?? L("不重复", "Does Not Repeat"))
+                            Text(recurrenceRule?.summary ?? String(localized: "Does Not Repeat"))
                                 .foregroundStyle(.secondary)
                         }
                     }
                 }
             }
 
-            Section(L("学习进度", "Learning Progress")) {
-                Toggle(L("跟踪进度", "Track Progress"), isOn: $tracksProgress)
+            Section(String(localized: "Learning Progress")) {
+                Toggle(String(localized: "Track Progress"), isOn: $tracksProgress)
                     .tint(selectedType.tint)
 
                 if tracksProgress {
-                    Picker(L("进度类型", "Progress Type"), selection: $progressKind) {
+                    Picker(String(localized: "Progress Type"), selection: $progressKind) {
                         ForEach(ProgressKind.allCases) { kind in
                             Text(kind.title).tag(kind)
                         }
@@ -704,7 +704,7 @@ private struct EditTaskView: View {
                                 .tint(selectedType.tint)
                         }
                     } else {
-                        Picker(L("阶段", "Stage"), selection: $stageName) {
+                        Picker(String(localized: "Stage"), selection: $stageName) {
                             ForEach(stageOptions, id: \.self) { stage in
                                 Text(stage).tag(stage)
                             }
@@ -713,18 +713,18 @@ private struct EditTaskView: View {
                 }
             }
 
-            Section(L("备注", "Notes")) {
-                TextField(L("备注", "Notes"), text: $notes, axis: .vertical)
+            Section(String(localized: "Notes")) {
+                TextField(String(localized: "Notes"), text: $notes, axis: .vertical)
                     .lineLimit(3...7)
             }
         }
         .scrollContentBackground(.hidden)
         .background(PlanoraBackground())
-        .navigationTitle(L("编辑任务", "Edit Task"))
+        .navigationTitle(String(localized: "Edit Task"))
         .planoraDetailNavigationBar()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(L("保存更改", "Save Changes")) {
+                Button(String(localized: "Save Changes")) {
                     requestSave()
                 }
                 .fontWeight(.semibold)
@@ -750,14 +750,14 @@ private struct EditTaskView: View {
             if newRule != nil { hasDeadline = true }
         }
         .confirmationDialog(
-            L("应用到重复任务", "Apply to Repeating Task"),
+            String(localized: "Apply to Repeating Task"),
             isPresented: $isShowingSeriesScope,
             titleVisibility: .visible
         ) {
-            Button(L("仅本次", "This Occurrence Only")) { saveChanges(scope: .occurrence) }
-            Button(L("本次及以后", "This and Future Occurrences")) { saveChanges(scope: .future) }
-            Button(L("整个系列", "Entire Series")) { saveChanges(scope: .entireSeries) }
-            Button(L("取消", "Cancel"), role: .cancel) {}
+            Button(String(localized: "This Occurrence Only")) { saveChanges(scope: .occurrence) }
+            Button(String(localized: "This and Future Occurrences")) { saveChanges(scope: .future) }
+            Button(String(localized: "Entire Series")) { saveChanges(scope: .entireSeries) }
+            Button(String(localized: "Cancel"), role: .cancel) {}
         }
     }
 

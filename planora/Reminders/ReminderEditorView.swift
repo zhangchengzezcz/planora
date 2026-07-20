@@ -20,11 +20,11 @@ struct TaskReminderEditorView: View {
             deadline: task.hasDeadline ? task.deadline : nil,
             tint: task.type.tint
         )
-        .navigationTitle(L("提醒", "Reminders"))
+        .navigationTitle(String(localized: "Reminders"))
         .planoraDetailNavigationBar()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(L("保存", "Save"), action: save)
+                Button(String(localized: "Save"), action: save)
                     .fontWeight(.semibold)
             }
         }
@@ -51,7 +51,7 @@ struct ReminderDraftEditorView: View {
             deadline: deadline,
             tint: tint
         )
-        .navigationTitle(L("提醒", "Reminders"))
+        .navigationTitle(String(localized: "Reminders"))
         .planoraDetailNavigationBar()
     }
 }
@@ -93,7 +93,7 @@ private struct ReminderConfigurationView: View {
                 } else {
                     Section {
                         Label(
-                            L("没有 Deadline 的任务只能使用自定义提醒。", "Tasks without a deadline can only use custom reminders."),
+                            String(localized: "Tasks without a deadline can only use custom reminders."),
                             systemImage: "info.circle"
                         )
                         .font(.subheadline)
@@ -117,42 +117,42 @@ private struct ReminderConfigurationView: View {
     }
 
     private var permissionSection: some View {
-        Section(L("通知权限", "Notification Access")) {
+        Section(String(localized: "Notification Access")) {
             switch authorizationStatus {
             case .authorized, .provisional, .ephemeral:
-                Label(L("通知已启用", "Notifications Enabled"), systemImage: "checkmark.circle.fill")
+                Label(String(localized: "Notifications Enabled"), systemImage: "checkmark.circle.fill")
                     .foregroundStyle(Color.planoraGreen)
             case .denied:
                 VStack(alignment: .leading, spacing: 10) {
-                    Label(L("通知权限已关闭", "Notifications Are Off"), systemImage: "bell.slash.fill")
+                    Label(String(localized: "Notifications Are Off"), systemImage: "bell.slash.fill")
                         .font(.headline)
                         .foregroundStyle(.red)
 
-                    Text(L("请在系统设置中允许 Planora 发送通知。", "Allow Planora notifications in System Settings to use reminders."))
+                    Text(String(localized: "Allow Planora notifications in System Settings to use reminders."))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
 
-                    Button(L("打开系统设置", "Open Settings"), action: openSettings)
+                    Button(String(localized: "Open Settings"), action: openSettings)
                         .fontWeight(.semibold)
                 }
                 .padding(.vertical, 4)
             case .notDetermined:
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(L("启用通知后，Planora 会在你选择的时间提醒任务。", "Enable notifications so Planora can remind you at the times you choose."))
+                    Text(String(localized: "Enable notifications so Planora can remind you at the times you choose."))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
 
                     Button {
                         Task { authorizationStatus = await TaskReminderScheduler.requestAuthorization() }
                     } label: {
-                        Label(L("启用通知", "Enable Notifications"), systemImage: "bell.badge.fill")
+                        Label(String(localized: "Enable Notifications"), systemImage: "bell.badge.fill")
                             .fontWeight(.semibold)
                             .foregroundStyle(tint)
                     }
                 }
                 .padding(.vertical, 4)
             @unknown default:
-                Text(L("无法读取通知权限状态。", "Notification access status is unavailable."))
+                Text(String(localized: "Notification access status is unavailable."))
                     .foregroundStyle(.secondary)
             }
         }
@@ -167,7 +167,7 @@ private struct ReminderConfigurationView: View {
 
             if hasRelativeReminder {
                 DatePicker(
-                    L("提醒时间", "Reminder Time"),
+                    String(localized: "Reminder Time"),
                     selection: $relativeTime,
                     displayedComponents: .hourAndMinute
                 )
@@ -176,9 +176,9 @@ private struct ReminderConfigurationView: View {
                 }
             }
         } header: {
-            Text(L("Deadline 提醒", "Deadline Reminders"))
+            Text(String(localized: "Deadline Reminders"))
         } footer: {
-            Text(L("逾期提醒只会在任务仍未完成时保留。", "Overdue reminders are removed automatically when the task is completed."))
+            Text(String(localized: "Overdue reminders are removed automatically when the task is completed."))
         }
     }
 
@@ -193,13 +193,13 @@ private struct ReminderConfigurationView: View {
             }
 
             Button(action: addCustomReminder) {
-                Label(L("添加自定义提醒", "Add Custom Reminder"), systemImage: "plus.circle.fill")
+                Label(String(localized: "Add Custom Reminder"), systemImage: "plus.circle.fill")
                     .foregroundStyle(tint)
             }
         } header: {
-            Text(L("自定义提醒", "Custom Reminders"))
+            Text(String(localized: "Custom Reminders"))
         } footer: {
-            Text(L("可以添加多个自定义日期和时间。", "You can add multiple custom dates and times."))
+            Text(String(localized: "You can add multiple custom dates and times."))
         }
     }
 
@@ -274,7 +274,7 @@ private struct CustomReminderRow: View {
     var body: some View {
         HStack(spacing: 10) {
             DatePicker(
-                L("自定义时间", "Custom Time"),
+                String(localized: "Custom Time"),
                 selection: date,
                 displayedComponents: [.date, .hourAndMinute]
             )
@@ -283,7 +283,7 @@ private struct CustomReminderRow: View {
                 Image(systemName: "trash")
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(L("删除提醒", "Delete Reminder"))
+            .accessibilityLabel(String(localized: "Delete Reminder"))
         }
     }
 }

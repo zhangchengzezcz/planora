@@ -19,13 +19,13 @@ struct RecurrenceDraftEditorView: View {
     var body: some View {
         Form {
             Section {
-                Toggle(L("重复任务", "Repeat Task"), isOn: $isEnabled)
+                Toggle(String(localized: "Repeat Task"), isOn: $isEnabled)
                     .tint(tint)
             }
 
             if isEnabled {
-                Section(L("重复频率", "Frequency")) {
-                    Picker(L("重复频率", "Frequency"), selection: $draft.frequency) {
+                Section(String(localized: "Frequency")) {
+                    Picker(String(localized: "Frequency"), selection: $draft.frequency) {
                         ForEach(RecurrenceFrequency.allCases) { frequency in
                             Text(frequency.title).tag(frequency)
                         }
@@ -33,9 +33,9 @@ struct RecurrenceDraftEditorView: View {
 
                     if draft.frequency == .custom {
                         Stepper(value: $draft.interval, in: 1...30) {
-                            Text(LF("repeat_every_format", draft.interval, draft.customUnit.title))
+                            Text(PlanoraLocalization.format(String(localized: "repeat_every_format"), draft.interval, draft.customUnit.title))
                         }
-                        Picker(L("间隔单位", "Interval Unit"), selection: $draft.customUnit) {
+                        Picker(String(localized: "Interval Unit"), selection: $draft.customUnit) {
                             ForEach(RecurrenceUnit.allCases) { unit in
                                 Text(unit.title).tag(unit)
                             }
@@ -47,11 +47,11 @@ struct RecurrenceDraftEditorView: View {
                     }
                 }
 
-                Section(L("结束重复", "Ends")) {
-                    Picker(L("结束方式", "End Option"), selection: endMode) {
-                        Text(L("永不", "Never")).tag(RecurrenceEndMode.never)
-                        Text(L("指定日期", "On Date")).tag(RecurrenceEndMode.onDate)
-                        Text(L("重复次数", "After Count")).tag(RecurrenceEndMode.afterCount)
+                Section(String(localized: "Ends")) {
+                    Picker(String(localized: "End Option"), selection: endMode) {
+                        Text(String(localized: "Never")).tag(RecurrenceEndMode.never)
+                        Text(String(localized: "On Date")).tag(RecurrenceEndMode.onDate)
+                        Text(String(localized: "After Count")).tag(RecurrenceEndMode.afterCount)
                     }
 
                     switch draft.end {
@@ -59,7 +59,7 @@ struct RecurrenceDraftEditorView: View {
                         EmptyView()
                     case .onDate(let date):
                         DatePicker(
-                            L("结束日期", "End Date"),
+                            String(localized: "End Date"),
                             selection: Binding(
                                 get: { date },
                                 set: { draft.end = .onDate(max($0, startDate)) }
@@ -72,7 +72,7 @@ struct RecurrenceDraftEditorView: View {
                             get: { count },
                             set: { draft.end = .afterCount($0) }
                         ), in: 2...500) {
-                            Text(LF("repeat_count_format", count))
+                            Text(PlanoraLocalization.format(String(localized: "repeat_count_format"), count))
                         }
                     }
                 }
@@ -80,7 +80,7 @@ struct RecurrenceDraftEditorView: View {
         }
         .scrollContentBackground(.hidden)
         .background(PlanoraBackground())
-        .navigationTitle(L("重复", "Repeat"))
+        .navigationTitle(String(localized: "Repeat"))
         .planoraDetailNavigationBar()
         .onChange(of: isEnabled) { _, enabled in
             rule = enabled ? normalizedDraft : nil

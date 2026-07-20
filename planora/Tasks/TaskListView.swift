@@ -32,7 +32,7 @@ struct TaskListView: View {
                             TaskListRow(task: task)
                         }
                             .buttonStyle(.plain)
-                            .accessibilityHint(L("打开任务详情", "Open task details"))
+                            .accessibilityHint(String(localized: "Open task details"))
                             .listRowInsets(EdgeInsets(top: 7, leading: PlanoraTheme.pageHorizontalPadding, bottom: 7, trailing: PlanoraTheme.pageHorizontalPadding))
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
@@ -41,7 +41,7 @@ struct TaskListView: View {
                                     taskPendingDeletion = task
                                     isShowingDeleteConfirmation = true
                                 } label: {
-                                    Label(L("删除", "Delete"), systemImage: "trash.fill")
+                                    Label(String(localized: "Delete"), systemImage: "trash.fill")
                                 }
                             }
                             .swipeActions(edge: .leading, allowsFullSwipe: true) {
@@ -50,7 +50,7 @@ struct TaskListView: View {
                                     PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
                                 } label: {
                                     Label(
-                                        task.isCompleted ? L("标记为未完成", "Mark Incomplete") : L("标记为完成", "Mark Complete"),
+                                        task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"),
                                         systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark"
                                     )
                                 }
@@ -71,38 +71,38 @@ struct TaskListView: View {
         .navigationDestination(item: $selectedTask) { task in
             TaskDetailView(store: store, task: task)
         }
-        .alert(L("删除任务？", "Delete Task?"), isPresented: $isShowingDeleteConfirmation, presenting: taskPendingDeletion) { task in
+        .alert(String(localized: "Delete Task?"), isPresented: $isShowingDeleteConfirmation, presenting: taskPendingDeletion) { task in
             if task.isRecurring {
-                Button(L("仅删除本次", "Delete This Occurrence"), role: .destructive) {
+                Button(String(localized: "Delete This Occurrence"), role: .destructive) {
                     delete(task, scope: .occurrence)
                 }
-                Button(L("删除本次及以后", "Delete This and Future"), role: .destructive) {
+                Button(String(localized: "Delete This and Future"), role: .destructive) {
                     delete(task, scope: .future)
                 }
-                Button(L("删除整个系列", "Delete Entire Series"), role: .destructive) {
+                Button(String(localized: "Delete Entire Series"), role: .destructive) {
                     delete(task, scope: .entireSeries)
                 }
             } else {
-                Button(L("删除", "Delete"), role: .destructive) {
+                Button(String(localized: "Delete"), role: .destructive) {
                     delete(task, scope: .occurrence)
                 }
             }
 
-            Button(L("取消", "Cancel"), role: .cancel) {
+            Button(String(localized: "Cancel"), role: .cancel) {
                 taskPendingDeletion = nil
             }
         } message: { task in
-            Text(LF("delete_task_confirmation_format", task.title))
+            Text(PlanoraLocalization.format(String(localized: "delete_task_confirmation_format"), task.title))
         }
     }
 
     private var taskListHeader: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(L("任务", "Tasks"))
+            Text(String(localized: "Tasks"))
                 .font(.largeTitle.weight(.bold))
                 .foregroundStyle(Color.planoraInk)
 
-            Text(L("根据设置显示和排序任务。", "Tasks are displayed and sorted using your settings."))
+            Text(String(localized: "Tasks are displayed and sorted using your settings."))
                 .font(.callout.weight(.medium))
                 .foregroundStyle(.secondary)
         }
@@ -174,12 +174,12 @@ private struct TaskListRow: View {
                 }
 
                 HStack(spacing: 10) {
-                    TaskListMetric(label: L("完成时间", "Completion Time"), value: task.completionTimeText, tint: task.type.tint, isPrimary: true)
+                    TaskListMetric(label: String(localized: "Completion Time"), value: task.completionTimeText, tint: task.type.tint, isPrimary: true)
 
                     if task.tracksProgress && (task.progressState.kind != .percentage || displaySettings.showsProgressPercentage) {
                         TaskListMetric(label: task.progressState.label, value: task.progressState.valueText, tint: task.type.tint)
                     } else {
-                        TaskListMetric(label: L("类型", "Type"), value: task.type.title, tint: task.type.tint)
+                        TaskListMetric(label: String(localized: "Type"), value: task.type.title, tint: task.type.tint)
                     }
                 }
 
@@ -228,11 +228,11 @@ private struct EmptyTaskListCard: View {
                     .font(.title.weight(.bold))
                     .foregroundStyle(LinearGradient.planoraAccent)
 
-                Text(L("还没有任务", "No Tasks Yet"))
+                Text(String(localized: "No Tasks Yet"))
                     .font(.title2.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
-                Text(L("创建任务后，这里会按完成时间显示所有任务。", "After you create tasks, they will appear here by completion time."))
+                Text(String(localized: "After you create tasks, they will appear here by completion time."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -245,7 +245,7 @@ private struct EmptyTaskListCard: View {
 private extension PlanoraTask {
     var completionTimeText: String {
         guard hasDeadline, let deadline else {
-            return L("无截止日期", "No deadline")
+            return String(localized: "No deadline")
         }
 
         return PlanoraFormat.monthDay(deadline)

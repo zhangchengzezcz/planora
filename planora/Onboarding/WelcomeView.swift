@@ -17,11 +17,11 @@ struct WelcomeView: View {
                 .offset(y: lifted ? -26 : 0)
 
             VStack(spacing: 8) {
-                Text(L("欢迎使用", "Welcome to"))
+                Text(String(localized: "Welcome to"))
                     .font(.title3.weight(.medium))
                     .foregroundStyle(.secondary)
 
-                Text("Planora")
+                Text(verbatim: "Planora")
                     .font(.system(size: 48, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
             }
@@ -30,7 +30,7 @@ struct WelcomeView: View {
 
             Spacer()
 
-            Text(L("学习计划，简单清晰。", "Study planning, simple and clear."))
+            Text(String(localized: "Study planning, simple and clear."))
                 .font(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)
                 .opacity(textVisible ? 0.75 : 0)

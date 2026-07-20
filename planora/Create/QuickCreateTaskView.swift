@@ -31,30 +31,30 @@ struct QuickCreateTaskView: View {
     var body: some View {
         Form {
             Section {
-                TextField(L("任务标题", "Task Title"), text: $title)
+                TextField(String(localized: "Task Title"), text: $title)
                     .font(.title3.weight(.semibold))
             }
 
-            Section(L("科目", "Subject")) {
-                Picker(L("科目", "Subject"), selection: $selectedSubject) {
+            Section(String(localized: "Subject")) {
+                Picker(String(localized: "Subject"), selection: $selectedSubject) {
                     ForEach(subjectOptions, id: \.self) { subject in
                         Text(PlanoraFormat.subjectDisplayName(subject)).tag(subject)
                     }
                 }
             }
 
-            Section(L("日期", "Date")) {
-                Toggle(L("设置日期", "Set Date"), isOn: $hasDeadline)
+            Section(String(localized: "Date")) {
+                Toggle(String(localized: "Set Date"), isOn: $hasDeadline)
                     .tint(taskType.tint)
 
                 if hasDeadline {
-                    DatePicker(L("日期", "Date"), selection: $deadline, displayedComponents: .date)
+                    DatePicker(String(localized: "Date"), selection: $deadline, displayedComponents: .date)
                 }
             }
 
             Section {
                 Label(
-                    LF("quick_create_defaults_format", taskType.title, QuickCreatePreferences.reminderSummary),
+                    PlanoraLocalization.format(String(localized: "quick_create_defaults_format"), taskType.title, QuickCreatePreferences.reminderSummary),
                     systemImage: "bolt.fill"
                 )
                 .font(.caption)
@@ -63,11 +63,11 @@ struct QuickCreateTaskView: View {
         }
         .scrollContentBackground(.hidden)
         .background(PlanoraBackground())
-        .navigationTitle(L("快速新建", "Quick Create"))
+        .navigationTitle(String(localized: "Quick Create"))
         .planoraDetailNavigationBar()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(L("保存", "Save"), action: save)
+                Button(String(localized: "Save"), action: save)
                     .fontWeight(.semibold)
                     .disabled(!canSave)
             }
@@ -139,8 +139,8 @@ enum QuickCreatePreferences {
 
     @MainActor static var reminderSummary: String {
         relativeReminders.isEmpty
-            ? L("无提醒", "No reminders")
-            : LF("reminder_count_format", relativeReminders.count)
+            ? String(localized: "No reminders")
+            : PlanoraLocalization.format(String(localized: "reminder_count_format"), relativeReminders.count)
     }
 
     static func save(

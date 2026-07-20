@@ -10,7 +10,7 @@ struct MainAppView: View {
 
     var body: some View {
         TabView(selection: $store.selectedTab) {
-            Tab(L("首页", "Home"), systemImage: "house.fill", value: MainTab.home) {
+            Tab(String(localized: "Home"), systemImage: "house.fill", value: MainTab.home) {
                 NavigationStack {
                     HomeDashboardView(store: store) {
                         presentCreateFlow()
@@ -18,19 +18,19 @@ struct MainAppView: View {
                 }
             }
 
-            Tab(L("任务", "Tasks"), systemImage: "checklist", value: MainTab.tasks) {
+            Tab(String(localized: "Tasks"), systemImage: "checklist", value: MainTab.tasks) {
                 NavigationStack {
                     TaskListView(store: store)
                 }
             }
 
-            Tab(L("新建", "New"), systemImage: "plus", value: MainTab.create, role: .prominent) {
+            Tab(String(localized: "New"), systemImage: "plus", value: MainTab.create, role: .prominent) {
                 NavigationStack {
                     CreateTabPlaceholder()
                 }
             }
 
-            Tab(L("搜索", "Search"), systemImage: "magnifyingglass", value: MainTab.search, role: .search) {
+            Tab(String(localized: "Search"), systemImage: "magnifyingglass", value: MainTab.search, role: .search) {
                 NavigationStack {
                     EventSearchView(
                         store: store,
@@ -40,7 +40,7 @@ struct MainAppView: View {
                 }
             }
 
-            Tab(L("我的", "Me"), systemImage: "person.fill", value: MainTab.profile) {
+            Tab(String(localized: "Me"), systemImage: "person.fill", value: MainTab.profile) {
                 NavigationStack {
                     ProfileView(store: store)
                 }
@@ -119,13 +119,13 @@ private struct DeletedTaskUndoBanner: View {
             Image(systemName: "trash.fill")
                 .foregroundStyle(.secondary)
 
-            Text(LF("tasks_deleted_format", count))
+            Text(PlanoraLocalization.format(String(localized: "tasks_deleted_format"), count))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Color.planoraInk)
 
             Spacer()
 
-            Button(L("撤销", "Undo"), action: undo)
+            Button(String(localized: "Undo"), action: undo)
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(Color.planoraBlue)
         }

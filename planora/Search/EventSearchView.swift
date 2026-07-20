@@ -47,7 +47,7 @@ struct EventSearchView: View {
     }
 
     private var selectedSubjectTitle: String {
-        guard let selectedSubject else { return L("科目", "Subject") }
+        guard let selectedSubject else { return String(localized: "Subject") }
         return PlanoraFormat.subjectDisplayName(selectedSubject)
     }
 
@@ -66,11 +66,11 @@ struct EventSearchView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(L("搜索", "Search"))
+                    Text(String(localized: "Search"))
                         .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(L("快速查找任务、事件和重要日期。", "Quickly find tasks, events, and important dates."))
+                    Text(String(localized: "Quickly find tasks, events, and important dates."))
                         .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
@@ -85,7 +85,7 @@ struct EventSearchView: View {
                         hasTasks: !tasks.isEmpty
                     )
                 } else {
-                    DashboardSection(title: trimmedSearchText.isEmpty && !hasActiveFilters ? L("全部项目", "All Items") : L("搜索结果", "Search Results")) {
+                    DashboardSection(title: trimmedSearchText.isEmpty && !hasActiveFilters ? String(localized: "All Items") : String(localized: "Search Results")) {
                         LazyVStack(spacing: 0) {
                             ForEach(results) { task in
                                 NavigationLink {
@@ -137,7 +137,7 @@ struct EventSearchView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 Menu {
-                    filterButton(title: L("全部科目", "All Subjects"), isSelected: selectedSubject == nil) {
+                    filterButton(title: String(localized: "All Subjects"), isSelected: selectedSubject == nil) {
                         selectedSubject = nil
                     }
 
@@ -158,7 +158,7 @@ struct EventSearchView: View {
                 }
 
                 Menu {
-                    filterButton(title: L("全部类型", "All Types"), isSelected: selectedType == nil) {
+                    filterButton(title: String(localized: "All Types"), isSelected: selectedType == nil) {
                         selectedType = nil
                     }
 
@@ -169,7 +169,7 @@ struct EventSearchView: View {
                     }
                 } label: {
                     SearchFilterChip(
-                        title: selectedType?.title ?? L("任务类型", "Task Type"),
+                        title: selectedType?.title ?? String(localized: "Task Type"),
                         systemImage: "square.grid.2x2",
                         isActive: selectedType != nil
                     )
@@ -183,7 +183,7 @@ struct EventSearchView: View {
                     }
                 } label: {
                     SearchFilterChip(
-                        title: deadlineFilter == .all ? L("截止日期", "Deadline") : deadlineFilter.title,
+                        title: deadlineFilter == .all ? String(localized: "Deadline") : deadlineFilter.title,
                         systemImage: "calendar",
                         isActive: deadlineFilter != .all
                     )
@@ -197,14 +197,14 @@ struct EventSearchView: View {
                     }
                 } label: {
                     SearchFilterChip(
-                        title: completionFilter == .all ? L("状态", "Status") : completionFilter.title,
+                        title: completionFilter == .all ? String(localized: "Status") : completionFilter.title,
                         systemImage: "checkmark.circle",
                         isActive: completionFilter != .all
                     )
                 }
 
                 Menu {
-                    filterButton(title: L("全部优先级", "Any Priority"), isSelected: selectedPriority == nil) {
+                    filterButton(title: String(localized: "Any Priority"), isSelected: selectedPriority == nil) {
                         selectedPriority = nil
                     }
 
@@ -215,7 +215,7 @@ struct EventSearchView: View {
                     }
                 } label: {
                     SearchFilterChip(
-                        title: selectedPriority?.title ?? L("优先级", "Priority"),
+                        title: selectedPriority?.title ?? String(localized: "Priority"),
                         systemImage: "flag",
                         isActive: selectedPriority != nil
                     )
@@ -223,7 +223,7 @@ struct EventSearchView: View {
 
                 if hasActiveFilters {
                     Button(action: clearFilters) {
-                        Label(L("清除筛选", "Clear Filters"), systemImage: "xmark.circle.fill")
+                        Label(String(localized: "Clear Filters"), systemImage: "xmark.circle.fill")
                             .font(.caption.weight(.bold))
                             .foregroundStyle(Color.planoraDeepGreen)
                             .frame(minHeight: 36)
@@ -318,11 +318,11 @@ private enum SearchDeadlineFilter: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .all: L("任意截止日期", "Any Deadline")
-        case .overdue: L("已逾期", "Overdue")
-        case .today: L("今天", "Today")
-        case .nextSevenDays: L("未来 7 天", "Next 7 Days")
-        case .noDeadline: L("无截止日期", "No deadline")
+        case .all: String(localized: "Any Deadline")
+        case .overdue: String(localized: "Overdue")
+        case .today: String(localized: "Today")
+        case .nextSevenDays: String(localized: "Next 7 Days")
+        case .noDeadline: String(localized: "No deadline")
         }
     }
 }
@@ -336,9 +336,9 @@ private enum SearchCompletionFilter: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .all: L("全部状态", "Any Status")
-        case .open: L("进行中", "Open")
-        case .completed: L("已完成", "Completed")
+        case .all: String(localized: "Any Status")
+        case .open: String(localized: "Open")
+        case .completed: String(localized: "Completed")
         }
     }
 }
@@ -379,7 +379,7 @@ private struct EventSearchField: View {
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
 
-                TextField(L("搜索任务或事件", "Search tasks or events"), text: $text)
+                TextField(String(localized: "Search tasks or events"), text: $text)
                     .font(.title3)
                     .foregroundStyle(Color.planoraInk)
                     .textFieldStyle(.plain)
@@ -415,7 +415,7 @@ private struct EventSearchField: View {
                         .overlay(Circle().stroke(Color.planoraGlassStroke, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(L("收起键盘", "Dismiss Keyboard"))
+                .accessibilityLabel(String(localized: "Dismiss Keyboard"))
                 .transition(.scale(scale: 0.88).combined(with: .opacity))
             }
         }
@@ -457,11 +457,11 @@ private struct EventSearchRow: View {
             }
 
             HStack(spacing: 10) {
-                EventSearchStatusTile(label: L("截止日期", "Deadline"), value: task.deadlineText)
+                EventSearchStatusTile(label: String(localized: "Deadline"), value: task.deadlineText)
                 if task.tracksProgress {
                     EventSearchStatusTile(label: task.progressState.label, value: task.progressState.valueText)
                 } else {
-                    EventSearchStatusTile(label: L("类型", "Type"), value: task.type.title)
+                    EventSearchStatusTile(label: String(localized: "Type"), value: task.type.title)
                 }
             }
 
@@ -504,20 +504,20 @@ private struct EmptyEventSearchCard: View {
 
     private var title: String {
         if isSearching {
-            return L("没有找到匹配内容", "No Matching Items")
+            return String(localized: "No Matching Items")
         }
 
-        return hasTasks ? L("输入关键词搜索任务", "Search Tasks") : L("还没有任务", "No Tasks Yet")
+        return hasTasks ? String(localized: "Search Tasks") : String(localized: "No Tasks Yet")
     }
 
     private var message: String {
         if isSearching {
-            return L("换一个关键词，或检查标题、科目、类型和备注。", "Try another keyword, or check the title, subject, type, and notes.")
+            return String(localized: "Try another keyword, or check the title, subject, type, and notes.")
         }
 
         return hasTasks
-            ? L("可以按标题、科目、类型、备注或阶段查找。", "You can search by title, subject, type, notes, or stage.")
-            : L("创建任务后，这里会显示所有可搜索内容。", "After you create tasks, all searchable items will appear here.")
+            ? String(localized: "You can search by title, subject, type, notes, or stage.")
+            : String(localized: "After you create tasks, all searchable items will appear here.")
     }
 
     var body: some View {
@@ -577,7 +577,7 @@ enum PlanoraTaskSearchEngine {
 extension PlanoraTask {
     var deadlineText: String {
         guard hasDeadline, let deadline else {
-            return L("无截止日期", "No deadline")
+            return String(localized: "No deadline")
         }
 
         return PlanoraFormat.monthDay(deadline)
@@ -591,7 +591,7 @@ extension PlanoraTask {
                 SearchField(value: type.title, weight: 110),
                 SearchField(value: subject.planoraSearchDisplayName, weight: 100),
                 SearchField(value: deadlineText, weight: 24),
-                SearchField(value: tracksProgress ? progressState.valueText : L("仅记录", "Record only"), weight: 36),
+                SearchField(value: tracksProgress ? progressState.valueText : String(localized: "Record only"), weight: 36),
                 SearchField(value: notes, weight: 16)
             ]
         )

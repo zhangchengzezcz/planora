@@ -1,6 +1,6 @@
 # Changelog / 更新说明
 
-## 1.4.2 - 2026-07-12
+## 1.4.2 - 2026-07-20
 
 ### 中文
 
@@ -8,6 +8,13 @@
 - 删除字体扫描、字形检测、字体偏好、预览、警告和相关本地化资源，减少运行时代码与资源占用。
 - 将各页面字体调用恢复为系统原生修饰器，同时保留原有字号、字重和信息层级。
 - 颜色主题、显示模式、背景、任务显示与全部核心任务功能保持不变。
+- 将全项目旧式双语 `L(...)` / `LF(...)` 调用迁移到 Swift `String(localized:)` 与 String Catalog。
+- 完成 390 个界面 key 的英文、简体中文与日文翻译；Xcode 本地化导出不再报告非字面 key 或缺失源码引用。
+- 移除“当前科目”下重复的“编辑科目”入口，保留“我的科目”作为唯一科目管理入口。
+- 优化首页、任务页和搜索在 1,000 至 2,000 项任务下的渲染与查询性能。
+- 修复大任务集下搜索崩溃、切回首页卡顿和持续输入状态问题。
+- 任务列表移除多余披露箭头，任务页与“我的”页采用 iOS 27 系统顶部滚动边缘效果。
+- 将项目目标收敛为 iOS，并清理无效 App Intents 元数据警告。
 
 ### English
 
@@ -15,6 +22,13 @@
 - Removed font discovery, glyph inspection, preferences, previews, warnings, and related localization resources to reduce runtime and resource overhead.
 - Restored native system font modifiers while preserving existing sizes, weights, and information hierarchy.
 - Color themes, display modes, backgrounds, task-display preferences, and all core task features remain unchanged.
+- Migrated all legacy bilingual `L(...)` / `LF(...)` calls to Swift `String(localized:)` and String Catalog.
+- Completed English, Simplified Chinese, and Japanese translations for all 390 interface keys; Xcode localization export no longer reports non-literal keys or missing source references.
+- Removed the duplicate Edit Subjects action from Current Subjects and kept My Subjects as the single subject-management entry.
+- Optimized Home, Tasks, and Search rendering and queries for task sets ranging from 1,000 to 2,000 items.
+- Fixed search crashes, delayed Home transitions, and lingering input state with large imported task sets.
+- Removed unnecessary disclosure arrows and adopted iOS 27 system top scroll-edge effects in Tasks and Profile.
+- Restricted the app target to iOS and removed invalid App Intents metadata warnings.
 
 ## 1.4.1 - 2026-07-11
 

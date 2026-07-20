@@ -22,7 +22,7 @@ struct CreateTaskView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
                 HStack(alignment: .top) {
-                    Text(L("新建任务", "New Task"))
+                    Text(String(localized: "New Task"))
                         .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
@@ -50,10 +50,10 @@ struct CreateTaskView: View {
                                 .background(Color.planoraAmber.opacity(0.14), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(L("快速新建", "Quick Create"))
+                                Text(String(localized: "Quick Create"))
                                     .font(.headline.weight(.bold))
                                     .foregroundStyle(Color.planoraInk)
-                                Text(L("只填写标题、科目和日期。", "Just add a title, subject, and date."))
+                                Text(String(localized: "Just add a title, subject, and date."))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -103,7 +103,7 @@ private struct CloseCreateButton: View {
                 .overlay(shape.stroke(Color.planoraGlassStroke, lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(L("关闭", "Close"))
+        .accessibilityLabel(String(localized: "Close"))
     }
 }
 
@@ -191,14 +191,14 @@ private struct CreateTaskFormView: View {
 
                 GlassPanel {
                     VStack(alignment: .leading, spacing: 18) {
-                        PlanoraFieldLabel(L("标题", "Title"))
+                        PlanoraFieldLabel(String(localized: "Title"))
                         TextField(taskType.titlePlaceholder, text: titleBinding)
                             .textFieldStyle(.plain)
                             .font(.title3.weight(.semibold))
 
                         Divider()
 
-                        PlanoraFieldLabel(L("科目", "Subject"))
+                        PlanoraFieldLabel(String(localized: "Subject"))
                         LazyVGrid(columns: subjectColumns, spacing: 10) {
                             ForEach(subjectOptions, id: \.self) { subject in
                                 SelectableChip(title: PlanoraFormat.subjectDisplayName(subject), isSelected: selectedSubject == subject) {
@@ -216,22 +216,22 @@ private struct CreateTaskFormView: View {
 
                         Divider()
 
-                        Toggle(L("截止日期", "Deadline"), isOn: $hasDeadline)
+                        Toggle(String(localized: "Deadline"), isOn: $hasDeadline)
                             .font(.headline)
                             .tint(taskType.tint)
                             .disabled(recurrenceRule != nil)
 
                         if hasDeadline {
-                            DatePicker(L("日期", "Date"), selection: $deadline, displayedComponents: .date)
+                            DatePicker(String(localized: "Date"), selection: $deadline, displayedComponents: .date)
                                 .datePickerStyle(.compact)
                         }
 
-                        Toggle(L("计划完成日期", "Planned Date"), isOn: $hasPlannedDate)
+                        Toggle(String(localized: "Planned Date"), isOn: $hasPlannedDate)
                             .font(.headline)
                             .tint(taskType.tint)
 
                         if hasPlannedDate {
-                            DatePicker(L("计划日期", "Plan For"), selection: $plannedDate, displayedComponents: .date)
+                            DatePicker(String(localized: "Plan For"), selection: $plannedDate, displayedComponents: .date)
                                 .datePickerStyle(.compact)
                         }
 
@@ -243,7 +243,7 @@ private struct CreateTaskFormView: View {
                             )
                         } label: {
                             HStack {
-                                Label(L("提醒", "Reminders"), systemImage: "bell.badge")
+                                Label(String(localized: "Reminders"), systemImage: "bell.badge")
                                     .font(.headline)
                                     .foregroundStyle(Color.planoraInk)
 
@@ -271,13 +271,13 @@ private struct CreateTaskFormView: View {
                             )
                         } label: {
                             HStack {
-                                Label(L("重复", "Repeat"), systemImage: "repeat")
+                                Label(String(localized: "Repeat"), systemImage: "repeat")
                                     .font(.headline)
                                     .foregroundStyle(Color.planoraInk)
 
                                 Spacer()
 
-                                Text(recurrenceRule?.summary ?? L("不重复", "Does Not Repeat"))
+                                Text(recurrenceRule?.summary ?? String(localized: "Does Not Repeat"))
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(.secondary)
 
@@ -291,8 +291,8 @@ private struct CreateTaskFormView: View {
 
                         Divider()
 
-                        PlanoraFieldLabel(L("优先级", "Priority"))
-                        Picker(L("优先级", "Priority"), selection: $priority) {
+                        PlanoraFieldLabel(String(localized: "Priority"))
+                        Picker(String(localized: "Priority"), selection: $priority) {
                             ForEach(TaskPriority.allCases) { priority in
                                 Text(priority.title).tag(priority)
                             }
@@ -301,13 +301,13 @@ private struct CreateTaskFormView: View {
 
                         Divider()
 
-                        Toggle(L("跟踪进度", "Track Progress"), isOn: $tracksProgress)
+                        Toggle(String(localized: "Track Progress"), isOn: $tracksProgress)
                             .font(.headline)
                             .tint(taskType.tint)
 
                         if tracksProgress {
-                            PlanoraFieldLabel(L("进度", "Progress"))
-                            Picker(L("进度类型", "Progress Type"), selection: $progressKind) {
+                            PlanoraFieldLabel(String(localized: "Progress"))
+                            Picker(String(localized: "Progress Type"), selection: $progressKind) {
                                 ForEach(ProgressKind.allCases) { kind in
                                     Text(kind.title).tag(kind)
                                 }
@@ -323,14 +323,14 @@ private struct CreateTaskFormView: View {
 
                         Divider()
 
-                        PlanoraFieldLabel(L("备注", "Notes"))
-                        TextField(L("备注", "Notes"), text: $notes, axis: .vertical)
+                        PlanoraFieldLabel(String(localized: "Notes"))
+                        TextField(String(localized: "Notes"), text: $notes, axis: .vertical)
                             .textFieldStyle(.plain)
                             .lineLimit(3...6)
                     }
                 }
 
-                PlanoraPrimaryButton(title: L("保存任务", "Save Task"), systemImage: "checkmark", isDisabled: !canSave) {
+                PlanoraPrimaryButton(title: String(localized: "Save Task"), systemImage: "checkmark", isDisabled: !canSave) {
                     saveTask()
                 }
             }
@@ -408,7 +408,7 @@ private struct CreateTaskFormView: View {
     }
 
     private var reminderSummary: String {
-        reminders.isEmpty ? L("未设置", "Not Set") : LF("reminder_count_format", reminders.count)
+        reminders.isEmpty ? String(localized: "Not Set") : PlanoraLocalization.format(String(localized: "reminder_count_format"), reminders.count)
     }
 }
 
@@ -428,7 +428,7 @@ private struct FormHeader: View {
                     .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(Color.planoraInk)
 
-                Text(L("新建任务", "New Task"))
+                Text(String(localized: "New Task"))
                     .font(.callout.weight(.medium))
                     .foregroundStyle(.secondary)
             }
@@ -460,7 +460,7 @@ private struct PercentageProgressEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(L("进度", "Progress"))
+                Text(String(localized: "Progress"))
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
 
@@ -484,14 +484,14 @@ private struct StageProgressEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Picker(L("阶段", "Stage"), selection: $stageName) {
+            Picker(String(localized: "Stage"), selection: $stageName) {
                 ForEach(options, id: \.self) { option in
                     Text(option).tag(option)
                 }
             }
             .pickerStyle(.menu)
 
-            TextField(L("自定义阶段", "Custom stage"), text: $stageName)
+            TextField(String(localized: "Custom stage"), text: $stageName)
                 .textFieldStyle(.plain)
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(tint)

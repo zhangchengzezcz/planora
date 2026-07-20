@@ -83,7 +83,7 @@ struct SelectableChip: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(title)
-        .accessibilityValue(isSelected ? L("已选择", "Selected") : L("未选择", "Not Selected"))
+        .accessibilityValue(isSelected ? String(localized: "Selected") : String(localized: "Not Selected"))
     }
 }
 

@@ -10,8 +10,8 @@ struct PlanningDestinationStrip: View {
                 TodayPlanningView(store: store)
             } label: {
                 PlanningDestinationLabel(
-                    title: L("今日", "Today"),
-                    subtitle: L("执行今天的计划", "Work today's plan"),
+                    title: String(localized: "Today"),
+                    subtitle: String(localized: "Work today's plan"),
                     symbol: "sun.max.fill",
                     tint: .planoraAmber
                 )
@@ -21,8 +21,8 @@ struct PlanningDestinationStrip: View {
                 WeekPlanningView(store: store)
             } label: {
                 PlanningDestinationLabel(
-                    title: L("本周", "This Week"),
-                    subtitle: L("查看七天负载", "Review seven days"),
+                    title: String(localized: "This Week"),
+                    subtitle: String(localized: "Review seven days"),
                     symbol: "calendar.badge.clock",
                     tint: .planoraBlue
                 )
@@ -92,23 +92,23 @@ struct TodayPlanningView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 PlanningHeader(
-                    title: L("今日", "Today"),
+                    title: String(localized: "Today"),
                     subtitle: Date().formatted(date: .complete, time: .omitted)
                 )
 
                 if overdue.isEmpty && dueToday.isEmpty && plannedToday.isEmpty {
-                    PlanningEmptyState(title: L("今天没有安排", "Nothing Planned Today"))
+                    PlanningEmptyState(title: String(localized: "Nothing Planned Today"))
                 } else {
-                    PlanningTaskSection(title: L("已逾期", "Overdue"), tasks: overdue, store: store, tint: .red)
-                    PlanningTaskSection(title: L("今天截止", "Due Today"), tasks: dueToday, store: store, tint: .planoraAmber)
-                    PlanningTaskSection(title: L("计划今天完成", "Planned Today"), tasks: plannedToday, store: store, tint: .planoraGreen)
+                    PlanningTaskSection(title: String(localized: "Overdue"), tasks: overdue, store: store, tint: .red)
+                    PlanningTaskSection(title: String(localized: "Due Today"), tasks: dueToday, store: store, tint: .planoraAmber)
+                    PlanningTaskSection(title: String(localized: "Planned Today"), tasks: plannedToday, store: store, tint: .planoraGreen)
                 }
             }
             .padding(.top, 12)
             .padding(.bottom, 32)
         }
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
-        .navigationTitle(L("今日", "Today"))
+        .navigationTitle(String(localized: "Today"))
         .planoraDetailNavigationBar()
         .background(PlanoraBackground())
     }
@@ -144,16 +144,16 @@ struct WeekPlanningView: View {
 
     private var summaryText: String {
         if let busiestDay {
-            return LF(
-                "busiest_day_format",
+            return PlanoraLocalization.format(
+                String(localized: "busiest_day_format"),
                 busiestDay.formatted(.dateTime.weekday(.wide)),
                 tasks(on: busiestDay).count
             )
         }
 
         return incompleteTasks.isEmpty
-            ? L("本周暂无任务", "No tasks this week")
-            : L("本周暂无已安排任务", "No scheduled tasks this week")
+            ? String(localized: "No tasks this week")
+            : String(localized: "No scheduled tasks this week")
     }
 
     private var unscheduled: [PlanoraTask] {
@@ -164,7 +164,7 @@ struct WeekPlanningView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 PlanningHeader(
-                    title: L("本周", "This Week"),
+                    title: String(localized: "This Week"),
                     subtitle: summaryText
                 )
 
@@ -184,7 +184,7 @@ struct WeekPlanningView: View {
                 }
 
                 PlanningTaskSection(
-                    title: LF("unscheduled_tasks_format", unscheduled.count),
+                    title: PlanoraLocalization.format(String(localized: "unscheduled_tasks_format"), unscheduled.count),
                     tasks: unscheduled,
                     store: store,
                     tint: .gray
@@ -194,7 +194,7 @@ struct WeekPlanningView: View {
             .padding(.bottom, 32)
         }
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
-        .navigationTitle(L("本周", "This Week"))
+        .navigationTitle(String(localized: "This Week"))
         .planoraDetailNavigationBar()
         .background(PlanoraBackground())
     }
@@ -219,7 +219,7 @@ private struct WeekDayEmptyState: View {
                 .font(.headline)
                 .foregroundStyle(Color.planoraInk)
 
-            Text(L("无安排", "No tasks"))
+            Text(String(localized: "No tasks"))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }

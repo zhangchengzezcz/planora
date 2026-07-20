@@ -30,19 +30,19 @@ struct ExtraLearningPicker: View {
                 }
             }
         }
-        .alert(L("自定义额外学习", "Custom Extra Learning"), isPresented: $isShowingCustomEntry) {
-            TextField(L("例如：艺术作品集", "For example: Art Portfolio"), text: $customTitle)
+        .alert(String(localized: "Custom Extra Learning"), isPresented: $isShowingCustomEntry) {
+            TextField(String(localized: "For example: Art Portfolio"), text: $customTitle)
 
-            Button(L("添加", "Add")) {
+            Button(String(localized: "Add")) {
                 store.addCustomExtraLearning(customTitle)
                 customTitle = ""
             }
 
-            Button(L("取消", "Cancel"), role: .cancel) {
+            Button(String(localized: "Cancel"), role: .cancel) {
                 customTitle = ""
             }
         } message: {
-            Text(L("输入要加入学习空间的项目。", "Enter an item to add to your learning space."))
+            Text(String(localized: "Enter an item to add to your learning space."))
         }
     }
 }
@@ -81,19 +81,19 @@ struct SubjectPicker: View {
                 }
             }
         }
-        .alert(L("自定义科目", "Custom Subject"), isPresented: $isShowingCustomEntry) {
-            TextField(L("例如：Astronomy", "For example: Astronomy"), text: $customTitle)
+        .alert(String(localized: "Custom Subject"), isPresented: $isShowingCustomEntry) {
+            TextField(String(localized: "For example: Astronomy"), text: $customTitle)
 
-            Button(L("添加", "Add")) {
+            Button(String(localized: "Add")) {
                 store.addCustomSubject(customTitle)
                 customTitle = ""
             }
 
-            Button(L("取消", "Cancel"), role: .cancel) {
+            Button(String(localized: "Cancel"), role: .cancel) {
                 customTitle = ""
             }
         } message: {
-            Text(L("输入要加入科目列表的名称。", "Enter a subject name to add to your subject list."))
+            Text(String(localized: "Enter a subject name to add to your subject list."))
         }
     }
 }

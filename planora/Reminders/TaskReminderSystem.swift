@@ -75,13 +75,13 @@ enum TaskReminderTiming: Codable, Hashable {
     var title: String {
         switch self {
         case .daysBefore(let days):
-            LF("days_before_deadline_format", days)
+            PlanoraLocalization.format(String(localized: "days_before_deadline_format"), days)
         case .atDeadline:
-            L("截止当天", "On Due Date")
+            String(localized: "On Due Date")
         case .custom:
-            L("自定义时间", "Custom Time")
+            String(localized: "Custom Time")
         case .daysAfter(let days):
-            LF("days_after_deadline_format", days)
+            PlanoraLocalization.format(String(localized: "days_after_deadline_format"), days)
         }
     }
 }
@@ -96,12 +96,12 @@ enum TaskReminderScheduler {
     static func configureCategories() {
         let hourAction = UNNotificationAction(
             identifier: snoozeHourAction,
-            title: L("1 小时后提醒", "Remind in 1 Hour"),
+            title: String(localized: "Remind in 1 Hour"),
             options: []
         )
         let tomorrowAction = UNNotificationAction(
             identifier: snoozeTomorrowAction,
-            title: L("明天提醒", "Remind Tomorrow"),
+            title: String(localized: "Remind Tomorrow"),
             options: []
         )
         let category = UNNotificationCategory(
@@ -282,10 +282,10 @@ enum TaskReminderScheduler {
 
     private static func notificationBody(for task: PlanoraTask) -> String {
         guard task.hasDeadline, let deadline = task.deadline else {
-            return LF("task_reminder_no_deadline_format", PlanoraFormat.subjectDisplayName(task.subject))
+            return PlanoraLocalization.format(String(localized: "task_reminder_no_deadline_format"), PlanoraFormat.subjectDisplayName(task.subject))
         }
-        return LF(
-            "task_reminder_deadline_format",
+        return PlanoraLocalization.format(
+            String(localized: "task_reminder_deadline_format"),
             PlanoraFormat.subjectDisplayName(task.subject),
             PlanoraFormat.monthDay(deadline)
         )

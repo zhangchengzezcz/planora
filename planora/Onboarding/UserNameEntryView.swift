@@ -27,12 +27,12 @@ struct UserNameEntryView: View {
                 PlanoraLogoMark(size: 72)
 
                 VStack(spacing: 8) {
-                    Text(L("怎么称呼你？", "What should we call you?"))
+                    Text(String(localized: "What should we call you?"))
                         .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
                         .multilineTextAlignment(.center)
 
-                    Text(L("这个名字会显示在主页。", "This name will appear on your home page."))
+                    Text(String(localized: "This name will appear on your home page."))
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -41,7 +41,7 @@ struct UserNameEntryView: View {
             .padding(.horizontal, 28)
 
             GlassPanel(padding: 18) {
-                TextField(L("你的名字", "Your name"), text: $nameDraft)
+                TextField(String(localized: "Your name"), text: $nameDraft)
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(Color.planoraInk)
                     .textFieldStyle(.plain)
@@ -55,7 +55,7 @@ struct UserNameEntryView: View {
             Spacer()
 
             PlanoraPrimaryButton(
-                title: L("继续", "Continue"),
+                title: String(localized: "Continue"),
                 systemImage: "arrow.right",
                 isDisabled: !canContinue,
                 action: continueToCurriculum

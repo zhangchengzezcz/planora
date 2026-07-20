@@ -141,8 +141,8 @@ final class PlanoraTask {
 
     var reminderSummary: String {
         reminders.isEmpty
-            ? L("未设置", "Not Set")
-            : LF("reminder_count_format", reminders.count)
+            ? String(localized: "Not Set")
+            : PlanoraLocalization.format(String(localized: "reminder_count_format"), reminders.count)
     }
 
     func replaceReminders(with reminders: [TaskReminder]) {
@@ -160,7 +160,7 @@ final class PlanoraTask {
     }
 
     @MainActor var recurrenceSummary: String {
-        recurrenceRule?.summary ?? L("不重复", "Does Not Repeat")
+        recurrenceRule?.summary ?? String(localized: "Does Not Repeat")
     }
 
     var isRecurring: Bool {
@@ -442,9 +442,9 @@ enum TaskPriority: Int, Codable, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .low: L("低", "Low")
-        case .medium: L("中", "Medium")
-        case .high: L("高", "High")
+        case .low: String(localized: "Low")
+        case .medium: String(localized: "Medium")
+        case .high: String(localized: "High")
         }
     }
 
@@ -483,16 +483,16 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .assignment: L("作业", "Assignment")
-        case .practical: L("实验实践", "Practical")
-        case .revision: L("复习计划", "Revision")
+        case .assignment: String(localized: "Assignment")
+        case .practical: String(localized: "Practical")
+        case .revision: String(localized: "Revision")
         case .ia: "IA"
         case .ee: "EE"
         case .tok: "TOK"
         case .cas: "CAS"
-        case .exam: L("考试", "Exam")
-        case .event: L("事件", "Event")
-        case .custom: L("自定义", "Custom")
+        case .exam: String(localized: "Exam")
+        case .event: String(localized: "Event")
+        case .custom: String(localized: "Custom")
         }
     }
 
@@ -651,25 +651,25 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
     var titlePlaceholder: String {
         switch self {
         case .assignment:
-            L("Physics 作业", "Physics Assignment")
+            String(localized: "Physics Assignment")
         case .practical:
-            L("Physics 实验", "Physics Practical")
+            String(localized: "Physics Practical")
         case .revision:
-            L("Math 复习", "Math Revision")
+            String(localized: "Math Revision")
         case .ia:
             "Physics IA"
         case .ee:
             "EE"
         case .tok:
-            L("TOK 展览", "TOK Exhibition")
+            String(localized: "TOK Exhibition")
         case .cas:
-            L("CAS 反思", "CAS Reflection")
+            String(localized: "CAS Reflection")
         case .exam:
-            L("Math 模拟考试", "Math Mock Exam")
+            String(localized: "Math Mock Exam")
         case .event:
-            L("大学讲座", "University Talk")
+            String(localized: "University Talk")
         case .custom:
-            L("阅读第 5 章", "Read Chapter 5")
+            String(localized: "Read Chapter 5")
         }
     }
 
@@ -680,21 +680,21 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
 
         switch self {
         case .assignment:
-            return LF("default_assignment_title_format", subject)
+            return PlanoraLocalization.format(String(localized: "default_assignment_title_format"), subject)
         case .practical:
-            return LF("default_practical_title_format", subject)
+            return PlanoraLocalization.format(String(localized: "default_practical_title_format"), subject)
         case .revision:
-            return LF("default_revision_title_format", subject)
+            return PlanoraLocalization.format(String(localized: "default_revision_title_format"), subject)
         case .ia:
             return "\(subject) IA"
         case .ee:
             return "EE"
         case .tok:
-            return L("TOK 展览", "TOK Exhibition")
+            return String(localized: "TOK Exhibition")
         case .cas:
-            return L("CAS 反思", "CAS Reflection")
+            return String(localized: "CAS Reflection")
         case .exam:
-            return LF("default_exam_title_format", subject)
+            return PlanoraLocalization.format(String(localized: "default_exam_title_format"), subject)
         case .event:
             return titlePlaceholder
         case .custom:
@@ -703,86 +703,86 @@ enum TaskType: String, Codable, CaseIterable, Identifiable, Hashable {
     }
 
     var defaultStage: String {
-        stageOptions.first ?? L("未开始", "Not started")
+        stageOptions.first ?? String(localized: "Not started")
     }
 
     var stageOptions: [String] {
         switch self {
         case .ia:
             [
-                L("研究问题", "Research Question"),
-                L("方法设计", "Methodology"),
-                L("数据收集", "Data Collection"),
-                L("分析", "Analysis"),
-                L("评估", "Evaluation"),
-                L("最终提交", "Final Submission")
+                String(localized: "Research Question"),
+                String(localized: "Methodology"),
+                String(localized: "Data Collection"),
+                String(localized: "Analysis"),
+                String(localized: "Evaluation"),
+                String(localized: "Final Submission")
             ]
         case .ee:
             [
-                L("选题", "Topic"),
-                L("研究问题", "Research Question"),
-                L("大纲", "Outline"),
-                L("草稿", "Draft"),
-                L("导师反馈", "Supervisor Feedback"),
-                L("最终反思", "Final Reflection")
+                String(localized: "Topic"),
+                String(localized: "Research Question"),
+                String(localized: "Outline"),
+                String(localized: "Draft"),
+                String(localized: "Supervisor Feedback"),
+                String(localized: "Final Reflection")
             ]
         case .tok:
             [
-                L("题目", "Prompt"),
-                L("对象", "Objects"),
-                L("评述", "Commentary"),
-                L("最终提交", "Final Submission")
+                String(localized: "Prompt"),
+                String(localized: "Objects"),
+                String(localized: "Commentary"),
+                String(localized: "Final Submission")
             ]
         case .cas:
             [
-                L("计划", "Plan"),
-                L("体验", "Experience"),
-                L("证据", "Evidence"),
-                L("反思", "Reflection"),
-                L("完成", "Complete")
+                String(localized: "Plan"),
+                String(localized: "Experience"),
+                String(localized: "Evidence"),
+                String(localized: "Reflection"),
+                String(localized: "Complete")
             ]
         case .assignment:
             [
-                L("未开始", "Not started"),
-                L("进行中", "In progress"),
-                L("检查", "Review"),
-                L("已提交", "Submitted")
+                String(localized: "Not started"),
+                String(localized: "In progress"),
+                String(localized: "Review"),
+                String(localized: "Submitted")
             ]
         case .practical:
             [
-                L("计划", "Plan"),
-                L("准备", "Preparation"),
-                L("实验实践", "Practical"),
-                L("结果", "Results"),
-                L("评估", "Evaluation")
+                String(localized: "Plan"),
+                String(localized: "Preparation"),
+                String(localized: "Practical"),
+                String(localized: "Results"),
+                String(localized: "Evaluation")
             ]
         case .revision:
             [
-                L("制定计划", "Plan"),
-                L("知识复习", "Content Review"),
-                L("历年真题", "Past Papers"),
-                L("薄弱环节", "Weak Areas"),
-                L("准备好", "Ready")
+                String(localized: "Plan"),
+                String(localized: "Content Review"),
+                String(localized: "Past Papers"),
+                String(localized: "Weak Areas"),
+                String(localized: "Ready")
             ]
         case .exam:
             [
-                L("计划", "Planning"),
-                L("复习", "Revision"),
-                L("练习", "Practice"),
-                L("准备好", "Ready")
+                String(localized: "Planning"),
+                String(localized: "Revision"),
+                String(localized: "Practice"),
+                String(localized: "Ready")
             ]
         case .event:
             [
-                L("已计划", "Planned"),
-                L("已准备", "Prepared"),
-                L("完成", "Complete")
+                String(localized: "Planned"),
+                String(localized: "Prepared"),
+                String(localized: "Complete")
             ]
         case .custom:
             [
-                L("未开始", "Not started"),
-                L("进行中", "In progress"),
-                L("检查", "Review"),
-                L("完成", "Complete")
+                String(localized: "Not started"),
+                String(localized: "In progress"),
+                String(localized: "Review"),
+                String(localized: "Complete")
             ]
         }
     }
@@ -798,8 +798,8 @@ enum ProgressKind: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .percentage: L("百分比", "Percentage")
-        case .stage: L("阶段", "Stage")
+        case .percentage: String(localized: "Percentage")
+        case .stage: String(localized: "Stage")
         }
     }
 }
@@ -818,9 +818,9 @@ enum ProgressState: Codable, Hashable {
     var label: String {
         switch self {
         case .percentage:
-            L("进度", "Progress")
+            String(localized: "Progress")
         case .stage:
-            L("阶段", "Stage")
+            String(localized: "Stage")
         }
     }
 
@@ -857,47 +857,47 @@ enum ProgressState: Codable, Hashable {
 private extension String {
     var planoraLocalizedStageName: String {
         switch self {
-        case "Research Question", "研究问题": L("研究问题", "Research Question")
-        case "Method", "方法": L("方法", "Method")
-        case "Methodology", "方法设计": L("方法设计", "Methodology")
-        case "Data Collection", "数据收集": L("数据收集", "Data Collection")
-        case "Analysis", "分析": L("分析", "Analysis")
-        case "Evaluation", "评估": L("评估", "Evaluation")
-        case "Final Submission", "最终提交": L("最终提交", "Final Submission")
-        case "Final", "最终版": L("最终版", "Final")
-        case "Topic", "选题": L("选题", "Topic")
-        case "Research", "研究": L("研究", "Research")
-        case "Outline", "大纲": L("大纲", "Outline")
-        case "Draft", "草稿": L("草稿", "Draft")
-        case "Reflection", "反思": L("反思", "Reflection")
-        case "Supervisor Feedback", "导师反馈": L("导师反馈", "Supervisor Feedback")
-        case "Final Reflection", "最终反思": L("最终反思", "Final Reflection")
-        case "Prompt", "题目": L("题目", "Prompt")
-        case "Objects", "对象": L("对象", "Objects")
-        case "Commentary", "评述": L("评述", "Commentary")
-        case "Submission", "提交": L("提交", "Submission")
-        case "Plan", "计划": L("计划", "Plan")
-        case "Experience", "体验": L("体验", "Experience")
-        case "Evidence", "证据": L("证据", "Evidence")
-        case "Complete", "完成": L("完成", "Complete")
-        case "Not started", "未开始": L("未开始", "Not started")
-        case "In progress", "进行中": L("进行中", "In progress")
-        case "Review", "检查": L("检查", "Review")
-        case "Submitted", "已提交": L("已提交", "Submitted")
-        case "Planning": L("计划", "Planning")
-        case "Revision", "复习": L("复习", "Revision")
-        case "Practice", "练习": L("练习", "Practice")
-        case "Ready", "准备好": L("准备好", "Ready")
-        case "Planned", "已计划": L("已计划", "Planned")
-        case "Prepared", "已准备": L("已准备", "Prepared")
-        case "Brief", "任务要求": L("任务要求", "Brief")
-        case "Feedback", "反馈": L("反馈", "Feedback")
-        case "Preparation", "准备": L("准备", "Preparation")
-        case "Practical", "实验实践": L("实验实践", "Practical")
-        case "Results", "结果": L("结果", "Results")
-        case "Content Review", "知识复习": L("知识复习", "Content Review")
-        case "Past Papers", "历年真题": L("历年真题", "Past Papers")
-        case "Weak Areas", "薄弱环节": L("薄弱环节", "Weak Areas")
+        case "Research Question", "研究问题": String(localized: "Research Question")
+        case "Method", "方法": String(localized: "Method")
+        case "Methodology", "方法设计": String(localized: "Methodology")
+        case "Data Collection", "数据收集": String(localized: "Data Collection")
+        case "Analysis", "分析": String(localized: "Analysis")
+        case "Evaluation", "评估": String(localized: "Evaluation")
+        case "Final Submission", "最终提交": String(localized: "Final Submission")
+        case "Final", "最终版": String(localized: "Final")
+        case "Topic", "选题": String(localized: "Topic")
+        case "Research", "研究": String(localized: "Research")
+        case "Outline", "大纲": String(localized: "Outline")
+        case "Draft", "草稿": String(localized: "Draft")
+        case "Reflection", "反思": String(localized: "Reflection")
+        case "Supervisor Feedback", "导师反馈": String(localized: "Supervisor Feedback")
+        case "Final Reflection", "最终反思": String(localized: "Final Reflection")
+        case "Prompt", "题目": String(localized: "Prompt")
+        case "Objects", "对象": String(localized: "Objects")
+        case "Commentary", "评述": String(localized: "Commentary")
+        case "Submission", "提交": String(localized: "Submission")
+        case "Plan", "计划": String(localized: "Plan")
+        case "Experience", "体验": String(localized: "Experience")
+        case "Evidence", "证据": String(localized: "Evidence")
+        case "Complete", "完成": String(localized: "Complete")
+        case "Not started", "未开始": String(localized: "Not started")
+        case "In progress", "进行中": String(localized: "In progress")
+        case "Review", "检查": String(localized: "Review")
+        case "Submitted", "已提交": String(localized: "Submitted")
+        case "Planning": String(localized: "Planning")
+        case "Revision", "复习": String(localized: "Revision")
+        case "Practice", "练习": String(localized: "Practice")
+        case "Ready", "准备好": String(localized: "Ready")
+        case "Planned", "已计划": String(localized: "Planned")
+        case "Prepared", "已准备": String(localized: "Prepared")
+        case "Brief", "任务要求": String(localized: "Brief")
+        case "Feedback", "反馈": String(localized: "Feedback")
+        case "Preparation", "准备": String(localized: "Preparation")
+        case "Practical", "实验实践": String(localized: "Practical")
+        case "Results", "结果": String(localized: "Results")
+        case "Content Review", "知识复习": String(localized: "Content Review")
+        case "Past Papers", "历年真题": String(localized: "Past Papers")
+        case "Weak Areas", "薄弱环节": String(localized: "Weak Areas")
         default: self
         }
     }

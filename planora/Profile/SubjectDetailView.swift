@@ -51,13 +51,13 @@ struct SubjectDetailView: View {
                 overviewSection
 
                 if !upcomingTasks.isEmpty {
-                    taskSection(title: L("即将到来", "Upcoming"), tasks: upcomingTasks)
+                    taskSection(title: String(localized: "Upcoming"), tasks: upcomingTasks)
                 }
 
                 if sortedTasks.isEmpty {
                     emptyState
                 } else {
-                    taskSection(title: L("全部任务", "All Tasks"), tasks: sortedTasks)
+                    taskSection(title: String(localized: "All Tasks"), tasks: sortedTasks)
                 }
             }
             .padding(.top, 18)
@@ -84,7 +84,7 @@ struct SubjectDetailView: View {
                         .lineLimit(2)
                         .minimumScaleFactor(0.72)
 
-                    Text(L("科目学习空间", "Subject Workspace"))
+                    Text(String(localized: "Subject Workspace"))
                         .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
@@ -93,19 +93,19 @@ struct SubjectDetailView: View {
     }
 
     private var overviewSection: some View {
-        DashboardSection(title: L("学习概览", "Learning Overview")) {
+        DashboardSection(title: String(localized: "Learning Overview")) {
             VStack(spacing: 18) {
                 HStack(spacing: 12) {
-                    SubjectMetric(label: L("任务", "Tasks"), value: "\(subjectTasks.count)", tint: tint)
-                    SubjectMetric(label: L("进行中", "Open"), value: "\(openCount)", tint: .planoraAmber)
-                    SubjectMetric(label: L("已完成", "Completed"), value: "\(completedCount)", tint: .planoraGreen)
+                    SubjectMetric(label: String(localized: "Tasks"), value: "\(subjectTasks.count)", tint: tint)
+                    SubjectMetric(label: String(localized: "Open"), value: "\(openCount)", tint: .planoraAmber)
+                    SubjectMetric(label: String(localized: "Completed"), value: "\(completedCount)", tint: .planoraGreen)
                 }
 
                 Divider()
 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text(L("学习进度", "Learning Progress"))
+                        Text(String(localized: "Learning Progress"))
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(Color.planoraInk)
 
@@ -124,7 +124,7 @@ struct SubjectDetailView: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text(L("任务完成率", "Task Completion Rate"))
+                        Text(String(localized: "Task Completion Rate"))
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(Color.planoraInk)
 
@@ -172,11 +172,11 @@ struct SubjectDetailView: View {
                     .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(L("这个科目还没有任务", "No Tasks for This Subject"))
+                    Text(String(localized: "No Tasks for This Subject"))
                         .font(.headline)
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(L("为这个科目创建任务后，它会显示在这里。", "Create a task for this subject and it will appear here."))
+                    Text(String(localized: "Create a task for this subject and it will appear here."))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -229,7 +229,7 @@ private struct SubjectTaskRow: View {
                 HStack(spacing: 7) {
                     Text(task.type.title)
 
-                    Text("·")
+                    Text(verbatim: "·")
 
                     Text(deadlineText)
                 }
@@ -257,7 +257,7 @@ private struct SubjectTaskRow: View {
 
     private var deadlineText: String {
         guard task.hasDeadline, let deadline = task.deadline else {
-            return L("无截止日期", "No deadline")
+            return String(localized: "No deadline")
         }
 
         return PlanoraFormat.monthDay(deadline)

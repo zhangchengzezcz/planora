@@ -52,7 +52,7 @@ private struct PlanoraRootView: View {
             importSharedBackup(from: url)
         }
         .alert(importAlertTitle, isPresented: $isShowingImportAlert) {
-            Button(L("好", "OK"), role: .cancel) { }
+            Button(String(localized: "OK"), role: .cancel) { }
         } message: {
             Text(importAlertMessage)
         }
@@ -73,13 +73,13 @@ private struct PlanoraRootView: View {
             }
 
             presentImportAlert(
-                title: L("导入完成", "Import Complete"),
-                message: LF("backup_import_result_format", result.importedCount, result.skippedCount)
+                title: String(localized: "Import Complete"),
+                message: PlanoraLocalization.format(String(localized: "backup_import_result_format"), result.importedCount, result.skippedCount)
             )
         } catch {
             presentImportAlert(
                 title: TaskBackupError.importFailureTitle(for: error),
-                message: LF("backup_failure_format", error.localizedDescription)
+                message: PlanoraLocalization.format(String(localized: "backup_failure_format"), error.localizedDescription)
             )
         }
     }

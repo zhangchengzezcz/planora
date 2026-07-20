@@ -32,16 +32,16 @@ struct HomeDashboardView: View {
                 hasRefreshedScheduledWork = true
             }
         }
-        .alert(L("确认切换课程？", "Switch Curriculum?"), isPresented: $isShowingCurriculumSwitchConfirmation, presenting: pendingCurriculum) { curriculum in
-            Button(L("确认切换", "Switch"), role: .destructive) {
+        .alert(String(localized: "Switch Curriculum?"), isPresented: $isShowingCurriculumSwitchConfirmation, presenting: pendingCurriculum) { curriculum in
+            Button(String(localized: "Switch"), role: .destructive) {
                 switchCurriculum(to: curriculum)
             }
 
-            Button(L("取消", "Cancel"), role: .cancel) {
+            Button(String(localized: "Cancel"), role: .cancel) {
                 pendingCurriculum = nil
             }
         } message: { _ in
-            Text(L("切换课程后会清空当前课程体系内已创建的任务，并将科目重置为新课程体系的默认必选项。", "Switching curriculum deletes existing tasks for the current curriculum and resets subjects to the new curriculum defaults."))
+            Text(String(localized: "Switching curriculum deletes existing tasks for the current curriculum and resets subjects to the new curriculum defaults."))
         }
     }
 
@@ -99,7 +99,7 @@ struct HomeDashboardView: View {
     @ViewBuilder
     private func upcomingProgressSection(tasks: [PlanoraTask]) -> some View {
         if !tasks.isEmpty {
-            DashboardSection(title: L("即将到来的任务", "Upcoming Tasks")) {
+            DashboardSection(title: String(localized: "Upcoming Tasks")) {
                 TaskList(store: store, tasks: tasks)
             }
         }
@@ -108,7 +108,7 @@ struct HomeDashboardView: View {
     @ViewBuilder
     private func upcomingTimelineSection(tasks: [PlanoraTask]) -> some View {
         if !tasks.isEmpty {
-            DashboardSection(title: L("时间与事件", "Dates and Events")) {
+            DashboardSection(title: String(localized: "Dates and Events")) {
                 TaskList(store: store, tasks: tasks)
             }
         }
@@ -117,10 +117,10 @@ struct HomeDashboardView: View {
     @ViewBuilder
     private func learningProgressSection(snapshot: HomeDashboardSnapshot) -> some View {
         if snapshot.hasTasks {
-            DashboardSection(title: L("学习进度", "Learning Progress")) {
+            DashboardSection(title: String(localized: "Learning Progress")) {
                 VStack(alignment: .leading, spacing: 18) {
                     if !snapshot.subjectProgress.isEmpty {
-                        ProgressGroupTitle(L("科目进度", "Subject Progress"))
+                        ProgressGroupTitle(String(localized: "Subject Progress"))
 
                         ForEach(snapshot.subjectProgress) { subject in
                             ProgressSubjectRow(title: subject.title, value: subject.value, tint: subject.tint)
@@ -129,7 +129,7 @@ struct HomeDashboardView: View {
                         Divider()
                     }
 
-                    ProgressGroupTitle(L("任务完成", "Task Completion"))
+                    ProgressGroupTitle(String(localized: "Task Completion"))
                     TaskCompletionRow(snapshot: snapshot.taskCompletion)
 
                     Divider()
@@ -137,7 +137,7 @@ struct HomeDashboardView: View {
                     LearningInsightsGrid(
                         completedThisWeek: snapshot.completedThisWeek,
                         mostActiveSubject: snapshot.mostActiveSubject,
-                        upcomingWorkload: "\(snapshot.workloadLevel.title) · \(LF("task_count_short_format", snapshot.upcomingSevenDayCount))",
+                        upcomingWorkload: "\(snapshot.workloadLevel.title) · \(PlanoraLocalization.format(String(localized: "task_count_short_format"), snapshot.upcomingSevenDayCount))",
                         workloadTint: snapshot.workloadLevel.tint,
                         overdueCount: snapshot.overdueCount
                     )
@@ -150,7 +150,7 @@ struct HomeDashboardView: View {
     @ViewBuilder
     private func calendarPreviewSection(snapshot: HomeDashboardSnapshot) -> some View {
         if !snapshot.deadlineTasks.isEmpty {
-            DashboardSection(title: L("日历预览", "Calendar Preview")) {
+            DashboardSection(title: String(localized: "Calendar Preview")) {
                 CalendarPreview(
                     store: store,
                     tasks: snapshot.deadlineTasks,
@@ -281,7 +281,7 @@ private struct HomeDashboardSnapshot {
         }
 
         taskCompletion = TaskCompletionSnapshot(
-            title: L("本周", "This Week"),
+            title: String(localized: "This Week"),
             completed: completedThisWeek,
             total: weeklyTotal,
             tint: .planoraGreen
@@ -295,7 +295,7 @@ private struct HomeDashboardSnapshot {
             return PlanoraFormat.subjectDisplayName(lhs.key) > PlanoraFormat.subjectDisplayName(rhs.key)
         }
         .map { PlanoraFormat.subjectDisplayName($0.key) }
-        ?? L("暂无", "None Yet")
+        ?? String(localized: "None Yet")
 
         switch upcomingSevenDayCount {
         case 0...2: workloadLevel = .low
@@ -329,11 +329,11 @@ private struct HomeHeader: View {
     var body: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(LF("home_hello_user_format", store.userName))
+                Text(PlanoraLocalization.format(String(localized: "home_hello_user_format"), store.userName))
                     .font(.largeTitle.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
-                Text(L("现在应该关注什么？", "What needs attention now?"))
+                Text(String(localized: "What needs attention now?"))
                     .font(.callout.weight(.medium))
                     .foregroundStyle(.secondary)
             }
@@ -381,7 +381,7 @@ private struct TodayFocusCard: View {
                     TaskCompletionButton(task: task)
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(L("当前重点", "Current Focus"))
+                        Text(String(localized: "Current Focus"))
                             .font(.caption.weight(.bold))
                             .foregroundStyle(Color.planoraBlue)
                             .textCase(.uppercase)
@@ -431,8 +431,8 @@ private struct TodayFocusCard: View {
     private var focusText: String {
         guard task.hasDeadline, let deadline = task.deadline else {
             return task.tracksProgress
-                ? L("无截止日期。完成你的下一个里程碑。", "No deadline. Complete your next milestone.")
-                : LF("focus_no_deadline_saved_format", task.type.title)
+                ? String(localized: "No deadline. Complete your next milestone.")
+                : PlanoraLocalization.format(String(localized: "focus_no_deadline_saved_format"), task.type.title)
         }
 
         let calendar = Calendar.current
@@ -442,19 +442,19 @@ private struct TodayFocusCard: View {
 
         if days < 0 {
             return task.tracksProgress
-                ? L("已逾期。完成你的下一个里程碑。", "Overdue. Complete your next milestone.")
-                : LF("focus_date_passed_review_format", task.type.title)
+                ? String(localized: "Overdue. Complete your next milestone.")
+                : PlanoraLocalization.format(String(localized: "focus_date_passed_review_format"), task.type.title)
         }
 
         if days == 0 {
             return task.tracksProgress
-                ? L("今天截止。完成你的下一个里程碑。", "Due today. Complete your next milestone.")
-                : LF("focus_today_remember_format", task.type.title)
+                ? String(localized: "Due today. Complete your next milestone.")
+                : PlanoraLocalization.format(String(localized: "focus_today_remember_format"), task.type.title)
         }
 
         return task.tracksProgress
-            ? LF("focus_days_left_progress_format", days)
-            : LF("focus_days_left_saved_format", days, task.type.title)
+            ? PlanoraLocalization.format(String(localized: "focus_days_left_progress_format"), days)
+            : PlanoraLocalization.format(String(localized: "focus_days_left_saved_format"), days, task.type.title)
     }
 }
 
@@ -535,18 +535,18 @@ private struct TaskStatusGrid: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            TaskStatusTile(label: L("截止日期", "Deadline"), value: deadlineText, tint: task.type.tint, isPrimary: true)
+            TaskStatusTile(label: String(localized: "Deadline"), value: deadlineText, tint: task.type.tint, isPrimary: true)
             if task.tracksProgress {
                 TaskStatusTile(label: task.progressState.label, value: task.progressState.valueText, tint: task.type.tint)
             } else {
-                TaskStatusTile(label: L("类型", "Type"), value: task.type.title, tint: task.type.tint)
+                TaskStatusTile(label: String(localized: "Type"), value: task.type.title, tint: task.type.tint)
             }
         }
     }
 
     private var deadlineText: String {
         guard task.hasDeadline, let deadline = task.deadline else {
-            return L("无截止日期", "No deadline")
+            return String(localized: "No deadline")
         }
 
         return PlanoraFormat.monthDay(deadline)
@@ -612,15 +612,15 @@ private struct EmptyTasksCard: View {
                         .font(.title.weight(.bold))
                         .foregroundStyle(LinearGradient.planoraAccent)
 
-                    Text(L("还没有任务", "No Tasks Yet"))
+                    Text(String(localized: "No Tasks Yet"))
                         .font(.title2.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(L("开始规划你的学习旅程。", "Start planning your learning journey."))
+                    Text(String(localized: "Start planning your learning journey."))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
 
-                    Text(L("点击这里创建第一个任务。", "Tap here to create your first task."))
+                    Text(String(localized: "Tap here to create your first task."))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(Color.planoraDeepGreen)
                 }
@@ -628,7 +628,7 @@ private struct EmptyTasksCard: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(L("创建第一个任务", "Create first task"))
+        .accessibilityLabel(String(localized: "Create first task"))
     }
 }
 
@@ -643,11 +643,11 @@ private struct AllTasksCompletedCard: View {
                     .background(Color.planoraGreen.opacity(0.12), in: Circle())
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(L("全部完成", "All Caught Up"))
+                    Text(String(localized: "All Caught Up"))
                         .font(.title2.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(L("所有任务都已完成。准备好时，再开始下一段计划。", "Every task is complete. Start your next plan whenever you are ready."))
+                    Text(String(localized: "Every task is complete. Start your next plan whenever you are ready."))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -696,28 +696,28 @@ private struct LearningInsightsGrid: View {
     var body: some View {
         LazyVGrid(columns: columns, alignment: .leading, spacing: 18) {
             LearningInsight(
-                title: L("本周完成", "Completed This Week"),
+                title: String(localized: "Completed This Week"),
                 value: "\(completedThisWeek)",
                 systemImage: "checkmark.circle.fill",
                 tint: .planoraGreen
             )
 
             LearningInsight(
-                title: L("最活跃科目", "Most Active Subject"),
+                title: String(localized: "Most Active Subject"),
                 value: mostActiveSubject,
                 systemImage: "book.closed.fill",
                 tint: .planoraBlue
             )
 
             LearningInsight(
-                title: L("未来任务负载", "Upcoming Workload"),
+                title: String(localized: "Upcoming Workload"),
                 value: upcomingWorkload,
                 systemImage: "calendar.badge.clock",
                 tint: workloadTint
             )
 
             LearningInsight(
-                title: L("已逾期", "Overdue"),
+                title: String(localized: "Overdue"),
                 value: "\(overdueCount)",
                 systemImage: "exclamationmark.circle.fill",
                 tint: overdueCount > 0 ? .red : .planoraGreen
@@ -733,9 +733,9 @@ private enum LearningWorkloadLevel {
 
     var title: String {
         switch self {
-        case .low: L("低", "Low")
-        case .moderate: L("中等", "Moderate")
-        case .high: L("高", "High")
+        case .low: String(localized: "Low")
+        case .moderate: String(localized: "Moderate")
+        case .high: String(localized: "High")
         }
     }
 
@@ -818,7 +818,7 @@ private struct CalendarPreview: View {
                     .font(.title3.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
-                Text(LF("calendar_item_count_format", snapshot.monthTaskCount))
+                Text(PlanoraLocalization.format(String(localized: "calendar_item_count_format"), snapshot.monthTaskCount))
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
@@ -829,7 +829,7 @@ private struct CalendarPreview: View {
                 monthDate = Date()
                 selectedDate = Date()
             } label: {
-                Text(L("今天", "Today"))
+                Text(String(localized: "Today"))
                     .font(.caption.weight(.bold))
                     .foregroundStyle(Color.planoraDeepGreen)
                     .frame(minHeight: 34)
@@ -839,14 +839,14 @@ private struct CalendarPreview: View {
 
             CalendarNavigationButton(
                 systemImage: "chevron.left",
-                accessibilityTitle: L("上个月", "Previous Month")
+                accessibilityTitle: String(localized: "Previous Month")
             ) {
                 changeMonth(by: -1)
             }
 
             CalendarNavigationButton(
                 systemImage: "chevron.right",
-                accessibilityTitle: L("下个月", "Next Month")
+                accessibilityTitle: String(localized: "Next Month")
             ) {
                 changeMonth(by: 1)
             }
@@ -893,13 +893,13 @@ private struct CalendarPreview: View {
 
                     Spacer()
 
-                    Text(LF("task_count_short_format", snapshot.selectedTasks.count))
+                    Text(PlanoraLocalization.format(String(localized: "task_count_short_format"), snapshot.selectedTasks.count))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
 
                 if snapshot.selectedTasks.isEmpty {
-                    Text(L("这一天没有截止任务。", "No deadlines on this day."))
+                    Text(String(localized: "No deadlines on this day."))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
@@ -1038,7 +1038,7 @@ private struct CalendarDateButton: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 2) {
-                Text("\(Calendar.current.component(.day, from: date))")
+                Text(verbatim: "\(Calendar.current.component(.day, from: date))")
                     .font(.caption.weight(taskTints.isEmpty ? .medium : .bold))
                     .foregroundStyle(isSelected ? Color.white : Color.planoraInk)
 

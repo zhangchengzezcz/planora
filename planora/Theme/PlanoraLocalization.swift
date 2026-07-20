@@ -6,22 +6,9 @@ enum PlanoraLocalization {
         return Locale(identifier: identifier)
     }
 
-    static func string(_ key: String) -> String {
-        String(localized: String.LocalizationValue(key))
-    }
-
-    static func format(_ key: String, _ arguments: [CVarArg]) -> String {
-        let format = NSLocalizedString(key, tableName: nil, bundle: .main, value: key, comment: "")
+    static func format(_ format: String, _ arguments: CVarArg...) -> String {
         return String(format: format, locale: preferredLocale, arguments: arguments)
     }
-}
-
-func L(_ chinese: String, _ english: String) -> String {
-    PlanoraLocalization.string(english)
-}
-
-func LF(_ key: String, _ arguments: CVarArg...) -> String {
-    PlanoraLocalization.format(key, arguments)
 }
 
 enum PlanoraFormat {
@@ -75,17 +62,17 @@ enum PlanoraFormat {
     static func subjectDisplayName(_ subject: String) -> String {
         switch subject {
         case "General", "通用":
-            PlanoraLocalization.string("General")
+            String(localized: "General")
         case "补习":
-            PlanoraLocalization.string("Tutoring")
+            String(localized: "Tutoring")
         case "竞赛":
-            PlanoraLocalization.string("Competitions")
+            String(localized: "Competitions")
         case "语言学习":
-            PlanoraLocalization.string("Language Study")
+            String(localized: "Language Study")
         case "其他":
-            PlanoraLocalization.string("Other")
+            String(localized: "Other")
         case "其他科目":
-            PlanoraLocalization.string("Other Subject")
+            String(localized: "Other Subject")
         default:
             subject
         }

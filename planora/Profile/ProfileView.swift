@@ -48,29 +48,29 @@ struct ProfileView: View {
             importBackup(from: result)
         }
         .confirmationDialog(
-            L("导入备份", "Import Backup"),
+            String(localized: "Import Backup"),
             isPresented: $isShowingImportOptions,
             titleVisibility: .visible
         ) {
-            Button(L("跳过重复任务", "Skip Duplicates")) {
+            Button(String(localized: "Skip Duplicates")) {
                 performImport(strategy: .skipDuplicates)
             }
-            Button(L("覆盖相同任务", "Overwrite Matching Tasks")) {
+            Button(String(localized: "Overwrite Matching Tasks")) {
                 performImport(strategy: .overwriteDuplicates)
             }
-            Button(L("全部作为新任务导入", "Import All as New")) {
+            Button(String(localized: "Import All as New")) {
                 performImport(strategy: .importAsNew)
             }
-            Button(L("取消", "Cancel"), role: .cancel) {
+            Button(String(localized: "Cancel"), role: .cancel) {
                 pendingImportPreview = nil
             }
         } message: {
             if let preview = pendingImportPreview {
-                Text(LF("backup_import_preview_format", preview.tasks.count, preview.duplicateCount))
+                Text(PlanoraLocalization.format(String(localized: "backup_import_preview_format"), preview.tasks.count, preview.duplicateCount))
             }
         }
         .alert(backupAlertTitle, isPresented: $isShowingBackupAlert) {
-            Button(L("好", "OK"), role: .cancel) { }
+            Button(String(localized: "OK"), role: .cancel) { }
         } message: {
             Text(backupAlertMessage)
         }
@@ -79,7 +79,7 @@ struct ProfileView: View {
     // MARK: - Page Sections
 
     private var profileTitle: some View {
-        Text(L("我的", "Me"))
+        Text(String(localized: "Me"))
             .font(.largeTitle.weight(.bold))
             .foregroundStyle(Color.planoraInk)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -98,7 +98,7 @@ struct ProfileView: View {
                         .font(.title3.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
-                    Text("\(store.curriculum.badge) \(L("学习空间", "Learning Space"))")
+                    Text(verbatim: "\(store.curriculum.badge) \(String(localized: "Learning Space"))")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -109,26 +109,26 @@ struct ProfileView: View {
     }
 
     private var profileSettingsSection: some View {
-        DashboardSection(title: L("个人资料", "Profile")) {
+        DashboardSection(title: String(localized: "Profile")) {
             VStack(spacing: 0) {
                 NavigationLink {
                     NameEditView(store: store)
                 } label: {
-                    SettingsRow(icon: "person.crop.circle", title: L("姓名", "Name"), value: store.userName, showsChevron: true)
+                    SettingsRow(icon: "person.crop.circle", title: String(localized: "Name"), value: store.userName, showsChevron: true)
                 }
                 .buttonStyle(.plain)
                 Divider().padding(.leading, 52)
                 NavigationLink {
                     CurriculumEditView(store: store)
                 } label: {
-                    SettingsRow(icon: store.curriculum.symbol, title: L("课程体系", "Curriculum"), value: store.curriculum.badge, showsChevron: true)
+                    SettingsRow(icon: store.curriculum.symbol, title: String(localized: "Curriculum"), value: store.curriculum.badge, showsChevron: true)
                 }
                 .buttonStyle(.plain)
                 Divider().padding(.leading, 52)
                 NavigationLink {
                     SubjectEditView(store: store)
                 } label: {
-                    SettingsRow(icon: "book.pages", title: L("我的科目", "My Subjects"), value: "\(store.selectedSubjectTitles.count)", showsChevron: true)
+                    SettingsRow(icon: "book.pages", title: String(localized: "My Subjects"), value: "\(store.selectedSubjectTitles.count)", showsChevron: true)
                 }
                 .buttonStyle(.plain)
                 Divider().padding(.leading, 52)
@@ -137,7 +137,7 @@ struct ProfileView: View {
                 } label: {
                     SettingsRow(
                         icon: "gearshape.fill",
-                        title: L("设置", "Settings"),
+                        title: String(localized: "Settings"),
                         value: "",
                         showsChevron: true
                     )
@@ -148,7 +148,7 @@ struct ProfileView: View {
     }
 
     private var taskStorageSection: some View {
-        DashboardSection(title: L("任务保存", "Task Storage")) {
+        DashboardSection(title: String(localized: "Task Storage")) {
             TaskBackupCard(
                 taskCount: tasks.count,
                 onExport: prepareBackupExport,
@@ -165,7 +165,7 @@ struct ProfileView: View {
         let subjects = store.selectedSubjectTitles + store.selectedExtraLearningTitles
 
         if !subjects.isEmpty {
-            DashboardSection(title: L("当前科目", "Current Subjects")) {
+            DashboardSection(title: String(localized: "Current Subjects")) {
                 VStack(spacing: 0) {
                     ForEach(Array(subjects.enumerated()), id: \.offset) { index, subject in
                         NavigationLink {
@@ -182,20 +182,6 @@ struct ProfileView: View {
                             Divider().padding(.leading, 54)
                         }
                     }
-
-                    Divider().padding(.leading, 54)
-
-                    NavigationLink {
-                        SubjectEditView(store: store)
-                    } label: {
-                        SettingsRow(
-                            icon: "slider.horizontal.3",
-                            title: L("编辑科目", "Edit Subjects"),
-                            value: "",
-                            showsChevron: true
-                        )
-                    }
-                    .buttonStyle(.plain)
                 }
             }
         }
@@ -215,8 +201,8 @@ struct ProfileView: View {
             isShowingBackupExporter = true
         } catch {
             presentBackupAlert(
-                title: L("备份失败", "Backup Failed"),
-                message: LF("backup_failure_format", error.localizedDescription)
+                title: String(localized: "Backup Failed"),
+                message: PlanoraLocalization.format(String(localized: "backup_failure_format"), error.localizedDescription)
             )
         }
     }
@@ -225,13 +211,13 @@ struct ProfileView: View {
         switch result {
         case .success:
             presentBackupAlert(
-                title: L("备份已保存", "Backup Saved"),
-                message: L("任务备份已经保存到你选择的位置。", "Your task backup has been saved to the location you chose.")
+                title: String(localized: "Backup Saved"),
+                message: String(localized: "Your task backup has been saved to the location you chose.")
             )
         case .failure(let error):
             presentBackupAlert(
-                title: L("备份失败", "Backup Failed"),
-                message: LF("backup_failure_format", error.localizedDescription)
+                title: String(localized: "Backup Failed"),
+                message: PlanoraLocalization.format(String(localized: "backup_failure_format"), error.localizedDescription)
             )
         }
     }
@@ -244,7 +230,7 @@ struct ProfileView: View {
         } catch {
             presentBackupAlert(
                 title: TaskBackupError.importFailureTitle(for: error),
-                message: LF("backup_failure_format", error.localizedDescription)
+                message: PlanoraLocalization.format(String(localized: "backup_failure_format"), error.localizedDescription)
             )
         }
     }
@@ -261,14 +247,14 @@ struct ProfileView: View {
             PlanoraTaskPersistence.reconcile(fallbackTasks: tasks, in: modelContext)
             pendingImportPreview = nil
             presentBackupAlert(
-                title: L("导入完成", "Import Complete"),
-                message: LF("backup_import_result_format", result.importedCount, result.skippedCount)
+                title: String(localized: "Import Complete"),
+                message: PlanoraLocalization.format(String(localized: "backup_import_result_format"), result.importedCount, result.skippedCount)
             )
         } catch {
             pendingImportPreview = nil
             presentBackupAlert(
                 title: TaskBackupError.importFailureTitle(for: error),
-                message: LF("backup_failure_format", error.localizedDescription)
+                message: PlanoraLocalization.format(String(localized: "backup_failure_format"), error.localizedDescription)
             )
         }
     }
@@ -282,8 +268,8 @@ struct ProfileView: View {
             isShowingImportOptions = true
         } catch {
             presentBackupAlert(
-                title: L("恢复失败", "Restore Failed"),
-                message: LF("backup_failure_format", error.localizedDescription)
+                title: String(localized: "Restore Failed"),
+                message: PlanoraLocalization.format(String(localized: "backup_failure_format"), error.localizedDescription)
             )
         }
     }
@@ -314,7 +300,7 @@ private struct SubjectProfileRow: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.78)
 
-                Text(LF("subject_task_count_format", taskCount))
+                Text(PlanoraLocalization.format(String(localized: "subject_task_count_format"), taskCount))
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
@@ -356,19 +342,19 @@ private struct NameEditView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(L("编辑姓名", "Edit Name"))
+                    Text(String(localized: "Edit Name"))
                         .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(L("修改后，主页问候和个人资料会同步更新。", "Update your name here. The home greeting and profile will stay in sync."))
+                    Text(String(localized: "Update your name here. The home greeting and profile will stay in sync."))
                         .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.top, 18)
 
-                DashboardSection(title: L("显示名称", "Display Name")) {
-                    TextField(L("输入你的姓名", "Enter your name"), text: $nameDraft)
+                DashboardSection(title: String(localized: "Display Name")) {
+                    TextField(String(localized: "Enter your name"), text: $nameDraft)
                         .font(.title3.weight(.semibold))
                         .foregroundStyle(Color.planoraInk)
                         .textFieldStyle(.plain)
@@ -380,7 +366,7 @@ private struct NameEditView: View {
                 }
 
                 PlanoraPrimaryButton(
-                    title: L("保存姓名", "Save Name"),
+                    title: String(localized: "Save Name"),
                     systemImage: "checkmark",
                     isDisabled: !canSave,
                     action: saveName
@@ -410,24 +396,24 @@ private struct SettingsHomeView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 22) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(L("设置", "Settings"))
+                    Text(String(localized: "Settings"))
                         .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(L("调整 Planora 的显示方式和任务列表偏好。", "Manage Planora appearance and task-list preferences."))
+                    Text(String(localized: "Manage Planora appearance and task-list preferences."))
                         .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, 18)
 
-                DashboardSection(title: L("偏好设置", "Preferences")) {
+                DashboardSection(title: String(localized: "Preferences")) {
                     VStack(spacing: 0) {
                         NavigationLink {
                             AppearanceSettingsView(store: store)
                         } label: {
                             SettingsRow(
                                 icon: "paintpalette.fill",
-                                title: L("外观", "Appearance"),
+                                title: String(localized: "Appearance"),
                                 value: store.appearanceSettings.summary,
                                 showsChevron: true
                             )
@@ -441,7 +427,7 @@ private struct SettingsHomeView: View {
                         } label: {
                             SettingsRow(
                                 icon: "list.bullet.rectangle.portrait.fill",
-                                title: L("任务显示", "Task Display"),
+                                title: String(localized: "Task Display"),
                                 value: store.taskDisplaySettings.summary,
                                 showsChevron: true
                             )
@@ -470,17 +456,17 @@ private struct AppearanceSettingsView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 26) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(L("外观", "Appearance"))
+                    Text(String(localized: "Appearance"))
                         .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(L("调整 Planora 在这台设备上的显示方式。", "Customize how Planora looks on this device."))
+                    Text(String(localized: "Customize how Planora looks on this device."))
                         .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, 18)
 
-                AppearanceControlSection(title: L("颜色主题", "Color Theme")) {
+                AppearanceControlSection(title: String(localized: "Color Theme")) {
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(PlanoraColorTheme.allCases) { theme in
                             ColorThemeButton(
@@ -496,8 +482,8 @@ private struct AppearanceSettingsView: View {
                     }
                 }
 
-                AppearanceControlSection(title: L("显示模式", "Display Mode")) {
-                    Picker(L("显示模式", "Display Mode"), selection: binding(\.displayMode)) {
+                AppearanceControlSection(title: String(localized: "Display Mode")) {
+                    Picker(String(localized: "Display Mode"), selection: binding(\.displayMode)) {
                         ForEach(PlanoraDisplayMode.allCases) { mode in
                             Text(mode.title).tag(mode)
                         }
@@ -505,7 +491,7 @@ private struct AppearanceSettingsView: View {
                     .pickerStyle(.segmented)
                 }
 
-                AppearanceControlSection(title: L("背景", "Background")) {
+                AppearanceControlSection(title: String(localized: "Background")) {
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(PlanoraBackgroundStyle.allCases) { style in
                             BackgroundStyleButton(
@@ -518,7 +504,7 @@ private struct AppearanceSettingsView: View {
                     }
                 }
 
-                AppearanceControlSection(title: L("强调色", "Accent Color")) {
+                AppearanceControlSection(title: String(localized: "Accent Color")) {
                     HStack(spacing: 18) {
                         ForEach(PlanoraAccent.allCases) { accent in
                             AccentColorButton(
@@ -535,7 +521,7 @@ private struct AppearanceSettingsView: View {
                 Button {
                     store.resetAppearance()
                 } label: {
-                    Label(L("恢复默认外观", "Reset Appearance"), systemImage: "arrow.counterclockwise")
+                    Label(String(localized: "Reset Appearance"), systemImage: "arrow.counterclockwise")
                         .font(.headline)
                         .frame(maxWidth: .infinity, minHeight: 48)
                 }
@@ -567,18 +553,18 @@ private struct TaskDisplaySettingsView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 26) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(L("任务显示", "Task Display"))
+                    Text(String(localized: "Task Display"))
                         .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(L("这些选项只改变任务列表，不会修改任务内容。", "These options change the task list without editing task data."))
+                    Text(String(localized: "These options change the task list without editing task data."))
                         .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, 18)
 
-                AppearanceControlSection(title: L("任务外观", "Task Appearance")) {
-                    Picker(L("任务外观", "Task Appearance"), selection: binding(\.density)) {
+                AppearanceControlSection(title: String(localized: "Task Appearance")) {
+                    Picker(String(localized: "Task Appearance"), selection: binding(\.density)) {
                         ForEach(PlanoraTaskDensity.allCases) { density in
                             Text(density.title).tag(density)
                         }
@@ -586,8 +572,8 @@ private struct TaskDisplaySettingsView: View {
                     .pickerStyle(.segmented)
                 }
 
-                AppearanceControlSection(title: L("默认排序", "Default Sorting")) {
-                    Picker(L("默认排序", "Default Sorting"), selection: binding(\.sortOrder)) {
+                AppearanceControlSection(title: String(localized: "Default Sorting")) {
+                    Picker(String(localized: "Default Sorting"), selection: binding(\.sortOrder)) {
                         ForEach(PlanoraTaskSortOrder.allCases) { order in
                             Text(order.title).tag(order)
                         }
@@ -596,13 +582,13 @@ private struct TaskDisplaySettingsView: View {
                     .buttonStyle(.bordered)
                 }
 
-                AppearanceControlSection(title: L("显示内容", "Visible Content")) {
+                AppearanceControlSection(title: String(localized: "Visible Content")) {
                     VStack(spacing: 14) {
-                        Toggle(L("显示已完成任务", "Show Completed Tasks"), isOn: binding(\.showsCompletedTasks))
+                        Toggle(String(localized: "Show Completed Tasks"), isOn: binding(\.showsCompletedTasks))
                         Divider()
-                        Toggle(L("显示进度百分比", "Show Progress Percentage"), isOn: binding(\.showsProgressPercentage))
+                        Toggle(String(localized: "Show Progress Percentage"), isOn: binding(\.showsProgressPercentage))
                         Divider()
-                        Toggle(L("显示任务备注", "Show Task Notes"), isOn: binding(\.showsNotes))
+                        Toggle(String(localized: "Show Task Notes"), isOn: binding(\.showsNotes))
                     }
                     .font(.subheadline.weight(.semibold))
                 }
@@ -610,7 +596,7 @@ private struct TaskDisplaySettingsView: View {
                 Button {
                     store.resetTaskDisplay()
                 } label: {
-                    Label(L("恢复默认任务显示", "Reset Task Display"), systemImage: "arrow.counterclockwise")
+                    Label(String(localized: "Reset Task Display"), systemImage: "arrow.counterclockwise")
                         .font(.headline)
                         .frame(maxWidth: .infinity, minHeight: 48)
                 }
@@ -764,11 +750,11 @@ private struct CurriculumEditView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(L("课程体系", "Curriculum"))
+                    Text(String(localized: "Curriculum"))
                         .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(L("选择与你当前学习内容匹配的课程体系。", "Choose the curriculum that matches your current study plan."))
+                    Text(String(localized: "Choose the curriculum that matches your current study plan."))
                         .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -793,16 +779,16 @@ private struct CurriculumEditView: View {
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
         .planoraDetailNavigationBar()
         .background(PlanoraBackground())
-        .alert(L("确认切换课程？", "Switch Curriculum?"), isPresented: $isShowingCurriculumSwitchConfirmation, presenting: pendingCurriculum) { curriculum in
-            Button(L("确认切换", "Switch"), role: .destructive) {
+        .alert(String(localized: "Switch Curriculum?"), isPresented: $isShowingCurriculumSwitchConfirmation, presenting: pendingCurriculum) { curriculum in
+            Button(String(localized: "Switch"), role: .destructive) {
                 switchCurriculum(to: curriculum)
             }
 
-            Button(L("取消", "Cancel"), role: .cancel) {
+            Button(String(localized: "Cancel"), role: .cancel) {
                 pendingCurriculum = nil
             }
         } message: { _ in
-            Text(L("切换课程后会清空当前课程体系内已创建的任务，并将科目重置为新课程体系的默认必选项。", "Switching curriculum deletes existing tasks for the current curriculum and resets subjects to the new curriculum defaults."))
+            Text(String(localized: "Switching curriculum deletes existing tasks for the current curriculum and resets subjects to the new curriculum defaults."))
         }
     }
 
@@ -834,22 +820,22 @@ private struct SubjectEditView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(L("编辑科目", "Edit Subjects"))
+                    Text(String(localized: "My Subjects"))
                         .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(LF("curriculum_subjects_format", store.curriculum.title))
+                    Text(PlanoraLocalization.format(String(localized: "curriculum_subjects_format"), store.curriculum.title))
                         .font(.callout.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, 18)
 
-                DashboardSection(title: L("科目", "Subjects")) {
+                DashboardSection(title: String(localized: "Subjects")) {
                     SubjectPicker(store: store, columns: columns)
                     .padding(18)
                 }
 
-                DashboardSection(title: L("额外学习", "Extra Learning")) {
+                DashboardSection(title: String(localized: "Extra Learning")) {
                     ExtraLearningPicker(store: store, columns: columns)
                     .padding(18)
                 }
@@ -872,22 +858,22 @@ private struct ChangeCurriculumCard: View {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(Color.planoraAmber)
 
-                    Text(L("切换课程体系前请注意", "Before Changing Curriculum"))
+                    Text(String(localized: "Before Changing Curriculum"))
                         .font(.headline)
                         .foregroundStyle(Color.planoraInk)
 
                     Spacer()
                 }
 
-                Text(L("切换后，科目会根据新的课程体系重置为默认必选项；已创建的任务将不会保留。", "Changing curriculum resets subjects to the new curriculum defaults; existing tasks will not be kept."))
+                Text(String(localized: "Changing curriculum resets subjects to the new curriculum defaults; existing tasks will not be kept."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 HStack(spacing: 8) {
-                    MiniStatusPill(title: L("科目重置", "Subjects Reset"), tint: .planoraBlue)
-                    MiniStatusPill(title: L("任务不保留", "Tasks Removed"), tint: .red)
-                    MiniStatusPill(title: L("备份任务", "Back Up Tasks"), tint: .planoraAmber)
+                    MiniStatusPill(title: String(localized: "Subjects Reset"), tint: .planoraBlue)
+                    MiniStatusPill(title: String(localized: "Tasks Removed"), tint: .red)
+                    MiniStatusPill(title: String(localized: "Back Up Tasks"), tint: .planoraAmber)
                 }
             }
         }
@@ -911,11 +897,11 @@ private struct TaskBackupCard: View {
                     .background(Color.planoraBlue.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(L("任务备份", "Task Backup"))
+                    Text(String(localized: "Task Backup"))
                         .font(.headline)
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(LF("task_backup_count_format", taskCount))
+                    Text(PlanoraLocalization.format(String(localized: "task_backup_count_format"), taskCount))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
@@ -923,7 +909,7 @@ private struct TaskBackupCard: View {
                 Spacer()
             }
 
-            Text(L("保存为 JSON 备份文件，或导入并选择如何处理重复任务。", "Save a JSON backup file, or import one and choose how matching tasks are handled."))
+            Text(String(localized: "Save a JSON backup file, or import one and choose how matching tasks are handled."))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -932,14 +918,14 @@ private struct TaskBackupCard: View {
 
             HStack(spacing: 10) {
                 BackupActionButton(
-                    title: L("保存备份", "Save Backup"),
+                    title: String(localized: "Save Backup"),
                     systemImage: "square.and.arrow.down",
                     tint: .planoraBlue,
                     action: onExport
                 )
 
                 BackupActionButton(
-                    title: L("导入备份", "Import Backup"),
+                    title: String(localized: "Import Backup"),
                     systemImage: "square.and.arrow.up",
                     tint: .planoraGreen,
                     action: onImport
@@ -948,7 +934,7 @@ private struct TaskBackupCard: View {
 
 
             Button(action: onRestoreAutomatic) {
-                Label(L("恢复最近自动备份", "Restore Latest Automatic Backup"), systemImage: "clock.arrow.circlepath")
+                Label(String(localized: "Restore Latest Automatic Backup"), systemImage: "clock.arrow.circlepath")
                     .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity, minHeight: 42)
             }
@@ -967,7 +953,7 @@ private struct BackupShareHint: View {
                 .foregroundStyle(Color.planoraAmber)
                 .frame(width: 24, height: 24)
 
-            Text(L("也可以把 JSON 文件直接通过系统分享给 Planora，App 会自动打开并导入 JSON 备份。", "You can also share the JSON file directly to Planora from the system share sheet. The app opens and imports the JSON backup automatically."))
+            Text(String(localized: "You can also share the JSON file directly to Planora from the system share sheet. The app opens and imports the JSON backup automatically."))
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color.planoraInk)
                 .fixedSize(horizontal: false, vertical: true)

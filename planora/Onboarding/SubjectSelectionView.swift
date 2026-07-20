@@ -14,11 +14,11 @@ struct SubjectSelectionView: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 22) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text(L("选择科目", "Choose Subjects"))
+                        Text(String(localized: "Choose Subjects"))
                             .font(.system(size: 32, weight: .bold))
                             .foregroundStyle(Color.planoraInk)
 
-                        Text(L("先选正在学习的内容。", "Select what you are studying now."))
+                        Text(String(localized: "Select what you are studying now."))
                             .font(.callout)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -46,7 +46,7 @@ struct SubjectSelectionView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
-                        Text(L("额外学习", "Extra Learning"))
+                        Text(String(localized: "Extra Learning"))
                             .font(.headline)
                             .foregroundStyle(Color.planoraInk)
 
@@ -54,7 +54,7 @@ struct SubjectSelectionView: View {
                     }
 
                     PlanoraPrimaryButton(
-                        title: L("完成", "Finish"),
+                        title: String(localized: "Finish"),
                         systemImage: "sparkles",
                         isDisabled: store.selectedSubjects.isEmpty
                     ) {

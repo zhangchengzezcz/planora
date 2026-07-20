@@ -28,9 +28,9 @@ enum PlanoraDisplayMode: String, Codable, CaseIterable, Identifiable {
 
     @MainActor var title: String {
         switch self {
-        case .system: L("跟随系统", "Follow System")
-        case .light: L("浅色", "Light")
-        case .dark: L("深色", "Dark")
+        case .system: String(localized: "Follow System")
+        case .light: String(localized: "Light")
+        case .dark: String(localized: "Dark")
         }
     }
 
@@ -53,10 +53,10 @@ enum PlanoraColorTheme: String, CaseIterable, Identifiable {
 
     @MainActor var title: String {
         switch self {
-        case .classic: L("经典", "Classic")
-        case .ocean: L("海洋", "Ocean")
-        case .forest: L("森林", "Forest")
-        case .sunset: L("日落", "Sunset")
+        case .classic: String(localized: "Classic")
+        case .ocean: String(localized: "Ocean")
+        case .forest: String(localized: "Forest")
+        case .sunset: String(localized: "Sunset")
         }
     }
 
@@ -100,10 +100,10 @@ enum PlanoraBackgroundStyle: String, Codable, CaseIterable, Identifiable {
 
     @MainActor var title: String {
         switch self {
-        case .aurora: L("极光", "Aurora")
-        case .sky: L("天空", "Sky")
-        case .mint: L("薄荷", "Mint")
-        case .rose: L("玫瑰", "Rose")
+        case .aurora: String(localized: "Aurora")
+        case .sky: String(localized: "Sky")
+        case .mint: String(localized: "Mint")
+        case .rose: String(localized: "Rose")
         }
     }
 
@@ -135,10 +135,10 @@ enum PlanoraAccent: String, Codable, CaseIterable, Identifiable {
 
     @MainActor var title: String {
         switch self {
-        case .blue: L("蓝色", "Blue")
-        case .green: L("绿色", "Green")
-        case .amber: L("琥珀", "Amber")
-        case .pink: L("粉色", "Pink")
+        case .blue: String(localized: "Blue")
+        case .green: String(localized: "Green")
+        case .amber: String(localized: "Amber")
+        case .pink: String(localized: "Pink")
         }
     }
 
@@ -202,8 +202,8 @@ enum PlanoraTaskDensity: String, Codable, CaseIterable, Identifiable {
 
     @MainActor var title: String {
         switch self {
-        case .comfortable: L("舒适", "Comfortable")
-        case .compact: L("紧凑", "Compact")
+        case .comfortable: String(localized: "Comfortable")
+        case .compact: String(localized: "Compact")
         }
     }
 }
@@ -219,11 +219,11 @@ enum PlanoraTaskSortOrder: String, Codable, CaseIterable, Identifiable {
 
     @MainActor var title: String {
         switch self {
-        case .smart: L("智能排序", "Smart")
-        case .deadline: L("截止日期", "Deadline")
-        case .priority: L("优先级", "Priority")
-        case .createdDate: L("创建时间", "Created")
-        case .title: L("标题", "Title")
+        case .smart: String(localized: "Smart")
+        case .deadline: String(localized: "Deadline")
+        case .priority: String(localized: "Priority")
+        case .createdDate: String(localized: "Created")
+        case .title: String(localized: "Title")
         }
     }
 }

@@ -111,15 +111,15 @@ nonisolated struct TaskRecurrenceRule: Codable, Hashable {
     @MainActor var summary: String {
         switch frequency {
         case .daily:
-            interval == 1 ? L("每天", "Every Day") : LF("every_days_format", interval)
+            interval == 1 ? String(localized: "Every Day") : PlanoraLocalization.format(String(localized: "every_days_format"), interval)
         case .weekly:
-            interval == 1 ? L("每周", "Every Week") : LF("every_weeks_format", interval)
+            interval == 1 ? String(localized: "Every Week") : PlanoraLocalization.format(String(localized: "every_weeks_format"), interval)
         case .biweekly:
-            L("每两周", "Every Two Weeks")
+            String(localized: "Every Two Weeks")
         case .monthly:
-            interval == 1 ? L("每月", "Every Month") : LF("every_months_format", interval)
+            interval == 1 ? String(localized: "Every Month") : PlanoraLocalization.format(String(localized: "every_months_format"), interval)
         case .custom:
-            LF("custom_recurrence_format", interval, customUnit.title)
+            PlanoraLocalization.format(String(localized: "custom_recurrence_format"), interval, customUnit.title)
         }
     }
 }
@@ -135,11 +135,11 @@ nonisolated enum RecurrenceFrequency: String, Codable, CaseIterable, Identifiabl
 
     @MainActor var title: String {
         switch self {
-        case .daily: L("每天", "Daily")
-        case .weekly: L("每周", "Weekly")
-        case .biweekly: L("每两周", "Every Two Weeks")
-        case .monthly: L("每月", "Monthly")
-        case .custom: L("自定义", "Custom")
+        case .daily: String(localized: "Daily")
+        case .weekly: String(localized: "Weekly")
+        case .biweekly: String(localized: "Every Two Weeks")
+        case .monthly: String(localized: "Monthly")
+        case .custom: String(localized: "Custom")
         }
     }
 }
@@ -153,9 +153,9 @@ nonisolated enum RecurrenceUnit: String, Codable, CaseIterable, Identifiable {
 
     @MainActor var title: String {
         switch self {
-        case .day: L("天", "days")
-        case .week: L("周", "weeks")
-        case .month: L("月", "months")
+        case .day: String(localized: "days")
+        case .week: String(localized: "weeks")
+        case .month: String(localized: "months")
         }
     }
 }

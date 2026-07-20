@@ -43,38 +43,38 @@ enum TaskBackupError: LocalizedError {
     var alertTitle: String {
         switch self {
         case .unreadableFile:
-            L("文件读取失败", "File Read Failed")
+            String(localized: "File Read Failed")
         case .wrongBackupFile:
-            L("文件错误", "Wrong File")
+            String(localized: "Wrong File")
         case .invalidJSONFormat:
-            L("格式错误", "Format Error")
+            String(localized: "Format Error")
         case .missingTaskData, .emptyBackup:
-            L("备份数据缺失", "Backup Data Missing")
+            String(localized: "Backup Data Missing")
         case .unsupportedVersion:
-            L("备份版本不支持", "Unsupported Backup Version")
+            String(localized: "Unsupported Backup Version")
         }
     }
 
     var errorDescription: String? {
         switch self {
         case .unreadableFile:
-            L("文件无法读取。请确认它仍在文件 App 中可访问。", "The file could not be read. Make sure it is still accessible in Files.")
+            String(localized: "The file could not be read. Make sure it is still accessible in Files.")
         case .wrongBackupFile:
-            L("这个 JSON 文件不是 Planora 任务备份。请选择 Planora 导出的 .json 备份文件。", "This JSON file is not a Planora task backup. Choose a .json backup exported by Planora.")
+            String(localized: "This JSON file is not a Planora task backup. Choose a .json backup exported by Planora.")
         case .invalidJSONFormat:
-            L("这个文件不是有效的 JSON。请选择 Planora 导出的 .json 备份文件。", "This file is not valid JSON. Choose a .json backup exported by Planora.")
+            String(localized: "This file is not valid JSON. Choose a .json backup exported by Planora.")
         case .missingTaskData:
-            L("JSON 文件可以读取，但其中的 Planora 任务数据缺失或不完整。", "The JSON file is readable, but its Planora task data is missing or incomplete.")
+            String(localized: "The JSON file is readable, but its Planora task data is missing or incomplete.")
         case .emptyBackup:
-            L("这个备份中没有任务，因此没有导入任何内容。", "This backup contains no tasks, so nothing was imported.")
+            String(localized: "This backup contains no tasks, so nothing was imported.")
         case .unsupportedVersion:
-            L("Planora 当前只支持版本 8 的备份。", "Planora currently imports version 8 backups only.")
+            String(localized: "Planora currently imports version 8 backups only.")
         }
     }
 
     static func importFailureTitle(for error: Error) -> String {
         guard let backupError = error as? TaskBackupError else {
-            return L("导入失败", "Import Failed")
+            return String(localized: "Import Failed")
         }
 
         return backupError.alertTitle

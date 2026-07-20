@@ -24,13 +24,13 @@ struct PlanoraLogoMark: View {
                     .font(.system(size: size * 0.2, weight: .semibold))
                     .foregroundStyle(Color.planoraGreen)
 
-                Text("P")
+                Text(verbatim: "P")
                     .font(.system(size: size * 0.46, weight: .black, design: .rounded))
                     .foregroundStyle(Color.planoraBlue)
             }
         }
         .frame(width: size, height: size)
         .shadow(color: Color.planoraBlue.opacity(0.24), radius: size * 0.26, x: 0, y: size * 0.12)
-        .accessibilityLabel("Planora")
+        .accessibilityLabel(Text(verbatim: "Planora"))
     }
 }
