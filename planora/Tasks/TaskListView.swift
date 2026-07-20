@@ -16,20 +16,7 @@ struct TaskListView: View {
             settings: displaySettings
         )
 
-        VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(L("任务", "Tasks"))
-                    .font(.largeTitle.weight(.bold))
-                    .foregroundStyle(Color.planoraInk)
-
-                Text(L("根据设置显示和排序任务。", "Tasks are displayed and sorted using your settings."))
-                    .font(.callout.weight(.medium))
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
-            .padding(.top, 18)
-            .padding(.bottom, 10)
-
+        Group {
             if visibleTasks.isEmpty {
                 ScrollView(showsIndicators: false) {
                     EmptyTaskListCard()
@@ -75,6 +62,10 @@ struct TaskListView: View {
                 .scrollContentBackground(.hidden)
             }
         }
+        .safeAreaBar(edge: .top, spacing: 0) {
+            taskListHeader
+        }
+        .scrollEdgeEffectStyle(.automatic, for: .top)
         .planoraHiddenNavigationBar()
         .background(PlanoraBackground())
         .navigationDestination(item: $selectedTask) { task in
@@ -103,6 +94,22 @@ struct TaskListView: View {
         } message: { task in
             Text(LF("delete_task_confirmation_format", task.title))
         }
+    }
+
+    private var taskListHeader: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(L("任务", "Tasks"))
+                .font(.largeTitle.weight(.bold))
+                .foregroundStyle(Color.planoraInk)
+
+            Text(L("根据设置显示和排序任务。", "Tasks are displayed and sorted using your settings."))
+                .font(.callout.weight(.medium))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
+        .padding(.top, 18)
+        .padding(.bottom, 10)
     }
 
     private func delete(_ task: PlanoraTask, scope: RecurrenceEditScope) {
