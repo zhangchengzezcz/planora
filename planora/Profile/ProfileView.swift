@@ -27,6 +27,10 @@ struct ProfileView: View {
             .padding(.bottom, 32)
         }
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
+        .safeAreaBar(edge: .top, spacing: 0) {
+            profileTitle
+        }
+        .scrollEdgeEffectStyle(.automatic, for: .top)
         .planoraHiddenNavigationBar()
         .background(PlanoraBackground())
         .fileExporter(
@@ -74,29 +78,32 @@ struct ProfileView: View {
 
     // MARK: - Page Sections
 
+    private var profileTitle: some View {
+        Text(L("我的", "Me"))
+            .font(.largeTitle.weight(.bold))
+            .foregroundStyle(Color.planoraInk)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
+            .padding(.top, 18)
+            .padding(.bottom, 18)
+    }
+
     private var profileHeader: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text(L("我的", "Me"))
-                .font(.largeTitle.weight(.bold))
-                .foregroundStyle(Color.planoraInk)
-                .padding(.top, 18)
+        GlassPanel {
+            HStack(spacing: 16) {
+                PlanoraLogoMark(size: 58)
 
-            GlassPanel {
-                HStack(spacing: 16) {
-                    PlanoraLogoMark(size: 58)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(store.userName)
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(Color.planoraInk)
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(store.userName)
-                            .font(.title3.weight(.bold))
-                            .foregroundStyle(Color.planoraInk)
-
-                        Text("\(store.curriculum.badge) \(L("学习空间", "Learning Space"))")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
+                    Text("\(store.curriculum.badge) \(L("学习空间", "Learning Space"))")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
+
+                Spacer()
             }
         }
     }
