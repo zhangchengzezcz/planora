@@ -1,5 +1,19 @@
 # Changelog / 更新说明
 
+## 1.4.3 - 2026-07-22
+
+### 中文
+
+- 修复搜索页筛选控件在窄屏左右两侧被裁切的问题。
+- 将筛选控件改为自适应网格布局，完整显示科目、任务类型、截止日期、状态与优先级。
+- 保留原有搜索、筛选和清除筛选逻辑，不改变任务数据与搜索结果行为。
+
+### English
+
+- Fixed search filter controls being clipped at the left and right edges on narrow screens.
+- Replaced the filter strip with an adaptive grid that fully displays Subject, Task Type, Deadline, Status, and Priority.
+- Preserved all existing search, filtering, and clear-filter behavior without changing task data or result semantics.
+
 ## 1.4.2 - 2026-07-20
 
 ### 中文

@@ -2,17 +2,17 @@
 
 **中文** | **English**
 
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.4.2 版本已经形成从创建、计划、提醒、重复执行到备份恢复的日常学习闭环，并完成大数据量性能优化与英文、简体中文、日文的完整本地化。
+Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.4.3 版本已经形成从创建、计划、提醒、重复执行到备份恢复的日常学习闭环，并完成大数据量性能优化与英文、简体中文、日文的完整本地化。
 
-Planora is a study planning app for IB and IGCSE students. Version 1.4.2 completes the daily loop from creation and planning through reminders, recurrence, completion, and recovery, with large-task-set performance improvements and complete English, Simplified Chinese, and Japanese localization.
+Planora is a study planning app for IB and IGCSE students. Version 1.4.3 completes the daily loop from creation and planning through reminders, recurrence, completion, and recovery, with large-task-set performance improvements and complete English, Simplified Chinese, and Japanese localization.
 
 ## 当前版本 / Current Version
 
-- Version: **1.4.2**
-- Build: **6**
+- Version: **1.4.3**
+- Build: **7**
 - Platform: **iOS**
 - UI: SwiftUI, SwiftData, Observation, Liquid Glass-style custom surfaces
-- Status: Stable v1.4.2 daily academic planning workflow
+- Status: Stable v1.4.3 daily academic planning workflow
 
 ## 功能范围 / Scope
 
@@ -128,11 +128,11 @@ xcodebuild -project planora.xcodeproj \
 
 ### 中文
 
-Planora 1.4.2 继续追求 Apple 风格的简洁和清晰：内容直接嵌入背景，卡片和按钮保持轻量，底栏与顶部滚动边缘效果使用系统 SwiftUI API，让 iOS 27 SDK 管理 Liquid Glass 导航表现。当前版本专注于完整、可靠且流畅的本地学习规划闭环。
+Planora 1.4.3 继续追求 Apple 风格的简洁和清晰：内容直接嵌入背景，卡片和按钮保持轻量，底栏与顶部滚动边缘效果使用系统 SwiftUI API，让 iOS 27 SDK 管理 Liquid Glass 导航表现。当前版本专注于完整、可靠且流畅的本地学习规划闭环。
 
 ### English
 
-Planora 1.4.2 keeps the Apple-like sense of clarity: content sits naturally on the background, panels stay light, and system SwiftUI APIs manage the tab bar and top scroll-edge effects on iOS 27. This version focuses on a complete, reliable, and responsive local academic-planning workflow.
+Planora 1.4.3 keeps the Apple-like sense of clarity: content sits naturally on the background, panels stay light, and system SwiftUI APIs manage the tab bar and top scroll-edge effects on iOS 27. This version focuses on a complete, reliable, and responsive local academic-planning workflow.
 
 ## 后续计划 / Next Steps
 
