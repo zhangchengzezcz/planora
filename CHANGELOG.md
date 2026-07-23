@@ -1,5 +1,19 @@
 # Changelog / 更新说明
 
+## 1.4.4 - 2026-07-23
+
+### 中文
+
+- 恢复搜索页原有的单排横向筛选栏，不再使用多行网格布局。
+- 横向滚动区域延伸到屏幕边缘，筛选控件可以自然滚出屏幕，不再被正文左右边距裁切。
+- 首尾滚动位置保留页面安全留白，筛选样式、菜单与搜索行为保持不变。
+
+### English
+
+- Restored the original single-row horizontal filter strip on Search instead of the multi-row grid.
+- Extended the horizontal viewport to the screen edges so filters scroll naturally off-screen without being clipped by page margins.
+- Preserved safe leading and trailing insets along with all existing filter menus and search behavior.
+
 ## 1.4.3 - 2026-07-22
 
 ### 中文

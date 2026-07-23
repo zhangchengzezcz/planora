@@ -134,107 +134,107 @@ struct EventSearchView: View {
     }
 
     private var filterBar: some View {
-        LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 150), spacing: 8)],
-            alignment: .leading,
-            spacing: 8
-        ) {
-            Menu {
-                filterButton(title: String(localized: "All Subjects"), isSelected: selectedSubject == nil) {
-                    selectedSubject = nil
-                }
-
-                ForEach(subjectOptions, id: \.self) { subject in
-                    filterButton(
-                        title: PlanoraFormat.subjectDisplayName(subject),
-                        isSelected: selectedSubject == subject
-                    ) {
-                        selectedSubject = subject
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                Menu {
+                    filterButton(title: String(localized: "All Subjects"), isSelected: selectedSubject == nil) {
+                        selectedSubject = nil
                     }
-                }
-            } label: {
-                SearchFilterChip(
-                    title: selectedSubjectTitle,
-                    systemImage: "book.closed",
-                    isActive: selectedSubject != nil
-                )
-            }
 
-            Menu {
-                filterButton(title: String(localized: "All Types"), isSelected: selectedType == nil) {
-                    selectedType = nil
-                }
-
-                ForEach(typeOptions) { type in
-                    filterButton(title: type.title, isSelected: selectedType == type) {
-                        selectedType = type
+                    ForEach(subjectOptions, id: \.self) { subject in
+                        filterButton(
+                            title: PlanoraFormat.subjectDisplayName(subject),
+                            isSelected: selectedSubject == subject
+                        ) {
+                            selectedSubject = subject
+                        }
                     }
+                } label: {
+                    SearchFilterChip(
+                        title: selectedSubjectTitle,
+                        systemImage: "book.closed",
+                        isActive: selectedSubject != nil
+                    )
                 }
-            } label: {
-                SearchFilterChip(
-                    title: selectedType?.title ?? String(localized: "Task Type"),
-                    systemImage: "square.grid.2x2",
-                    isActive: selectedType != nil
-                )
-            }
 
-            Menu {
-                ForEach(SearchDeadlineFilter.allCases) { filter in
-                    filterButton(title: filter.title, isSelected: deadlineFilter == filter) {
-                        deadlineFilter = filter
+                Menu {
+                    filterButton(title: String(localized: "All Types"), isSelected: selectedType == nil) {
+                        selectedType = nil
                     }
-                }
-            } label: {
-                SearchFilterChip(
-                    title: deadlineFilter == .all ? String(localized: "Deadline") : deadlineFilter.title,
-                    systemImage: "calendar",
-                    isActive: deadlineFilter != .all
-                )
-            }
 
-            Menu {
-                ForEach(SearchCompletionFilter.allCases) { filter in
-                    filterButton(title: filter.title, isSelected: completionFilter == filter) {
-                        completionFilter = filter
+                    ForEach(typeOptions) { type in
+                        filterButton(title: type.title, isSelected: selectedType == type) {
+                            selectedType = type
+                        }
                     }
-                }
-            } label: {
-                SearchFilterChip(
-                    title: completionFilter == .all ? String(localized: "Status") : completionFilter.title,
-                    systemImage: "checkmark.circle",
-                    isActive: completionFilter != .all
-                )
-            }
-
-            Menu {
-                filterButton(title: String(localized: "Any Priority"), isSelected: selectedPriority == nil) {
-                    selectedPriority = nil
+                } label: {
+                    SearchFilterChip(
+                        title: selectedType?.title ?? String(localized: "Task Type"),
+                        systemImage: "square.grid.2x2",
+                        isActive: selectedType != nil
+                    )
                 }
 
-                ForEach(TaskPriority.allCases) { priority in
-                    filterButton(title: priority.title, isSelected: selectedPriority == priority) {
-                        selectedPriority = priority
+                Menu {
+                    ForEach(SearchDeadlineFilter.allCases) { filter in
+                        filterButton(title: filter.title, isSelected: deadlineFilter == filter) {
+                            deadlineFilter = filter
+                        }
                     }
+                } label: {
+                    SearchFilterChip(
+                        title: deadlineFilter == .all ? String(localized: "Deadline") : deadlineFilter.title,
+                        systemImage: "calendar",
+                        isActive: deadlineFilter != .all
+                    )
                 }
-            } label: {
-                SearchFilterChip(
-                    title: selectedPriority?.title ?? String(localized: "Priority"),
-                    systemImage: "flag",
-                    isActive: selectedPriority != nil
-                )
-            }
 
-            if hasActiveFilters {
-                Button(action: clearFilters) {
-                    Label(String(localized: "Clear Filters"), systemImage: "xmark.circle.fill")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(Color.planoraDeepGreen)
-                        .frame(minHeight: 36)
-                        .padding(.horizontal, 10)
+                Menu {
+                    ForEach(SearchCompletionFilter.allCases) { filter in
+                        filterButton(title: filter.title, isSelected: completionFilter == filter) {
+                            completionFilter = filter
+                        }
+                    }
+                } label: {
+                    SearchFilterChip(
+                        title: completionFilter == .all ? String(localized: "Status") : completionFilter.title,
+                        systemImage: "checkmark.circle",
+                        isActive: completionFilter != .all
+                    )
                 }
-                .buttonStyle(.plain)
+
+                Menu {
+                    filterButton(title: String(localized: "Any Priority"), isSelected: selectedPriority == nil) {
+                        selectedPriority = nil
+                    }
+
+                    ForEach(TaskPriority.allCases) { priority in
+                        filterButton(title: priority.title, isSelected: selectedPriority == priority) {
+                            selectedPriority = priority
+                        }
+                    }
+                } label: {
+                    SearchFilterChip(
+                        title: selectedPriority?.title ?? String(localized: "Priority"),
+                        systemImage: "flag",
+                        isActive: selectedPriority != nil
+                    )
+                }
+
+                if hasActiveFilters {
+                    Button(action: clearFilters) {
+                        Label(String(localized: "Clear Filters"), systemImage: "xmark.circle.fill")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(Color.planoraDeepGreen)
+                            .frame(minHeight: 36)
+                            .padding(.horizontal, 10)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
+        .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
+        .padding(.horizontal, -PlanoraTheme.pageHorizontalPadding)
     }
 
     private func filterButton(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
@@ -359,7 +359,7 @@ private struct SearchFilterChip: View {
         }
         .font(.caption.weight(.bold))
         .foregroundStyle(isActive ? Color.white : Color.planoraInk)
-        .frame(maxWidth: .infinity, minHeight: 36)
+        .frame(minHeight: 36)
         .padding(.horizontal, 12)
         .background(isActive ? Color.planoraDeepGreen : Color.planoraGlassFill, in: Capsule())
         .overlay(Capsule().stroke(isActive ? Color.clear : Color.planoraControlStroke, lineWidth: 1))
