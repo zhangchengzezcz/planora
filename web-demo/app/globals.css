@@ -356,15 +356,17 @@ textarea:focus-visible,
 }
 
 .device-stage {
-  display: grid;
-  place-items: center;
+  position: relative;
+  width: var(--device-stage-width, 329px);
+  height: var(--device-stage-height, 697px);
+  flex: 0 0 auto;
 }
 
 .device {
-  position: relative;
-  width: min(420px, calc(100vw - 32px));
-  height: min(890px, calc(100svh - 28px));
-  min-height: min(690px, calc(100svh - 28px));
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 422px;
+  height: 894px;
   padding: 10px;
   border: 1px solid rgb(255 255 255 / 0.5);
   border-radius: 60px;
@@ -373,6 +375,8 @@ textarea:focus-visible,
     0 38px 80px rgb(37 54 62 / 0.22),
     0 8px 24px rgb(37 54 62 / 0.14),
     inset 0 0 0 2px #2a2d31;
+  transform: scale(var(--device-scale, 0.78));
+  transform-origin: top left;
 }
 
 .device::before,
@@ -2173,53 +2177,74 @@ textarea:focus-visible,
 
 @media (max-width: 820px) {
   .showcase {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     min-height: 100svh;
-    padding: 0;
-    background: var(--phone-bg);
+    gap: 20px;
+    padding: 22px 14px 32px;
+    overflow-x: hidden;
   }
 
   .showcase-context {
+    display: grid;
+    align-self: center;
+    width: min(100%, 520px);
+    max-width: none;
+    gap: 18px;
+    padding: 0 4px;
+  }
+
+  .showcase-brand .logo-mark {
+    width: 50px;
+    height: 50px;
+  }
+
+  .showcase-brand .logo-mark span {
+    font-size: 25px;
+  }
+
+  .showcase-brand strong {
+    font-size: 22px;
+  }
+
+  .showcase-copy {
+    margin: 0;
+  }
+
+  .showcase-copy h1 {
+    max-width: 340px;
+    margin: 8px 0 0;
+    font-size: 34px;
+  }
+
+  .showcase-copy > p:last-child,
+  .showcase-status > span {
     display: none;
+  }
+
+  .showcase-status {
+    justify-content: flex-start;
+  }
+
+  .showcase-actions {
+    width: 100%;
+  }
+
+  .showcase-status button {
+    flex: 1;
+    justify-content: center;
   }
 
   .site-language-menu {
     display: none;
-  }
-
-  .device-stage,
-  .device {
-    width: 100%;
-    height: 100svh;
-    min-height: 100svh;
-  }
-
-  .device {
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  .device::before,
-  .device::after,
-  .device-speaker {
-    display: none;
-  }
-
-  .device-screen {
-    border-radius: 0;
   }
 }
 
 @media (max-height: 760px) and (min-width: 821px) {
   .showcase {
     padding-block: 14px;
-  }
-
-  .device {
-    min-height: min(650px, calc(100svh - 28px));
   }
 
   .showcase-context {

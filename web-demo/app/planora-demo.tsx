@@ -43,6 +43,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
 } from "react";
 import {
   browserLocale,
@@ -114,6 +115,9 @@ const STORAGE_LOCALE = "planora.demo.locale.v1";
 const STORAGE_CURRICULUM = "planora.demo.curriculum.v1";
 const STORAGE_INTRO = "planora.demo.intro.v1";
 const dayMs = 86_400_000;
+const deviceWidth = 422;
+const deviceHeight = 894;
+const defaultDeviceScale = 0.78;
 
 const LocaleContext = createContext<DemoLocale>("zh-Hans");
 
@@ -358,6 +362,7 @@ export function PlanoraDemo() {
   const [curriculum, setCurriculum] = useState<Curriculum>("igcse");
   const [introComplete, setIntroComplete] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [deviceScale, setDeviceScale] = useState(defaultDeviceScale);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -394,6 +399,28 @@ export function PlanoraDemo() {
     });
 
     return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    function updateDeviceScale() {
+      const narrowLayout = window.innerWidth <= 820;
+      const availableWidth = narrowLayout
+        ? Math.max(280, window.innerWidth - 28)
+        : 440;
+      const availableHeight = narrowLayout
+        ? Number.POSITIVE_INFINITY
+        : Math.max(560, window.innerHeight - 28);
+      const nextScale = Math.min(
+        1,
+        availableWidth / deviceWidth,
+        availableHeight / deviceHeight,
+      );
+      setDeviceScale(Math.max(0.62, nextScale));
+    }
+
+    updateDeviceScale();
+    window.addEventListener("resize", updateDeviceScale, { passive: true });
+    return () => window.removeEventListener("resize", updateDeviceScale);
   }, []);
 
   useEffect(() => {
@@ -450,6 +477,11 @@ export function PlanoraDemo() {
     screen.kind === "task"
       ? tasks.find((task) => task.id === screen.taskId)
       : undefined;
+  const deviceStageStyle = {
+    "--device-scale": deviceScale,
+    "--device-stage-width": `${deviceWidth * deviceScale}px`,
+    "--device-stage-height": `${deviceHeight * deviceScale}px`,
+  } as CSSProperties;
 
   return (
     <LocaleContext.Provider value={locale}>
@@ -508,6 +540,7 @@ export function PlanoraDemo() {
         <section
           className="device-stage"
           aria-label="Planora App interactive demo"
+          style={deviceStageStyle}
         >
           <div className="device">
             <div className="device-speaker" aria-hidden="true" />
