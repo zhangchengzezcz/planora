@@ -1139,8 +1139,12 @@ function HomeScreen({
             </div>
           </section>
 
-          <SectionTitle title={t("日历预览")} value={t("本周")} />
-          <MiniCalendar tasks={tasks} onOpenTask={onOpenTask} />
+          {tasks.some((task) => task.deadline) && (
+            <>
+              <SectionTitle title={t("日历预览")} />
+              <MiniCalendar tasks={tasks} onOpenTask={onOpenTask} />
+            </>
+          )}
         </>
       )}
     </div>
@@ -2285,47 +2289,220 @@ function MiniCalendar({
   tasks: PlanoraItem[];
   onOpenTask: (taskId: string) => void;
 }) {
-  const { locale } = useDemoCopy();
-  const days = Array.from({ length: 7 }, (_, index) => offsetISO(index));
+  const { locale, t } = useDemoCopy();
+  const now = new Date();
+  const today = localISO(now);
+  const [monthDate, setMonthDate] = useState(
+    () => new Date(now.getFullYear(), now.getMonth(), 1, 12),
+  );
+  const [selectedDate, setSelectedDate] = useState(today);
+  const deadlineTasks = tasks.filter(
+    (task): task is PlanoraItem & { deadline: string } => Boolean(task.deadline),
+  );
+  const monthTasks = deadlineTasks.filter((task) =>
+    isSameMonth(task.deadline, monthDate),
+  );
+  const selectedTasks = sortTasks(
+    deadlineTasks.filter((task) => task.deadline === selectedDate),
+    "smart",
+  );
+  const firstOfMonth = new Date(
+    monthDate.getFullYear(),
+    monthDate.getMonth(),
+    1,
+    12,
+  );
+  const daysInMonth = new Date(
+    monthDate.getFullYear(),
+    monthDate.getMonth() + 1,
+    0,
+    12,
+  ).getDate();
+  const leadingEmptyDays = (firstOfMonth.getDay() + 6) % 7;
+  const calendarDays: Array<string | null> = [
+    ...Array.from({ length: leadingEmptyDays }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, index) =>
+      localISO(
+        new Date(
+          monthDate.getFullYear(),
+          monthDate.getMonth(),
+          index + 1,
+          12,
+        ),
+      ),
+    ),
+  ];
+  const weekdays = Array.from({ length: 7 }, (_, index) =>
+    new Intl.DateTimeFormat(dateLocale(locale), { weekday: "short" }).format(
+      new Date(2024, 0, index + 1, 12),
+    ),
+  );
+
+  function itemCount(count: number) {
+    if (locale === "en") return `${count} ${count === 1 ? "item" : "items"}`;
+    if (locale === "ja") return `${count}件`;
+    return `${count} 项任务`;
+  }
+
+  function selectMonth(nextMonth: Date) {
+    const normalized = new Date(
+      nextMonth.getFullYear(),
+      nextMonth.getMonth(),
+      1,
+      12,
+    );
+    setMonthDate(normalized);
+
+    if (isSameMonth(today, normalized)) {
+      setSelectedDate(today);
+      return;
+    }
+
+    const firstDeadline = deadlineTasks
+      .filter((task) => isSameMonth(task.deadline, normalized))
+      .map((task) => task.deadline)
+      .sort()[0];
+    setSelectedDate(firstDeadline ?? localISO(normalized));
+  }
+
+  function changeMonth(offset: number) {
+    selectMonth(
+      new Date(
+        monthDate.getFullYear(),
+        monthDate.getMonth() + offset,
+        1,
+        12,
+      ),
+    );
+  }
+
   return (
     <section className="mini-calendar">
-      <div className="calendar-days">
-        {days.map((day) => {
-          const date = new Date(`${day}T12:00:00`);
-          const dayTasks = tasks.filter(
-            (task) => task.deadline === day || task.plannedDate === day,
-          );
+      <div className="calendar-preview-header">
+        <div>
+          <strong>
+            {new Intl.DateTimeFormat(dateLocale(locale), {
+              year: "numeric",
+              month: "long",
+            }).format(monthDate)}
+          </strong>
+          <span>{itemCount(monthTasks.length)}</span>
+        </div>
+
+        <div className="calendar-preview-controls">
+          <button
+            type="button"
+            className="calendar-today"
+            onClick={() => selectMonth(now)}
+          >
+            {t("今天")}
+          </button>
+          <button
+            type="button"
+            className="calendar-nav-button"
+            onClick={() => changeMonth(-1)}
+            aria-label={t("上个月")}
+          >
+            <ChevronLeft />
+          </button>
+          <button
+            type="button"
+            className="calendar-nav-button"
+            onClick={() => changeMonth(1)}
+            aria-label={t("下个月")}
+          >
+            <ChevronRight />
+          </button>
+        </div>
+      </div>
+
+      <div className="calendar-month-grid">
+        {weekdays.map((weekday, index) => (
+          <span className="calendar-weekday" key={`${weekday}-${index}`}>
+            {weekday}
+          </span>
+        ))}
+        {calendarDays.map((day, index) => {
+          if (!day) {
+            return <span className="calendar-empty-day" key={`empty-${index}`} />;
+          }
+
+          const dayTasks = monthTasks.filter((task) => task.deadline === day);
+          const isSelected = day === selectedDate;
+          const isToday = day === today;
           return (
-            <div key={day} className={day === localISO(new Date()) ? "today" : ""}>
-              <span>
-                {new Intl.DateTimeFormat(dateLocale(locale), {
-                  weekday: "short",
-                }).format(date)}
+            <button
+              type="button"
+              key={day}
+              className={`calendar-date ${
+                isSelected ? "selected" : ""
+              } ${isToday && !isSelected ? "today" : ""}`}
+              onClick={() => setSelectedDate(day)}
+              aria-label={formatDay(day, locale, true)}
+              aria-pressed={isSelected}
+            >
+              <strong>{Number(day.slice(-2))}</strong>
+              <span className="calendar-date-dots" aria-hidden="true">
+                {dayTasks.slice(0, 3).map((task) => (
+                  <i
+                    className={`tone-${taskMeta[task.type].color}`}
+                    key={task.id}
+                  />
+                ))}
               </span>
-              <strong>{date.getDate()}</strong>
-              <i className={dayTasks.length ? "has-event" : ""} />
-            </div>
+            </button>
           );
         })}
       </div>
-      <div className="calendar-events">
-        {tasks
-          .filter((task) => {
-            const day = task.plannedDate ?? task.deadline;
-            return day && days.includes(day) && !task.completed;
-          })
-          .slice(0, 3)
-          .map((task) => (
-            <button type="button" key={task.id} onClick={() => onOpenTask(task.id)}>
-              <span className={`week-dot tone-${taskMeta[task.type].color}`} />
-              <span>{task.title}</span>
-              <small>
-                {formatDay(task.plannedDate ?? task.deadline, locale)}
-              </small>
-            </button>
-          ))}
+
+      <div className="calendar-selected-day">
+        <div className="calendar-selected-heading">
+          <strong>{formatDay(selectedDate, locale, true)}</strong>
+          <span>{itemCount(selectedTasks.length)}</span>
+        </div>
+
+        {selectedTasks.length === 0 ? (
+          <p>{t("当天没有截止任务。")}</p>
+        ) : (
+          <div className="calendar-selected-tasks">
+            {selectedTasks.map((task) => {
+              const Icon = task.completed
+                ? CheckCircle2
+                : taskMeta[task.type].icon;
+              return (
+                <button
+                  type="button"
+                  key={task.id}
+                  className={task.completed ? "completed" : ""}
+                  onClick={() => onOpenTask(task.id)}
+                >
+                  <Icon
+                    className={`calendar-task-icon tone-${
+                      task.completed ? "green" : taskMeta[task.type].color
+                    }`}
+                  />
+                  <span>
+                    <strong>{task.title}</strong>
+                    <small>{task.subject}</small>
+                  </span>
+                  <PriorityBadge priority={task.priority} compact />
+                  <ChevronRight className="calendar-task-chevron" />
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
+  );
+}
+
+function isSameMonth(value: string | Date, monthDate: Date) {
+  const date =
+    typeof value === "string" ? new Date(`${value}T12:00:00`) : value;
+  return (
+    date.getFullYear() === monthDate.getFullYear() &&
+    date.getMonth() === monthDate.getMonth()
   );
 }
 
