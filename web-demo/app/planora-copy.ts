@@ -79,6 +79,14 @@ const english: Record<string, string> = {
   "任务存储": "Task Storage",
   "浏览器本地演示": "Browser-local demo",
   "恢复演示": "Restore Demo",
+  "任务备份": "Task Backup",
+  "保存为 JSON 备份文件，或导入并选择如何处理重复任务。":
+    "Save a JSON backup file, or import one and choose how matching tasks are handled.",
+  "也可以把 JSON 文件直接通过系统分享给 Planora，App 会自动打开并导入 JSON 备份。":
+    "You can also share the JSON file directly to Planora from the system share sheet. The app opens and imports the JSON backup automatically.",
+  "保存备份": "Save Backup",
+  "导入备份": "Import Backup",
+  "恢复最近自动备份": "Restore Latest Automatic Backup",
   "当前科目": "Current Subjects",
   "选择颜色主题与显示模式。": "Choose a color theme and display mode.",
   "颜色主题": "Color Theme",
@@ -236,6 +244,14 @@ const japanese: Record<string, string> = {
   "任务存储": "タスク保存",
   "浏览器本地演示": "ブラウザ内デモ",
   "恢复演示": "デモを復元",
+  "任务备份": "タスクバックアップ",
+  "保存为 JSON 备份文件，或导入并选择如何处理重复任务。":
+    "JSON バックアップを保存するか、読み込み時に一致するタスクの処理方法を選択できます。",
+  "也可以把 JSON 文件直接通过系统分享给 Planora，App 会自动打开并导入 JSON 备份。":
+    "JSON ファイルをシステム共有で直接 Planora に共有することもできます。App が開いて JSON バックアップを自動でインポートします。",
+  "保存备份": "バックアップを保存",
+  "导入备份": "バックアップをインポート",
+  "恢复最近自动备份": "最新の自動バックアップを復元",
   "当前科目": "現在の科目",
   "选择颜色主题与显示模式。": "カラーテーマと表示モードを選択します。",
   "颜色主题": "カラーテーマ",

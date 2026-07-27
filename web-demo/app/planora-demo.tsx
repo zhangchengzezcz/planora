@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Archive,
   Bell,
   BookOpen,
   CalendarDays,
@@ -17,6 +16,7 @@ import {
   Gauge,
   Globe2,
   GraduationCap,
+  HardDrive,
   HeartHandshake,
   Home,
   LayoutGrid,
@@ -29,9 +29,12 @@ import {
   RotateCcw,
   Search,
   Settings2,
+  Share2,
   Sparkles,
   Sun,
   TestTube2,
+  Download,
+  Upload,
   UserRound,
   X,
 } from "lucide-react";
@@ -582,12 +585,6 @@ export function PlanoraDemo() {
                         onOpenTask={(taskId) =>
                           setScreen({ kind: "task", taskId })
                         }
-                        onToggle={(task) =>
-                          updateTask({
-                            ...task,
-                            completed: !task.completed,
-                          })
-                        }
                       />
                     )}
                     {screen.kind === "tab" && tab === "search" && (
@@ -606,7 +603,6 @@ export function PlanoraDemo() {
                         onOpenSettings={(section) =>
                           setScreen({ kind: "settings", section })
                         }
-                        onReset={resetDemo}
                       />
                     )}
                     {screen.kind === "task" && activeTask && (
@@ -1177,12 +1173,10 @@ function TasksScreen({
   tasks,
   settings,
   onOpenTask,
-  onToggle,
 }: {
   tasks: PlanoraItem[];
   settings: DemoSettings;
   onOpenTask: (taskId: string) => void;
-  onToggle: (task: PlanoraItem) => void;
 }) {
   const { t } = useDemoCopy();
   const visible = sortTasks(
@@ -1205,7 +1199,6 @@ function TasksScreen({
             showPercentage={settings.showPercentage}
             showNotes={settings.showNotes}
             onOpen={() => onOpenTask(task.id)}
-            onToggle={() => onToggle(task)}
           />
         ))}
       </div>
@@ -1219,14 +1212,12 @@ function TaskRow({
   showPercentage,
   showNotes,
   onOpen,
-  onToggle,
 }: {
   task: PlanoraItem;
   density: Density;
   showPercentage: boolean;
   showNotes: boolean;
   onOpen: () => void;
-  onToggle?: () => void;
 }) {
   const { locale, t } = useDemoCopy();
   const meta = taskMeta[task.type];
@@ -1264,21 +1255,6 @@ function TaskRow({
       </div>
       <div className="task-side">
         <PriorityBadge priority={task.priority} compact />
-        {onToggle && (
-          <button
-            className="complete-button"
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onToggle();
-            }}
-            aria-label={
-              task.completed ? t("重新打开任务") : t("完成任务")
-            }
-          >
-            {task.completed ? <CheckCircle2 /> : <Circle />}
-          </button>
-        )}
       </div>
     </article>
   );
@@ -1437,7 +1413,6 @@ function ProfileScreen({
   settings,
   curriculum,
   onOpenSettings,
-  onReset,
 }: {
   tasks: PlanoraItem[];
   settings: DemoSettings;
@@ -1445,7 +1420,6 @@ function ProfileScreen({
   onOpenSettings: (
     section: "appearance" | "display" | "language",
   ) => void;
-  onReset: () => void;
 }) {
   const { locale, t } = useDemoCopy();
   const subjects = [...new Set(tasks.map((task) => task.subject))];
@@ -1488,15 +1462,41 @@ function ProfileScreen({
 
       <SectionTitle title={t("任务存储")} />
       <section className="backup-card">
-        <Archive />
-        <div>
-          <strong>
-            {tasks.length} {t("项")} {t("任务")}
-          </strong>
-          <span>JSON v8 · {t("浏览器本地演示")}</span>
+        <div className="backup-heading">
+          <span className="backup-drive-icon">
+            <HardDrive />
+          </span>
+          <div>
+            <strong>{t("任务备份")}</strong>
+            <span>{backupTaskCount(tasks.length, locale)}</span>
+          </div>
         </div>
-        <button type="button" onClick={onReset}>
-          {t("恢复演示")}
+
+        <p>{t("保存为 JSON 备份文件，或导入并选择如何处理重复任务。")}</p>
+
+        <div className="backup-share-hint">
+          <Share2 />
+          <span>
+            {t(
+              "也可以把 JSON 文件直接通过系统分享给 Planora，App 会自动打开并导入 JSON 备份。",
+            )}
+          </span>
+        </div>
+
+        <div className="backup-actions">
+          <button type="button">
+            <Download />
+            <span>{t("保存备份")}</span>
+          </button>
+          <button type="button">
+            <Upload />
+            <span>{t("导入备份")}</span>
+          </button>
+        </div>
+
+        <button className="backup-restore" type="button" disabled>
+          <RotateCcw />
+          <span>{t("恢复最近自动备份")}</span>
         </button>
       </section>
 
@@ -1512,6 +1512,13 @@ function ProfileScreen({
       </section>
     </div>
   );
+}
+
+function backupTaskCount(count: number, locale: DemoLocale) {
+  if (locale === "en")
+    return `${count} tasks currently available for backup`;
+  if (locale === "ja") return `現在 ${count} 件のタスクをバックアップできます`;
+  return `当前有 ${count} 项任务可备份`;
 }
 
 function SettingsRow({

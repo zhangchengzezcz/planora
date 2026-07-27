@@ -1129,22 +1129,6 @@ textarea:focus-visible,
   gap: 8px;
 }
 
-.complete-button {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: 0;
-  color: var(--green);
-  background: transparent;
-}
-
-.complete-button svg {
-  width: 20px;
-  height: 20px;
-}
-
 .plain-section,
 .mini-calendar,
 .profile-card,
@@ -1699,42 +1683,152 @@ textarea:focus-visible,
 }
 
 .backup-card {
-  display: grid;
-  grid-template-columns: 36px 1fr auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 13px;
+  padding: 16px;
+}
+
+.backup-heading {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px;
+  gap: 11px;
 }
 
-.backup-card > svg {
-  width: 22px;
-  height: 22px;
-  color: var(--green);
+.backup-drive-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 13px;
+  color: var(--blue);
+  background: rgb(46 109 237 / 0.12);
 }
 
-.backup-card > div {
+.backup-drive-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.4;
+}
+
+.backup-heading > div {
   display: grid;
   gap: 3px;
+  min-width: 0;
 }
 
-.backup-card strong {
+.backup-heading strong {
+  color: var(--ink);
   font-size: 12px;
 }
 
-.backup-card span {
+.backup-heading span {
   color: var(--muted);
   font-size: 9px;
+  font-weight: 650;
+}
+
+.backup-card > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.backup-share-hint {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  padding: 11px;
+  border: 1px solid rgb(235 140 41 / 0.24);
+  border-radius: 13px;
+  color: var(--ink);
+  background: rgb(235 140 41 / 0.12);
+}
+
+.backup-share-hint svg {
+  width: 15px;
+  height: 15px;
+  margin: 2px auto 0;
+  color: var(--amber);
+  stroke-width: 2.4;
+}
+
+.backup-share-hint span {
+  font-size: 8px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.backup-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.backup-actions button,
+.backup-restore {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 10px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.backup-actions button {
+  border-radius: 21px;
+  background: transparent;
+}
+
+.backup-actions button:first-child {
+  border: 1px solid rgb(46 109 237 / 0.24);
+  color: var(--blue);
+  background: rgb(46 109 237 / 0.12);
+}
+
+.backup-actions button:last-child {
+  border: 1px solid rgb(25 163 132 / 0.24);
+  color: var(--green);
+  background: rgb(25 163 132 / 0.12);
+}
+
+.backup-actions svg,
+.backup-restore svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  stroke-width: 2.4;
+}
+
+.backup-actions span,
+.backup-restore span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.backup-restore {
+  width: 100%;
+  border: 1px solid rgb(235 140 41 / 0.28);
+  border-radius: 10px;
+  color: var(--amber);
+  background: transparent;
+}
+
+.backup-restore:disabled {
+  cursor: default;
+  opacity: 0.48;
 }
 
 .backup-card button {
-  min-height: 34px;
-  padding: 0 10px;
-  border: 1px solid rgb(25 163 132 / 0.2);
-  border-radius: 10px;
-  color: var(--deep-green);
-  background: rgb(25 163 132 / 0.09);
   font-size: 9px;
-  font-weight: 800;
 }
 
 .subject-list > div {
