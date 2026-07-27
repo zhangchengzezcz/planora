@@ -9,11 +9,13 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
   Circle,
   Clock3,
   FileText,
   FlaskConical,
   Gauge,
+  Globe2,
   GraduationCap,
   HeartHandshake,
   Home,
@@ -34,7 +36,23 @@ import {
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  browserLocale,
+  copy,
+  dateLocale,
+  demoLocales,
+  localeCode,
+  localeLabel,
+  type DemoLocale,
+} from "./planora-copy";
 
 type Tab = "home" | "tasks" | "search" | "profile";
 type TaskType =
@@ -49,6 +67,7 @@ type TaskType =
   | "event"
   | "custom";
 type Priority = "low" | "medium" | "high";
+type Curriculum = "ib" | "igcse";
 type Theme = "classic" | "ocean" | "forest" | "sunset";
 type Density = "comfortable" | "compact";
 type SortOrder = "smart" | "deadline" | "priority" | "title";
@@ -58,7 +77,10 @@ type Screen =
   | { kind: "today" }
   | { kind: "week" }
   | { kind: "create" }
-  | { kind: "settings"; section: "appearance" | "display" };
+  | {
+      kind: "settings";
+      section: "appearance" | "display" | "language";
+    };
 
 interface PlanoraItem {
   id: string;
@@ -88,7 +110,20 @@ interface DemoSettings {
 
 const STORAGE_TASKS = "planora.demo.tasks.v2";
 const STORAGE_SETTINGS = "planora.demo.settings.v2";
+const STORAGE_LOCALE = "planora.demo.locale.v1";
+const STORAGE_CURRICULUM = "planora.demo.curriculum.v1";
+const STORAGE_INTRO = "planora.demo.intro.v1";
 const dayMs = 86_400_000;
+
+const LocaleContext = createContext<DemoLocale>("zh-Hans");
+
+function useDemoCopy() {
+  const locale = useContext(LocaleContext);
+  return {
+    locale,
+    t: (source: string) => copy(locale, source),
+  };
+}
 
 const taskMeta: Record<
   TaskType,
@@ -260,10 +295,10 @@ function seedTasks(): PlanoraItem[] {
   ];
 }
 
-function formatDay(value?: string, long = false) {
-  if (!value) return "无截止日期";
+function formatDay(value: string | undefined, locale: DemoLocale, long = false) {
+  if (!value) return copy(locale, "无截止日期");
   const date = new Date(`${value}T12:00:00`);
-  return new Intl.DateTimeFormat("zh-CN", {
+  return new Intl.DateTimeFormat(dateLocale(locale), {
     month: long ? "long" : "short",
     day: "numeric",
     weekday: long ? "short" : undefined,
@@ -277,12 +312,24 @@ function daysUntil(value?: string) {
   return Math.round((end.getTime() - start.getTime()) / dayMs);
 }
 
-function deadlineLabel(value?: string) {
+function deadlineLabel(value: string | undefined, locale: DemoLocale) {
   const days = daysUntil(value);
-  if (days === null) return "无截止日期";
-  if (days < 0) return `已逾期 ${Math.abs(days)} 天`;
-  if (days === 0) return "今天截止";
-  if (days === 1) return "明天截止";
+  if (days === null) return copy(locale, "无截止日期");
+  if (days < 0) {
+    const overdue = Math.abs(days);
+    if (locale === "en") return `${overdue} ${overdue === 1 ? "day" : "days"} overdue`;
+    if (locale === "ja") return `${overdue}日超過`;
+    return `已逾期 ${overdue} 天`;
+  }
+  if (days === 0) return copy(locale, "今天截止");
+  if (days === 1)
+    return locale === "en"
+      ? "Due tomorrow"
+      : locale === "ja"
+        ? "明日締切"
+        : "明天截止";
+  if (locale === "en") return `${days} days left`;
+  if (locale === "ja") return `あと${days}日`;
   return `还有 ${days} 天`;
 }
 
@@ -307,6 +354,9 @@ export function PlanoraDemo() {
   const [settings, setSettings] = useState<DemoSettings>(defaultSettings);
   const [tab, setTab] = useState<Tab>("home");
   const [screen, setScreen] = useState<Screen>({ kind: "tab" });
+  const [locale, setLocale] = useState<DemoLocale>("zh-Hans");
+  const [curriculum, setCurriculum] = useState<Curriculum>("igcse");
+  const [introComplete, setIntroComplete] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -314,12 +364,27 @@ export function PlanoraDemo() {
       try {
         const savedTasks = window.localStorage.getItem(STORAGE_TASKS);
         const savedSettings = window.localStorage.getItem(STORAGE_SETTINGS);
+        const savedLocale = window.localStorage.getItem(
+          STORAGE_LOCALE,
+        ) as DemoLocale | null;
+        const savedCurriculum = window.localStorage.getItem(
+          STORAGE_CURRICULUM,
+        ) as Curriculum | null;
         if (savedTasks) setTasks(JSON.parse(savedTasks) as PlanoraItem[]);
         if (savedSettings)
           setSettings({
             ...defaultSettings,
             ...(JSON.parse(savedSettings) as Partial<DemoSettings>),
           });
+        setLocale(
+          demoLocales.includes(savedLocale as DemoLocale)
+            ? (savedLocale as DemoLocale)
+            : browserLocale(window.navigator.language),
+        );
+        if (savedCurriculum === "ib" || savedCurriculum === "igcse") {
+          setCurriculum(savedCurriculum);
+        }
+        setIntroComplete(window.localStorage.getItem(STORAGE_INTRO) === "1");
       } catch {
         window.localStorage.removeItem(STORAGE_TASKS);
         window.localStorage.removeItem(STORAGE_SETTINGS);
@@ -341,6 +406,15 @@ export function PlanoraDemo() {
       window.localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(settings));
   }, [settings, hydrated]);
 
+  useEffect(() => {
+    if (hydrated) window.localStorage.setItem(STORAGE_LOCALE, locale);
+  }, [hydrated, locale]);
+
+  useEffect(() => {
+    if (hydrated)
+      window.localStorage.setItem(STORAGE_CURRICULUM, curriculum);
+  }, [curriculum, hydrated]);
+
   function updateTask(updated: PlanoraItem) {
     setTasks((current) =>
       current.map((task) => (task.id === updated.id ? updated : task)),
@@ -360,138 +434,388 @@ export function PlanoraDemo() {
     setScreen({ kind: "tab" });
   }
 
+  function finishIntro() {
+    setIntroComplete(true);
+    window.localStorage.setItem(STORAGE_INTRO, "1");
+  }
+
+  function replayIntro() {
+    setTab("home");
+    setScreen({ kind: "tab" });
+    setIntroComplete(false);
+    window.localStorage.removeItem(STORAGE_INTRO);
+  }
+
   const activeTask =
     screen.kind === "task"
       ? tasks.find((task) => task.id === screen.taskId)
       : undefined;
 
   return (
-    <main
-      className={`showcase theme-${settings.theme} ${
-        settings.dark ? "is-dark" : ""
-      }`}
-    >
-      <aside className="showcase-context">
-        <div className="showcase-brand">
-          <LogoMark />
-          <div>
-            <strong>Planora</strong>
-            <span>Interactive Preview</span>
+    <LocaleContext.Provider value={locale}>
+      <main
+        lang={locale}
+        className={`showcase theme-${settings.theme} ${
+          settings.dark ? "is-dark" : ""
+        }`}
+      >
+        {introComplete && (
+          <LanguageMenu
+            locale={locale}
+            onChange={setLocale}
+            className="site-language-menu"
+          />
+        )}
+
+        <aside className="showcase-context">
+          <div className="showcase-brand">
+            <LogoMark />
+            <div>
+              <strong>Planora</strong>
+              <span>{copy(locale, "交互式演示")}</span>
+            </div>
           </div>
+          <div className="showcase-copy">
+            <p className="eyebrow">
+              {copy(locale, "IB · IGCSE 学习规划")}
+            </p>
+            <h1>{copy(locale, "把 Deadline 变成清晰的行动。")}</h1>
+            <p>
+              {copy(
+                locale,
+                "这是基于真实 SwiftUI 项目制作的浏览器演示。任务与外观设置只保存在当前浏览器。",
+              )}
+            </p>
+          </div>
+          <div className="showcase-status">
+            <span>
+              <span className="status-dot" />
+              {copy(locale, "交互数据已启用")}
+            </span>
+            <div className="showcase-actions">
+              <button type="button" onClick={replayIntro}>
+                <Sparkles size={16} />
+                {copy(locale, "重播介绍")}
+              </button>
+              <button type="button" onClick={resetDemo}>
+                <RotateCcw size={16} />
+                {copy(locale, "重置演示")}
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <section
+          className="device-stage"
+          aria-label="Planora App interactive demo"
+        >
+          <div className="device">
+            <div className="device-speaker" aria-hidden="true" />
+            <div className="device-screen">
+              <StatusBar dark={settings.dark} />
+              <div className="app-content">
+                {!hydrated ? null : !introComplete ? (
+                  <Onboarding
+                    locale={locale}
+                    onLocaleChange={setLocale}
+                    onComplete={finishIntro}
+                  />
+                ) : (
+                  <>
+                    {screen.kind === "tab" && tab === "home" && (
+                      <HomeScreen
+                        tasks={tasks}
+                        settings={settings}
+                        curriculum={curriculum}
+                        onCurriculumChange={setCurriculum}
+                        onOpenTask={(taskId) =>
+                          setScreen({ kind: "task", taskId })
+                        }
+                        onToggleTask={(task) =>
+                          updateTask({
+                            ...task,
+                            completed: !task.completed,
+                          })
+                        }
+                        onOpenToday={() => setScreen({ kind: "today" })}
+                        onOpenWeek={() => setScreen({ kind: "week" })}
+                        onCreate={() => setScreen({ kind: "create" })}
+                      />
+                    )}
+                    {screen.kind === "tab" && tab === "tasks" && (
+                      <TasksScreen
+                        tasks={tasks}
+                        settings={settings}
+                        onOpenTask={(taskId) =>
+                          setScreen({ kind: "task", taskId })
+                        }
+                        onToggle={(task) =>
+                          updateTask({
+                            ...task,
+                            completed: !task.completed,
+                          })
+                        }
+                      />
+                    )}
+                    {screen.kind === "tab" && tab === "search" && (
+                      <SearchScreen
+                        tasks={tasks}
+                        onOpenTask={(taskId) =>
+                          setScreen({ kind: "task", taskId })
+                        }
+                      />
+                    )}
+                    {screen.kind === "tab" && tab === "profile" && (
+                      <ProfileScreen
+                        tasks={tasks}
+                        settings={settings}
+                        curriculum={curriculum}
+                        onOpenSettings={(section) =>
+                          setScreen({ kind: "settings", section })
+                        }
+                        onReset={resetDemo}
+                      />
+                    )}
+                    {screen.kind === "task" && activeTask && (
+                      <TaskDetailScreen
+                        task={activeTask}
+                        onBack={() => setScreen({ kind: "tab" })}
+                        onChange={updateTask}
+                      />
+                    )}
+                    {screen.kind === "today" && (
+                      <TodayScreen
+                        tasks={tasks}
+                        onBack={() => setScreen({ kind: "tab" })}
+                        onOpenTask={(taskId) =>
+                          setScreen({ kind: "task", taskId })
+                        }
+                      />
+                    )}
+                    {screen.kind === "week" && (
+                      <WeekScreen
+                        tasks={tasks}
+                        onBack={() => setScreen({ kind: "tab" })}
+                        onOpenTask={(taskId) =>
+                          setScreen({ kind: "task", taskId })
+                        }
+                      />
+                    )}
+                    {screen.kind === "settings" && (
+                      <SettingsScreen
+                        section={screen.section}
+                        settings={settings}
+                        locale={locale}
+                        onChange={setSettings}
+                        onLocaleChange={setLocale}
+                        onBack={() => setScreen({ kind: "tab" })}
+                      />
+                    )}
+                    {screen.kind === "create" && (
+                      <CreateScreen
+                        curriculum={curriculum}
+                        onClose={() => setScreen({ kind: "tab" })}
+                        onSave={(task) => {
+                          setTasks((current) => [task, ...current]);
+                          setTab("home");
+                          setScreen({ kind: "tab" });
+                        }}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+
+              {hydrated &&
+                introComplete &&
+                screen.kind !== "create" && (
+                  <TabBar
+                    active={tab}
+                    onSelect={chooseTab}
+                    onCreate={() => setScreen({ kind: "create" })}
+                  />
+                )}
+            </div>
+          </div>
+        </section>
+      </main>
+    </LocaleContext.Provider>
+  );
+}
+
+function LanguageMenu({
+  locale,
+  onChange,
+  className = "",
+}: {
+  locale: DemoLocale;
+  onChange: (locale: DemoLocale) => void;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`language-menu ${className} ${open ? "is-open" : ""}`}>
+      <button
+        className="language-menu-trigger"
+        type="button"
+        aria-expanded={open}
+        aria-label={copy(locale, "语言")}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <Globe2 />
+        <span>{localeCode(locale)}</span>
+        <ChevronDown />
+      </button>
+      {open && (
+        <div className="language-popover" role="menu">
+          {demoLocales.map((item) => (
+            <button
+              type="button"
+              role="menuitemradio"
+              aria-checked={item === locale}
+              key={item}
+              onClick={() => {
+                onChange(item);
+                setOpen(false);
+              }}
+            >
+              <span>{localeLabel(item, locale)}</span>
+              {item === locale && <Check />}
+            </button>
+          ))}
         </div>
-        <div className="showcase-copy">
-          <p className="eyebrow">IB · IGCSE 学习规划</p>
-          <h1>把 Deadline 变成清晰的行动。</h1>
-          <p>
-            这是基于真实 SwiftUI 项目制作的浏览器演示。任务与外观设置只保存在当前浏览器。
-          </p>
+      )}
+    </div>
+  );
+}
+
+function LocaleChoices({
+  locale,
+  onChange,
+}: {
+  locale: DemoLocale;
+  onChange: (locale: DemoLocale) => void;
+}) {
+  return (
+    <div className="locale-choices" aria-label={copy(locale, "语言")}>
+      {demoLocales.map((item) => (
+        <button
+          type="button"
+          className={locale === item ? "selected" : ""}
+          key={item}
+          onClick={() => onChange(item)}
+        >
+          {localeLabel(item, locale)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Onboarding({
+  locale,
+  onLocaleChange,
+  onComplete,
+}: {
+  locale: DemoLocale;
+  onLocaleChange: (locale: DemoLocale) => void;
+  onComplete: () => void;
+}) {
+  const [phase, setPhase] = useState<"welcome" | "features">("welcome");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setPhase("features"), 2350);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return (
+    <section className={`onboarding-screen phase-${phase}`}>
+      <div className="onboarding-language">
+        <Globe2 />
+        <LocaleChoices locale={locale} onChange={onLocaleChange} />
+      </div>
+
+      {phase === "welcome" ? (
+        <div className="welcome-stage">
+          <LogoMark />
+          <div className="welcome-copy">
+            <span>{copy(locale, "欢迎使用")}</span>
+            <strong>Planora</strong>
+          </div>
+          <p>{copy(locale, "学习规划，简单清晰。")}</p>
         </div>
-        <div className="showcase-status">
-          <span>
-            <span className="status-dot" />
-            交互数据已启用
-          </span>
-          <button type="button" onClick={resetDemo}>
-            <RotateCcw size={16} />
-            重置演示
+      ) : (
+        <div className="feature-intro">
+          <div className="feature-intro-heading">
+            <LogoMark small />
+            <h2>{copy(locale, "欢迎使用 Planora")}</h2>
+            <p>
+              {copy(
+                locale,
+                "一款为 IB 和 IGCSE 学生设计的学习规划工具。先选择课程体系与科目，再清晰查看任务、进度和重要日期。",
+              )}
+            </p>
+          </div>
+          <div className="feature-intro-list">
+            <IntroFeature
+              icon={BookOpen}
+              tone="blue"
+              title={copy(locale, "管理课程")}
+              description={copy(locale, "按课程体系整理科目与学习内容。")}
+            />
+            <IntroFeature
+              icon={CalendarDays}
+              tone="amber"
+              title={copy(locale, "掌握节点")}
+              description={copy(
+                locale,
+                "把作业、考试和长期项目放进清晰时间线。",
+              )}
+            />
+            <IntroFeature
+              icon={Gauge}
+              tone="green"
+              title={copy(locale, "推进进度")}
+              description={copy(
+                locale,
+                "用百分比或阶段追踪每一项学习任务。",
+              )}
+            />
+          </div>
+          <button
+            className="primary-button onboarding-continue"
+            type="button"
+            onClick={onComplete}
+          >
+            {copy(locale, "开始使用")}
           </button>
         </div>
-      </aside>
+      )}
+    </section>
+  );
+}
 
-      <section className="device-stage" aria-label="Planora App 交互式演示">
-        <div className="device">
-          <div className="device-speaker" aria-hidden="true" />
-          <div className="device-screen">
-            <StatusBar dark={settings.dark} />
-            <div className="app-content">
-              {screen.kind === "tab" && tab === "home" && (
-                <HomeScreen
-                  tasks={tasks}
-                  settings={settings}
-                  onOpenTask={(taskId) => setScreen({ kind: "task", taskId })}
-                  onOpenToday={() => setScreen({ kind: "today" })}
-                  onOpenWeek={() => setScreen({ kind: "week" })}
-                  onCreate={() => setScreen({ kind: "create" })}
-                />
-              )}
-              {screen.kind === "tab" && tab === "tasks" && (
-                <TasksScreen
-                  tasks={tasks}
-                  settings={settings}
-                  onOpenTask={(taskId) => setScreen({ kind: "task", taskId })}
-                  onToggle={(task) =>
-                    updateTask({ ...task, completed: !task.completed })
-                  }
-                />
-              )}
-              {screen.kind === "tab" && tab === "search" && (
-                <SearchScreen
-                  tasks={tasks}
-                  onOpenTask={(taskId) => setScreen({ kind: "task", taskId })}
-                />
-              )}
-              {screen.kind === "tab" && tab === "profile" && (
-                <ProfileScreen
-                  tasks={tasks}
-                  settings={settings}
-                  onOpenSettings={(section) =>
-                    setScreen({ kind: "settings", section })
-                  }
-                  onReset={resetDemo}
-                />
-              )}
-              {screen.kind === "task" && activeTask && (
-                <TaskDetailScreen
-                  task={activeTask}
-                  onBack={() => setScreen({ kind: "tab" })}
-                  onChange={updateTask}
-                />
-              )}
-              {screen.kind === "today" && (
-                <TodayScreen
-                  tasks={tasks}
-                  onBack={() => setScreen({ kind: "tab" })}
-                  onOpenTask={(taskId) => setScreen({ kind: "task", taskId })}
-                />
-              )}
-              {screen.kind === "week" && (
-                <WeekScreen
-                  tasks={tasks}
-                  onBack={() => setScreen({ kind: "tab" })}
-                  onOpenTask={(taskId) => setScreen({ kind: "task", taskId })}
-                />
-              )}
-              {screen.kind === "settings" && (
-                <SettingsScreen
-                  section={screen.section}
-                  settings={settings}
-                  onChange={setSettings}
-                  onBack={() => setScreen({ kind: "tab" })}
-                />
-              )}
-              {screen.kind === "create" && (
-                <CreateScreen
-                  onClose={() => setScreen({ kind: "tab" })}
-                  onSave={(task) => {
-                    setTasks((current) => [task, ...current]);
-                    setTab("home");
-                    setScreen({ kind: "tab" });
-                  }}
-                />
-              )}
-            </div>
-
-            {screen.kind !== "create" && (
-              <TabBar
-                active={tab}
-                onSelect={chooseTab}
-                onCreate={() => setScreen({ kind: "create" })}
-              />
-            )}
-          </div>
-        </div>
-      </section>
-    </main>
+function IntroFeature({
+  icon: Icon,
+  tone,
+  title,
+  description,
+}: {
+  icon: LucideIcon;
+  tone: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="intro-feature">
+      <span className={`tone-${tone}`}>
+        <Icon />
+      </span>
+      <div>
+        <strong>{title}</strong>
+        <p>{description}</p>
+      </div>
+    </div>
   );
 }
 
@@ -527,12 +851,13 @@ function ScreenHeader({
   subtitle?: string;
   onBack?: () => void;
 }) {
+  const { t } = useDemoCopy();
   return (
     <header className={`screen-header ${onBack ? "with-back" : ""}`}>
       {onBack && (
         <button className="icon-button back-button" type="button" onClick={onBack}>
           <ChevronLeft />
-          <span className="sr-only">返回</span>
+          <span className="sr-only">{t("返回")}</span>
         </button>
       )}
       <div>
@@ -546,18 +871,26 @@ function ScreenHeader({
 function HomeScreen({
   tasks,
   settings,
+  curriculum,
+  onCurriculumChange,
   onOpenTask,
+  onToggleTask,
   onOpenToday,
   onOpenWeek,
   onCreate,
 }: {
   tasks: PlanoraItem[];
   settings: DemoSettings;
+  curriculum: Curriculum;
+  onCurriculumChange: (curriculum: Curriculum) => void;
   onOpenTask: (taskId: string) => void;
+  onToggleTask: (task: PlanoraItem) => void;
   onOpenToday: () => void;
   onOpenWeek: () => void;
   onCreate: () => void;
 }) {
+  const { locale, t } = useDemoCopy();
+  const [curriculumOpen, setCurriculumOpen] = useState(false);
   const openTasks = sortTasks(
     tasks.filter((task) => !task.completed),
     "smart",
@@ -581,26 +914,72 @@ function HomeScreen({
     <div className="screen scroll-screen">
       <div className="home-header">
         <div>
-          <p className="eyebrow">今天 · {formatDay(localISO(new Date()), true)}</p>
-          <h2>你好，Mitty</h2>
-          <p>现在最需要关注什么？</p>
+          <h2>
+            {locale === "en"
+              ? "Hello, Mitty"
+              : locale === "ja"
+                ? "こんにちは、Mitty"
+                : "你好，Mitty"}
+          </h2>
+          <p>
+            {locale === "en"
+              ? "What should you focus on now?"
+              : locale === "ja"
+                ? "今、何に集中しますか？"
+                : "现在应该关注什么？"}
+          </p>
         </div>
-        <button className="curriculum-badge" type="button">
-          IB <ChevronDown size={15} />
-        </button>
+        <div
+          className={`curriculum-menu ${curriculumOpen ? "is-open" : ""}`}
+        >
+          <button
+            className="curriculum-badge"
+            type="button"
+            aria-expanded={curriculumOpen}
+            onClick={() => setCurriculumOpen((value) => !value)}
+          >
+            {curriculum.toUpperCase()} <ChevronDown size={15} />
+          </button>
+          {curriculumOpen && (
+            <div className="curriculum-popover" role="menu">
+              {(["ib", "igcse"] as Curriculum[]).map((item) => (
+                <button
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={curriculum === item}
+                  key={item}
+                  onClick={() => {
+                    onCurriculumChange(item);
+                    setCurriculumOpen(false);
+                  }}
+                >
+                  <span>
+                    <strong>{item.toUpperCase()}</strong>
+                    <small>
+                      {item === "ib"
+                        ? "Diploma Programme"
+                        : "International GCSE"}
+                    </small>
+                  </span>
+                  {curriculum === item && <Check />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="planning-strip">
         <PlanningButton
-          title="今日"
-          subtitle="安排今日执行"
+          title={t("今天")}
+          subtitle={t("执行今天的计划")}
           icon={Sun}
           color="amber"
           onClick={onOpenToday}
         />
         <PlanningButton
-          title="本周"
-          subtitle="查看七天负载"
+          title={t("本周")}
+          subtitle={t("查看七天负载")}
           icon={CalendarDays}
           color="blue"
           onClick={onOpenWeek}
@@ -610,11 +989,11 @@ function HomeScreen({
       {!focus ? (
         <section className="empty-panel">
           <ListChecks />
-          <h3>还没有任务</h3>
-          <p>点击加号创建第一个学习任务。</p>
+          <h3>{t("还没有任务")}</h3>
+          <p>{t("点击加号创建第一个学习任务。")}</p>
           <button className="primary-button" type="button" onClick={onCreate}>
             <Plus size={18} />
-            新建任务
+            {t("新建任务")}
           </button>
         </section>
       ) : (
@@ -629,23 +1008,61 @@ function HomeScreen({
             }}
           >
             <div className="focus-topline">
-              <span className="eyebrow">CURRENT FOCUS</span>
+              <span className="eyebrow">{t("当前重点")}</span>
               <PriorityBadge priority={focus.priority} />
             </div>
-            <h3>{focus.title}</h3>
-            <p>
-              {focus.subject} · {deadlineLabel(focus.deadline)}
-            </p>
-            <ProgressBar value={focus.progress} color={taskMeta[focus.type].color} />
-            <div className="focus-footer">
-              <span>
-                {focus.progressKind === "stage" ? focus.stage : `${focus.progress}%`}
+            <div className="focus-main">
+              <button
+                className="focus-complete"
+                type="button"
+                aria-label={t("完成任务")}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onToggleTask(focus);
+                }}
+              >
+                <Circle />
+              </button>
+              <div>
+                <h3>{focus.title}</h3>
+                <p>{focus.subject}</p>
+              </div>
+              <span className="focus-open" aria-hidden="true">
+                <ChevronRight />
               </span>
-              <span>完成下一个阶段目标</span>
+            </div>
+            <p className="focus-message">
+              {daysUntil(focus.deadline) !== null &&
+              (daysUntil(focus.deadline) ?? 0) < 0
+                ? t("已过日期。查看这个作业。")
+                : deadlineLabel(focus.deadline, locale)}
+            </p>
+            <div className="focus-metadata">
+              <div>
+                <span>{t("截止日期")}</span>
+                <strong>{formatDay(focus.deadline, locale)}</strong>
+              </div>
+              <div>
+                <span>
+                  {focus.progressKind === "stage" ? t("阶段") : t("进度")}
+                </span>
+                <strong>
+                  {focus.progressKind === "stage"
+                    ? t(focus.stage)
+                    : `${focus.progress}%`}
+                </strong>
+              </div>
             </div>
           </section>
 
-          <SectionTitle title="即将到来" value={`${openTasks.length} 项`} />
+          <SectionTitle
+            title={t("即将到来的任务")}
+            value={
+              locale === "en"
+                ? `${openTasks.length} items`
+                : `${openTasks.length} ${t("项")}`
+            }
+          />
           <div className="stack-list">
             {openTasks.slice(1, 4).map((task) => (
               <TaskRow
@@ -659,7 +1076,10 @@ function HomeScreen({
             ))}
           </div>
 
-          <SectionTitle title="学习进度" value={`${completed} / ${tasks.length}`} />
+          <SectionTitle
+            title={t("学习进度")}
+            value={`${completed} / ${tasks.length}`}
+          />
           <section className="plain-section progress-section">
             {subjectProgress.map((subject, index) => (
               <div className="subject-progress" key={subject.subject}>
@@ -674,16 +1094,19 @@ function HomeScreen({
               </div>
             ))}
             <div className="insight-grid">
-              <Insight value={`${completed}`} label="本周完成" />
-              <Insight value={openTasks[0]?.subject ?? "暂无"} label="当前重点" />
+              <Insight value={`${completed}`} label={t("本周完成")} />
+              <Insight
+                value={openTasks[0]?.subject ?? t("暂无")}
+                label={t("当前重点")}
+              />
               <Insight
                 value={`${openTasks.filter((task) => (daysUntil(task.deadline) ?? 99) <= 7).length}`}
-                label="未来七天"
+                label={t("未来七天")}
               />
             </div>
           </section>
 
-          <SectionTitle title="日历预览" value="本周" />
+          <SectionTitle title={t("日历预览")} value={t("本周")} />
           <MiniCalendar tasks={tasks} onOpenTask={onOpenTask} />
         </>
       )}
@@ -724,6 +1147,7 @@ function TasksScreen({
   onOpenTask: (taskId: string) => void;
   onToggle: (task: PlanoraItem) => void;
 }) {
+  const { t } = useDemoCopy();
   const visible = sortTasks(
     tasks.filter((task) => settings.showCompleted || !task.completed),
     settings.sortOrder,
@@ -731,7 +1155,10 @@ function TasksScreen({
 
   return (
     <div className="screen scroll-screen">
-      <ScreenHeader title="任务" subtitle="根据设置显示和排序任务。" />
+      <ScreenHeader
+        title={t("任务")}
+        subtitle={t("根据设置显示和排序任务。")}
+      />
       <div className={`task-list density-${settings.density}`}>
         {visible.map((task) => (
           <TaskRow
@@ -764,6 +1191,7 @@ function TaskRow({
   onOpen: () => void;
   onToggle?: () => void;
 }) {
+  const { locale, t } = useDemoCopy();
   const meta = taskMeta[task.type];
   const Icon = meta.icon;
   return (
@@ -777,22 +1205,24 @@ function TaskRow({
       <div className="task-copy">
         <div className="task-title-line">
           <h3>{task.title}</h3>
-          <span className={`type-pill tone-${meta.color}`}>{meta.title}</span>
+          <span className={`type-pill tone-${meta.color}`}>
+            {t(meta.title)}
+          </span>
         </div>
         <p>{task.subject}</p>
         <div className="task-metrics">
           <span>
             <CalendarDays />
-            {formatDay(task.deadline)}
+            {formatDay(task.deadline, locale)}
           </span>
           <span>
             {task.progressKind === "percentage" && showPercentage
               ? `${task.progress}%`
-              : task.stage}
+              : t(task.stage)}
           </span>
         </div>
         {showNotes && density === "comfortable" && task.notes && (
-          <p className="task-note">{task.notes}</p>
+          <p className="task-note">{t(task.notes)}</p>
         )}
       </div>
       <div className="task-side">
@@ -805,7 +1235,9 @@ function TaskRow({
               event.stopPropagation();
               onToggle();
             }}
-            aria-label={task.completed ? "重新打开任务" : "完成任务"}
+            aria-label={
+              task.completed ? t("重新打开任务") : t("完成任务")
+            }
           >
             {task.completed ? <CheckCircle2 /> : <Circle />}
           </button>
@@ -822,6 +1254,7 @@ function SearchScreen({
   tasks: PlanoraItem[];
   onOpenTask: (taskId: string) => void;
 }) {
+  const { t } = useDemoCopy();
   const [query, setQuery] = useState("");
   const [subject, setSubject] = useState("all");
   const [type, setType] = useState("all");
@@ -849,7 +1282,10 @@ function SearchScreen({
 
   return (
     <div className="screen scroll-screen search-screen">
-      <ScreenHeader title="搜索" subtitle="快速查找任务、活动和重要日期。" />
+      <ScreenHeader
+        title={t("搜索")}
+        subtitle={t("快速查找任务、活动和重要日期。")}
+      />
       <div className="search-control-row">
         <label className="search-field">
           <Search />
@@ -857,7 +1293,7 @@ function SearchScreen({
             ref={inputRef}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="搜索"
+            placeholder={t("搜索")}
             inputMode="search"
           />
         </label>
@@ -868,7 +1304,7 @@ function SearchScreen({
             setQuery("");
             inputRef.current?.blur();
           }}
-          aria-label="清除搜索并收起键盘"
+          aria-label={t("清除搜索并收起键盘")}
         >
           <X />
         </button>
@@ -879,7 +1315,7 @@ function SearchScreen({
           value={subject}
           onChange={setSubject}
           options={[
-            ["all", "科目"],
+            ["all", t("科目")],
             ...subjects.map((item) => [item, item] as [string, string]),
           ]}
         />
@@ -888,10 +1324,10 @@ function SearchScreen({
           value={type}
           onChange={setType}
           options={[
-            ["all", "任务类型"],
+            ["all", t("任务类型")],
             ...Object.entries(taskMeta).map(([value, meta]) => [
               value,
-              meta.title,
+              t(meta.title),
             ] as [string, string]),
           ]}
         />
@@ -900,13 +1336,16 @@ function SearchScreen({
           value={status}
           onChange={setStatus}
           options={[
-            ["all", "状态"],
-            ["open", "进行中"],
-            ["completed", "已完成"],
+            ["all", t("状态")],
+            ["open", t("进行中")],
+            ["completed", t("已完成")],
           ]}
         />
       </div>
-      <SectionTitle title={query ? "搜索结果" : "所有项目"} value={`${results.length}`} />
+      <SectionTitle
+        title={query ? t("搜索结果") : t("所有项目")}
+        value={`${results.length}`}
+      />
       <div className="search-results">
         {results.map((task) => (
           <TaskRow
@@ -921,8 +1360,8 @@ function SearchScreen({
         {results.length === 0 && (
           <div className="simple-empty">
             <Search />
-            <strong>没有匹配项目</strong>
-            <span>试试其他关键词或筛选条件。</span>
+            <strong>{t("没有匹配项目")}</strong>
+            <span>{t("试试其他关键词或筛选条件。")}</span>
           </div>
         )}
       </div>
@@ -959,55 +1398,72 @@ function FilterSelect({
 function ProfileScreen({
   tasks,
   settings,
+  curriculum,
   onOpenSettings,
   onReset,
 }: {
   tasks: PlanoraItem[];
   settings: DemoSettings;
-  onOpenSettings: (section: "appearance" | "display") => void;
+  curriculum: Curriculum;
+  onOpenSettings: (
+    section: "appearance" | "display" | "language",
+  ) => void;
   onReset: () => void;
 }) {
+  const { locale, t } = useDemoCopy();
   const subjects = [...new Set(tasks.map((task) => task.subject))];
   return (
     <div className="screen scroll-screen">
-      <ScreenHeader title="我的" />
+      <ScreenHeader title={t("我的")} />
       <section className="profile-card">
         <LogoMark small />
         <div>
           <h3>Mitty</h3>
-          <p>IB 学习空间</p>
+          <p>
+            {curriculum.toUpperCase()} {t("学习空间")}
+          </p>
         </div>
       </section>
 
-      <SectionTitle title="设置" />
+      <SectionTitle title={t("设置")} />
       <section className="settings-list">
         <SettingsRow
           icon={Palette}
-          title="外观"
-          value={themeTitle(settings.theme)}
+          title={t("外观")}
+          value={themeTitle(settings.theme, locale)}
           onClick={() => onOpenSettings("appearance")}
         />
         <SettingsRow
           icon={Settings2}
-          title="任务显示"
-          value={settings.density === "comfortable" ? "舒适" : "紧凑"}
+          title={t("任务显示")}
+          value={
+            settings.density === "comfortable" ? t("舒适") : t("紧凑")
+          }
           onClick={() => onOpenSettings("display")}
+        />
+        <SettingsRow
+          icon={Globe2}
+          title={t("语言")}
+          value={localeLabel(locale, locale)}
+          onClick={() => onOpenSettings("language")}
         />
       </section>
 
-      <SectionTitle title="任务存储" />
+      <SectionTitle title={t("任务存储")} />
       <section className="backup-card">
         <Archive />
         <div>
-          <strong>{tasks.length} 项任务</strong>
-          <span>JSON v8 · 浏览器本地演示</span>
+          <strong>
+            {tasks.length} {t("项")} {t("任务")}
+          </strong>
+          <span>JSON v8 · {t("浏览器本地演示")}</span>
         </div>
         <button type="button" onClick={onReset}>
-          恢复演示
+          {t("恢复演示")}
         </button>
       </section>
 
-      <SectionTitle title="当前科目" value={`${subjects.length}`} />
+      <SectionTitle title={t("当前科目")} value={`${subjects.length}`} />
       <section className="subject-list">
         {subjects.map((subject) => (
           <div key={subject}>
@@ -1047,19 +1503,28 @@ function SettingsRow({
 function SettingsScreen({
   section,
   settings,
+  locale,
   onChange,
+  onLocaleChange,
   onBack,
 }: {
-  section: "appearance" | "display";
+  section: "appearance" | "display" | "language";
   settings: DemoSettings;
+  locale: DemoLocale;
   onChange: (settings: DemoSettings) => void;
+  onLocaleChange: (locale: DemoLocale) => void;
   onBack: () => void;
 }) {
+  const { t } = useDemoCopy();
   if (section === "appearance") {
     return (
       <div className="screen scroll-screen">
-        <ScreenHeader title="外观" subtitle="选择颜色主题与显示模式。" onBack={onBack} />
-        <SectionTitle title="颜色主题" />
+        <ScreenHeader
+          title={t("外观")}
+          subtitle={t("选择颜色主题与显示模式。")}
+          onBack={onBack}
+        />
+        <SectionTitle title={t("颜色主题")} />
         <div className="theme-grid">
           {(["classic", "ocean", "forest", "sunset"] as Theme[]).map((theme) => (
             <button
@@ -1071,12 +1536,12 @@ function SettingsScreen({
               onClick={() => onChange({ ...settings, theme })}
             >
               <span className="theme-swatch" />
-              <strong>{themeTitle(theme)}</strong>
+              <strong>{themeTitle(theme, locale)}</strong>
               {settings.theme === theme && <Check />}
             </button>
           ))}
         </div>
-        <SectionTitle title="显示模式" />
+        <SectionTitle title={t("显示模式")} />
         <section className="segmented-setting">
           <button
             className={!settings.dark ? "selected" : ""}
@@ -1084,7 +1549,7 @@ function SettingsScreen({
             onClick={() => onChange({ ...settings, dark: false })}
           >
             <Sun />
-            浅色
+            {t("浅色")}
           </button>
           <button
             className={settings.dark ? "selected" : ""}
@@ -1092,8 +1557,28 @@ function SettingsScreen({
             onClick={() => onChange({ ...settings, dark: true })}
           >
             <Moon />
-            深色
+            {t("深色")}
           </button>
+        </section>
+      </div>
+    );
+  }
+
+  if (section === "language") {
+    return (
+      <div className="screen scroll-screen">
+        <ScreenHeader title={t("语言")} onBack={onBack} />
+        <section className="settings-radio-list language-settings-list">
+          {demoLocales.map((item) => (
+            <button
+              type="button"
+              key={item}
+              onClick={() => onLocaleChange(item)}
+            >
+              <span>{localeLabel(item, locale)}</span>
+              {locale === item ? <CheckCircle2 /> : <Circle />}
+            </button>
+          ))}
         </section>
       </div>
     );
@@ -1102,11 +1587,11 @@ function SettingsScreen({
   return (
     <div className="screen scroll-screen">
       <ScreenHeader
-        title="任务显示"
-        subtitle="控制任务列表的外观与排序。"
+        title={t("任务显示")}
+        subtitle={t("控制任务列表的外观与排序。")}
         onBack={onBack}
       />
-      <SectionTitle title="列表密度" />
+      <SectionTitle title={t("列表密度")} />
       <section className="segmented-setting">
         {(["comfortable", "compact"] as Density[]).map((density) => (
           <button
@@ -1116,18 +1601,18 @@ function SettingsScreen({
             onClick={() => onChange({ ...settings, density })}
           >
             {density === "comfortable" ? <LayoutGrid /> : <Menu />}
-            {density === "comfortable" ? "舒适" : "紧凑"}
+            {density === "comfortable" ? t("舒适") : t("紧凑")}
           </button>
         ))}
       </section>
-      <SectionTitle title="排序" />
+      <SectionTitle title={t("排序")} />
       <section className="settings-radio-list">
         {(
           [
-            ["smart", "智能排序"],
-            ["deadline", "截止日期"],
-            ["priority", "优先级"],
-            ["title", "标题"],
+            ["smart", t("智能排序")],
+            ["deadline", t("截止日期")],
+            ["priority", t("优先级")],
+            ["title", t("标题")],
           ] as [SortOrder, string][]
         ).map(([order, title]) => (
           <button
@@ -1140,20 +1625,20 @@ function SettingsScreen({
           </button>
         ))}
       </section>
-      <SectionTitle title="内容" />
+      <SectionTitle title={t("内容")} />
       <section className="toggle-list">
         <ToggleRow
-          title="显示已完成任务"
+          title={t("显示已完成任务")}
           checked={settings.showCompleted}
           onChange={(showCompleted) => onChange({ ...settings, showCompleted })}
         />
         <ToggleRow
-          title="显示进度百分比"
+          title={t("显示进度百分比")}
           checked={settings.showPercentage}
           onChange={(showPercentage) => onChange({ ...settings, showPercentage })}
         />
         <ToggleRow
-          title="显示备注"
+          title={t("显示备注")}
           checked={settings.showNotes}
           onChange={(showNotes) => onChange({ ...settings, showNotes })}
         />
@@ -1193,6 +1678,7 @@ function TaskDetailScreen({
   onBack: () => void;
   onChange: (task: PlanoraItem) => void;
 }) {
+  const { locale, t } = useDemoCopy();
   const meta = taskMeta[task.type];
   const Icon = meta.icon;
   const stages = [
@@ -1206,7 +1692,7 @@ function TaskDetailScreen({
 
   return (
     <div className="screen scroll-screen detail-screen">
-      <ScreenHeader title="任务详情" onBack={onBack} />
+      <ScreenHeader title={t("任务详情")} onBack={onBack} />
       <div className="detail-title">
         <span className={`task-icon large tone-${meta.color}`}>
           <Icon />
@@ -1218,26 +1704,34 @@ function TaskDetailScreen({
         <PriorityBadge priority={task.priority} />
       </div>
       <section className="detail-list">
-        <DetailLine icon={LayoutGrid} title="类型" value={meta.title} />
+        <DetailLine icon={LayoutGrid} title={t("类型")} value={t(meta.title)} />
         <DetailLine
           icon={CalendarDays}
-          title="截止日期"
-          value={formatDay(task.deadline, true)}
+          title={t("截止日期")}
+          value={formatDay(task.deadline, locale, true)}
         />
         <DetailLine
           icon={Clock3}
-          title="计划完成"
-          value={task.plannedDate ? formatDay(task.plannedDate, true) : "未安排"}
+          title={t("计划完成")}
+          value={
+            task.plannedDate
+              ? formatDay(task.plannedDate, locale, true)
+              : t("未安排")
+          }
         />
-        <DetailLine icon={Bell} title="提醒" value="提前 1 天 · 当天" />
+        <DetailLine
+          icon={Bell}
+          title={t("提醒")}
+          value={t("提前 1 天 · 当天")}
+        />
       </section>
 
-      <SectionTitle title="进度" />
+      <SectionTitle title={t("进度")} />
       <section className="detail-progress">
         {task.progressKind === "percentage" ? (
           <>
             <div>
-              <span>完成度</span>
+              <span>{t("完成度")}</span>
               <strong>{task.progress}%</strong>
             </div>
             <input
@@ -1272,7 +1766,7 @@ function TaskDetailScreen({
                   }
                 >
                   {done ? <CheckCircle2 /> : active ? <Gauge /> : <Circle />}
-                  <span>{stage}</span>
+                  <span>{t(stage)}</span>
                 </button>
               );
             })}
@@ -1280,8 +1774,10 @@ function TaskDetailScreen({
         )}
       </section>
 
-      <SectionTitle title="备注" />
-      <section className="notes-panel">{task.notes || "暂无备注"}</section>
+      <SectionTitle title={t("备注")} />
+      <section className="notes-panel">
+        {task.notes ? t(task.notes) : t("暂无备注")}
+      </section>
 
       <button
         className="primary-button full"
@@ -1289,7 +1785,7 @@ function TaskDetailScreen({
         onClick={() => onChange({ ...task, completed: !task.completed })}
       >
         {task.completed ? <RotateCcw /> : <CheckCircle2 />}
-        {task.completed ? "重新打开任务" : "标记为已完成"}
+        {task.completed ? t("重新打开任务") : t("标记为已完成")}
       </button>
     </div>
   );
@@ -1322,6 +1818,7 @@ function TodayScreen({
   onBack: () => void;
   onOpenTask: (taskId: string) => void;
 }) {
+  const { locale, t } = useDemoCopy();
   const today = localISO(new Date());
   const overdue = tasks.filter(
     (task) => !task.completed && task.deadline && task.deadline < today,
@@ -1340,16 +1837,29 @@ function TodayScreen({
   return (
     <div className="screen scroll-screen">
       <ScreenHeader
-        title="今日"
-        subtitle={new Intl.DateTimeFormat("zh-CN", { dateStyle: "full" }).format(
-          new Date(),
-        )}
+        title={t("今天")}
+        subtitle={new Intl.DateTimeFormat(dateLocale(locale), {
+          dateStyle: "full",
+        }).format(new Date())}
         onBack={onBack}
       />
-      {empty && <div className="simple-empty"><Sun /><strong>今天没有安排</strong></div>}
-      <PlanningGroup title="逾期" tasks={overdue} onOpenTask={onOpenTask} />
-      <PlanningGroup title="今天截止" tasks={due} onOpenTask={onOpenTask} />
-      <PlanningGroup title="计划今天完成" tasks={planned} onOpenTask={onOpenTask} />
+      {empty && (
+        <div className="simple-empty">
+          <Sun />
+          <strong>{t("今天没有安排")}</strong>
+        </div>
+      )}
+      <PlanningGroup title={t("逾期")} tasks={overdue} onOpenTask={onOpenTask} />
+      <PlanningGroup
+        title={t("今天截止")}
+        tasks={due}
+        onOpenTask={onOpenTask}
+      />
+      <PlanningGroup
+        title={t("计划今天完成")}
+        tasks={planned}
+        onOpenTask={onOpenTask}
+      />
     </div>
   );
 }
@@ -1363,6 +1873,7 @@ function WeekScreen({
   onBack: () => void;
   onOpenTask: (taskId: string) => void;
 }) {
+  const { locale, t } = useDemoCopy();
   const days = Array.from({ length: 7 }, (_, index) => offsetISO(index));
   const open = tasks.filter((task) => !task.completed);
   const unscheduled = open.filter((task) => !task.plannedDate && !task.deadline);
@@ -1378,11 +1889,15 @@ function WeekScreen({
   return (
     <div className="screen scroll-screen">
       <ScreenHeader
-        title="本周"
+        title={t("本周")}
         subtitle={
           busiest?.count
-            ? `最忙：${formatDay(busiest.day, true)} · ${busiest.count} 项任务`
-            : "本周还没有安排"
+            ? locale === "en"
+              ? `Busiest: ${formatDay(busiest.day, locale, true)} · ${busiest.count} tasks`
+              : locale === "ja"
+                ? `最多：${formatDay(busiest.day, locale, true)}・${busiest.count}件`
+                : `最忙：${formatDay(busiest.day, locale, true)} · ${busiest.count} 项任务`
+            : t("本周还没有安排")
         }
         onBack={onBack}
       />
@@ -1393,7 +1908,7 @@ function WeekScreen({
           );
           return (
             <section key={day}>
-              <h3>{formatDay(day, true)}</h3>
+              <h3>{formatDay(day, locale, true)}</h3>
               {dayTasks.length ? (
                 dayTasks.map((task) => (
                   <button
@@ -1407,7 +1922,7 @@ function WeekScreen({
                   </button>
                 ))
               ) : (
-                <p>无安排</p>
+                <p>{t("无安排")}</p>
               )}
             </section>
           );
@@ -1415,7 +1930,7 @@ function WeekScreen({
       </div>
       {unscheduled.length > 0 && (
         <PlanningGroup
-          title={`未安排 · ${unscheduled.length}`}
+          title={`${t("未安排任务")} · ${unscheduled.length}`}
           tasks={unscheduled}
           onOpenTask={onOpenTask}
         />
@@ -1454,16 +1969,29 @@ function PlanningGroup({
 }
 
 function CreateScreen({
+  curriculum,
   onClose,
   onSave,
 }: {
+  curriculum: Curriculum;
   onClose: () => void;
   onSave: (task: PlanoraItem) => void;
 }) {
+  const { t } = useDemoCopy();
+  const subjects =
+    curriculum === "ib"
+      ? ["Physics HL", "Mathematics AA HL", "English B HL", "TOK", "CAS"]
+      : [
+          "Mathematics",
+          "English as a Second Language",
+          "Physics",
+          "Chemistry",
+          "Biology",
+        ];
   const [mode, setMode] = useState<"select" | "quick" | "full">("select");
   const [type, setType] = useState<TaskType>("assignment");
   const [title, setTitle] = useState("");
-  const [subject, setSubject] = useState("Physics HL");
+  const [subject, setSubject] = useState(subjects[0]);
   const [hasDeadline, setHasDeadline] = useState(true);
   const [deadline, setDeadline] = useState(offsetISO(7));
   const [plannedDate, setPlannedDate] = useState("");
@@ -1476,7 +2004,7 @@ function CreateScreen({
 
   function chooseType(nextType: TaskType) {
     setType(nextType);
-    setTitle(taskMeta[nextType].title);
+    setTitle(t(taskMeta[nextType].title));
     setProgressKind(["tok", "ee", "ia", "cas"].includes(nextType) ? "stage" : "percentage");
     setMode("full");
   }
@@ -1494,7 +2022,7 @@ function CreateScreen({
       plannedDate: plannedDate || undefined,
       progressKind: mode === "quick" ? "percentage" : progressKind,
       progress: 0,
-      stage: taskMeta[type].defaultStage,
+      stage: t(taskMeta[type].defaultStage),
       notes: mode === "quick" ? "" : notes,
       completed: false,
       recurring: mode === "full" && recurring,
@@ -1511,8 +2039,19 @@ function CreateScreen({
         ) : (
           <span />
         )}
-        <h2>{mode === "select" ? "新建任务" : mode === "quick" ? "快速新建" : taskMeta[type].title}</h2>
-        <button className="icon-button" type="button" onClick={onClose}>
+        <h2>
+          {mode === "select"
+            ? t("新建任务")
+            : mode === "quick"
+              ? t("快速新建")
+              : t(taskMeta[type].title)}
+        </h2>
+        <button
+          className="icon-button"
+          type="button"
+          onClick={onClose}
+          aria-label={t("关闭")}
+        >
           <X />
         </button>
       </div>
@@ -1522,8 +2061,8 @@ function CreateScreen({
           <button className="quick-create-card" type="button" onClick={() => setMode("quick")}>
             <span><Sparkles /></span>
             <div>
-              <strong>快速新建</strong>
-              <small>只填写标题、科目和日期。</small>
+              <strong>{t("快速新建")}</strong>
+              <small>{t("只填写标题、科目和日期。")}</small>
             </div>
           </button>
           <div className="type-grid">
@@ -1538,7 +2077,7 @@ function CreateScreen({
                   onClick={() => chooseType(taskType)}
                 >
                   <span><Icon /></span>
-                  <strong>{meta.title}</strong>
+                  <strong>{t(meta.title)}</strong>
                 </button>
               );
             })}
@@ -1547,34 +2086,36 @@ function CreateScreen({
       ) : (
         <div className="create-content scroll-screen">
           <section className="form-panel">
-            <FormField label="标题">
+            <FormField label={t("标题")}>
               <input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
-                placeholder="任务名称"
+                placeholder={t("任务名称")}
               />
             </FormField>
-            <FormField label="科目">
+            <FormField label={t("科目")}>
               <select value={subject} onChange={(event) => setSubject(event.target.value)}>
-                <option>Physics HL</option>
-                <option>Mathematics AA HL</option>
-                <option>English B HL</option>
-                <option>TOK</option>
-                <option>CAS</option>
+                {subjects.map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
               </select>
             </FormField>
-            <ToggleRow title="截止日期" checked={hasDeadline} onChange={setHasDeadline} />
+            <ToggleRow
+              title={t("截止日期")}
+              checked={hasDeadline}
+              onChange={setHasDeadline}
+            />
             {hasDeadline && (
-              <FormField label="日期">
+              <FormField label={t("日期")}>
                 <input type="date" value={deadline} onChange={(event) => setDeadline(event.target.value)} />
               </FormField>
             )}
-            <FormField label="计划完成日期">
+            <FormField label={t("计划完成日期")}>
               <input type="date" value={plannedDate} onChange={(event) => setPlannedDate(event.target.value)} />
             </FormField>
             {mode === "full" && (
               <>
-                <FormField label="优先级">
+                <FormField label={t("优先级")}>
                   <div className="segmented-inline">
                     {(["low", "medium", "high"] as Priority[]).map((item) => (
                       <button
@@ -1583,31 +2124,35 @@ function CreateScreen({
                         className={priority === item ? "selected" : ""}
                         onClick={() => setPriority(item)}
                       >
-                        {priorities[item].title}
+                        {t(priorities[item].title)}
                       </button>
                     ))}
                   </div>
                 </FormField>
-                <FormField label="进度方式">
+                <FormField label={t("进度方式")}>
                   <div className="segmented-inline">
                     <button
                       type="button"
                       className={progressKind === "percentage" ? "selected" : ""}
                       onClick={() => setProgressKind("percentage")}
                     >
-                      百分比
+                      {t("百分比")}
                     </button>
                     <button
                       type="button"
                       className={progressKind === "stage" ? "selected" : ""}
                       onClick={() => setProgressKind("stage")}
                     >
-                      阶段
+                      {t("阶段")}
                     </button>
                   </div>
                 </FormField>
-                <ToggleRow title="重复任务" checked={recurring} onChange={setRecurring} />
-                <FormField label="备注">
+                <ToggleRow
+                  title={t("重复任务")}
+                  checked={recurring}
+                  onChange={setRecurring}
+                />
+                <FormField label={t("备注")}>
                   <textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows={3} />
                 </FormField>
               </>
@@ -1615,7 +2160,7 @@ function CreateScreen({
           </section>
           <button className="primary-button full" type="button" onClick={save} disabled={!title.trim()}>
             <Check />
-            保存任务
+            {t("保存任务")}
           </button>
         </div>
       )}
@@ -1647,24 +2192,34 @@ function TabBar({
   onSelect: (tab: Tab) => void;
   onCreate: () => void;
 }) {
+  const { t } = useDemoCopy();
   const tabs: { id: Tab; title: string; icon: LucideIcon }[] = [
-    { id: "home", title: "首页", icon: Home },
-    { id: "tasks", title: "任务", icon: ListChecks },
-    { id: "search", title: "搜索", icon: Search },
-    { id: "profile", title: "我的", icon: UserRound },
+    { id: "home", title: t("首页"), icon: Home },
+    { id: "tasks", title: t("任务"), icon: ListChecks },
+    { id: "profile", title: t("我的"), icon: UserRound },
+    { id: "search", title: t("搜索"), icon: Search },
   ];
   return (
-    <nav className="tab-bar" aria-label="主导航">
-      {tabs.slice(0, 2).map((item) => (
-        <TabButton key={item.id} item={item} active={active} onSelect={onSelect} />
-      ))}
-      <button className="create-tab" type="button" onClick={onCreate} aria-label="新建任务">
+    <div className="tab-bar">
+      <nav className="tab-cluster" aria-label={t("主导航")}>
+        {tabs.map((item) => (
+          <TabButton
+            key={item.id}
+            item={item}
+            active={active}
+            onSelect={onSelect}
+          />
+        ))}
+      </nav>
+      <button
+        className="create-tab"
+        type="button"
+        onClick={onCreate}
+        aria-label={t("新建任务")}
+      >
         <Plus />
       </button>
-      {tabs.slice(2).map((item) => (
-        <TabButton key={item.id} item={item} active={active} onSelect={onSelect} />
-      ))}
-    </nav>
+    </div>
   );
 }
 
@@ -1697,6 +2252,7 @@ function MiniCalendar({
   tasks: PlanoraItem[];
   onOpenTask: (taskId: string) => void;
 }) {
+  const { locale } = useDemoCopy();
   const days = Array.from({ length: 7 }, (_, index) => offsetISO(index));
   return (
     <section className="mini-calendar">
@@ -1708,7 +2264,11 @@ function MiniCalendar({
           );
           return (
             <div key={day} className={day === localISO(new Date()) ? "today" : ""}>
-              <span>{new Intl.DateTimeFormat("zh-CN", { weekday: "short" }).format(date)}</span>
+              <span>
+                {new Intl.DateTimeFormat(dateLocale(locale), {
+                  weekday: "short",
+                }).format(date)}
+              </span>
               <strong>{date.getDate()}</strong>
               <i className={dayTasks.length ? "has-event" : ""} />
             </div>
@@ -1726,7 +2286,9 @@ function MiniCalendar({
             <button type="button" key={task.id} onClick={() => onOpenTask(task.id)}>
               <span className={`week-dot tone-${taskMeta[task.type].color}`} />
               <span>{task.title}</span>
-              <small>{formatDay(task.plannedDate ?? task.deadline)}</small>
+              <small>
+                {formatDay(task.plannedDate ?? task.deadline, locale)}
+              </small>
             </button>
           ))}
       </div>
@@ -1750,10 +2312,11 @@ function PriorityBadge({
   priority: Priority;
   compact?: boolean;
 }) {
+  const { t } = useDemoCopy();
   return (
     <span className={`priority priority-${priority} ${compact ? "compact" : ""}`}>
       {priority === "high" && "!"}
-      {!compact && priorities[priority].title}
+      {!compact && t(priorities[priority].title)}
     </span>
   );
 }
@@ -1775,11 +2338,12 @@ function Insight({ value, label }: { value: string; label: string }) {
   );
 }
 
-function themeTitle(theme: Theme) {
-  return {
+function themeTitle(theme: Theme, locale: DemoLocale) {
+  const source = {
     classic: "经典",
     ocean: "海洋",
     forest: "森林",
     sunset: "日落",
   }[theme];
+  return copy(locale, source);
 }

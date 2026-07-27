@@ -10,9 +10,9 @@ Planora is a study planning app for IB and IGCSE students. Version 1.4.4 complet
 
 [打开 Planora 交互式网页演示 / Open the interactive web demo](https://zhangchengzezcz.github.io/planora/)
 
-网页演示依据当前 SwiftUI App 的首页、任务、新建、搜索、今日/本周规划、任务详情和设置界面制作。演示数据仅保存在当前浏览器，不会写入真实 App。
+网页演示依据当前 SwiftUI App 的启动动画、系统式底栏、首页、任务、新建、搜索、今日/本周规划、任务详情和设置界面制作，并支持简体中文、英文、日文及 IB/IGCSE 即时切换。演示数据仅保存在当前浏览器，不会写入真实 App。
 
-The browser demo mirrors the current SwiftUI app's Home, Tasks, Create, Search, Today/Week planning, task details, and settings. Demo data stays in the current browser and does not modify the iOS app.
+The browser demo mirrors the current SwiftUI app's welcome animation, system-style tab bar, Home, Tasks, Create, Search, Today/Week planning, task details, and settings, with live Simplified Chinese, English, Japanese, and IB/IGCSE switching. Demo data stays in the current browser and does not modify the iOS app.
 
 [![Planora interactive demo](https://zhangchengzezcz.github.io/planora/og.png)](https://zhangchengzezcz.github.io/planora/)
 

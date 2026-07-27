@@ -196,6 +196,11 @@ textarea:focus-visible,
   font-weight: 650;
 }
 
+.showcase-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .showcase-status > span {
   display: flex;
   align-items: center;
@@ -221,6 +226,95 @@ textarea:focus-visible,
   background: rgb(255 255 255 / 0.58);
   font-size: 12px;
   font-weight: 750;
+}
+
+.language-menu {
+  position: relative;
+  z-index: 80;
+}
+
+.site-language-menu {
+  position: fixed;
+  top: 24px;
+  right: 28px;
+}
+
+.language-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 82px;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgb(255 255 255 / 0.78);
+  border-radius: 21px;
+  color: #17232e;
+  background: rgb(255 255 255 / 0.7);
+  box-shadow: 0 10px 30px rgb(37 54 62 / 0.1);
+  backdrop-filter: blur(20px) saturate(1.25);
+}
+
+.language-menu-trigger svg:first-child {
+  width: 17px;
+  height: 17px;
+}
+
+.language-menu-trigger svg:last-child {
+  width: 13px;
+  height: 13px;
+  transition: transform 180ms ease;
+}
+
+.language-menu.is-open .language-menu-trigger svg:last-child {
+  transform: rotate(180deg);
+}
+
+.language-menu-trigger span {
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.language-popover,
+.curriculum-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  width: max-content;
+  min-width: 190px;
+  padding: 7px;
+  border: 1px solid rgb(255 255 255 / 0.76);
+  border-radius: 18px;
+  background: rgb(248 252 252 / 0.92);
+  box-shadow: 0 18px 48px rgb(37 54 62 / 0.18);
+  backdrop-filter: blur(26px) saturate(1.28);
+}
+
+.language-popover button,
+.curriculum-popover button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 12px;
+  text-align: left;
+  background: transparent;
+}
+
+.language-popover button:hover,
+.curriculum-popover button:hover {
+  background: rgb(25 163 132 / 0.1);
+}
+
+.language-popover svg,
+.curriculum-popover svg {
+  width: 17px;
+  height: 17px;
+  color: var(--green);
 }
 
 .logo-mark {
@@ -372,6 +466,219 @@ textarea:focus-visible,
   inset: 50px 0 0;
 }
 
+.onboarding-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 18px 26px 24px;
+}
+
+.onboarding-language {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  color: var(--muted);
+}
+
+.onboarding-language > svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+}
+
+.locale-choices {
+  display: flex;
+  min-width: 0;
+  padding: 3px;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background: var(--panel);
+  backdrop-filter: blur(16px) saturate(1.2);
+}
+
+.locale-choices button {
+  min-width: 0;
+  min-height: 30px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 9px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.locale-choices button.selected {
+  color: var(--deep-green);
+  background: var(--panel-strong);
+  box-shadow: 0 3px 10px var(--shadow);
+}
+
+.welcome-stage {
+  position: absolute;
+  inset: 38px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.welcome-stage .logo-mark {
+  width: 104px;
+  height: 104px;
+  animation: welcome-logo-in 720ms cubic-bezier(0.2, 0.82, 0.28, 1) both;
+}
+
+.welcome-stage .logo-mark span {
+  font-size: 49px;
+}
+
+.welcome-stage .logo-spark {
+  top: 14px;
+  width: 23px;
+  height: 23px;
+}
+
+.welcome-copy {
+  display: grid;
+  gap: 5px;
+  margin-top: 24px;
+  animation: welcome-copy-in 580ms 460ms ease-out both;
+}
+
+.welcome-copy span {
+  color: var(--muted);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.welcome-copy strong {
+  font-size: 46px;
+  line-height: 1;
+}
+
+.welcome-stage > p {
+  position: absolute;
+  bottom: 16px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  animation: welcome-copy-in 500ms 900ms ease-out both;
+}
+
+.feature-intro {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 44px);
+  padding-top: 16px;
+  animation: feature-page-in 520ms cubic-bezier(0.2, 0.82, 0.28, 1) both;
+}
+
+.feature-intro-heading {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.feature-intro-heading h2 {
+  margin: 13px 0 7px;
+  font-size: 27px;
+  line-height: 1.08;
+}
+
+.feature-intro-heading p {
+  max-width: 315px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 570;
+  line-height: 1.5;
+}
+
+.feature-intro-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 25px;
+}
+
+.intro-feature {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.intro-feature > span {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.intro-feature svg {
+  width: 21px;
+  height: 21px;
+}
+
+.intro-feature strong {
+  font-size: 13px;
+}
+
+.intro-feature p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 580;
+  line-height: 1.4;
+}
+
+.onboarding-continue {
+  width: 100%;
+  margin-top: auto;
+}
+
+@keyframes welcome-logo-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.78);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes welcome-copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes feature-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .screen {
   width: 100%;
   height: 100%;
@@ -452,77 +759,105 @@ textarea:focus-visible,
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding-top: 8px;
+  padding-top: 16px;
 }
 
-.home-header .eyebrow {
-  margin-bottom: 6px;
+.curriculum-menu {
+  position: relative;
+  z-index: 18;
 }
 
 .curriculum-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: 36px;
-  padding: 0 12px;
-  border: 1px solid var(--stroke);
-  border-radius: 18px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgb(255 255 255 / 0.8);
+  border-radius: 20px;
   color: var(--deep-green);
-  background: var(--panel);
+  background: color-mix(in srgb, var(--panel-strong) 78%, transparent);
+  box-shadow: 0 6px 20px rgb(7 107 92 / 0.08);
   font-size: 13px;
   font-weight: 850;
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(18px) saturate(1.22);
+}
+
+.curriculum-menu.is-open .curriculum-badge svg {
+  transform: rotate(180deg);
+}
+
+.curriculum-badge svg {
+  transition: transform 180ms ease;
+}
+
+.curriculum-popover {
+  min-width: 205px;
+}
+
+.curriculum-popover button > span {
+  display: grid;
+  gap: 2px;
+}
+
+.curriculum-popover strong {
+  font-size: 13px;
+}
+
+.curriculum-popover small {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 650;
 }
 
 .planning-strip {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 18px;
+  gap: 12px;
+  margin-top: 22px;
 }
 
 .planning-button {
-  display: grid;
-  grid-template-columns: 24px 1fr;
-  gap: 2px 8px;
-  min-height: 94px;
-  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 118px;
+  padding: 17px;
   border: 1px solid var(--stroke);
-  border-radius: 18px;
+  border-radius: 22px;
   text-align: left;
   background: var(--panel);
-  box-shadow: 0 8px 24px var(--shadow);
-  backdrop-filter: blur(18px);
+  box-shadow: 0 12px 28px var(--shadow);
+  backdrop-filter: blur(22px) saturate(1.18);
 }
 
 .planning-button svg {
-  grid-row: span 2;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   color: currentColor;
 }
 
 .planning-button strong {
-  align-self: end;
-  font-size: 15px;
+  margin-top: auto;
+  color: var(--ink);
+  font-size: 18px;
 }
 
 .planning-button span {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 650;
 }
 
 .focus-panel {
-  margin-top: 14px;
-  padding: 19px;
+  margin-top: 18px;
+  padding: 20px;
   border: 1px solid var(--stroke);
-  border-radius: 24px;
-  background:
-    linear-gradient(140deg, rgb(46 109 237 / 0.16), transparent 52%),
-    var(--panel-strong);
-  box-shadow: 0 14px 34px var(--shadow);
-  backdrop-filter: blur(22px) saturate(1.2);
+  border-radius: 27px;
+  background: color-mix(in srgb, var(--panel-strong) 92%, transparent);
+  box-shadow: 0 16px 38px var(--shadow);
+  backdrop-filter: blur(24px) saturate(1.22);
   cursor: pointer;
 }
 
@@ -539,30 +874,87 @@ textarea:focus-visible,
   gap: 10px;
 }
 
-.focus-panel h3 {
-  margin: 14px 0 5px;
-  font-size: 27px;
-  line-height: 1.08;
+.focus-main {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 13px;
+  margin-top: 13px;
 }
 
-.focus-panel > p {
-  margin: 0 0 18px;
+.focus-complete {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  color: #899198;
+  background: transparent;
+}
+
+.focus-complete svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 2.4;
+}
+
+.focus-main h3 {
+  margin: 0;
+  font-size: 23px;
+  line-height: 1.12;
+}
+
+.focus-main p {
+  margin: 5px 0 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 650;
 }
 
-.focus-footer {
-  margin-top: 10px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 650;
-}
-
-.focus-footer span:first-child {
+.focus-open {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   color: var(--blue);
+  background: rgb(46 109 237 / 0.12);
+}
+
+.focus-open svg {
+  width: 21px;
+  height: 21px;
+  stroke-width: 3;
+}
+
+.focus-message {
+  margin: 18px 0 0;
+  color: var(--muted);
   font-size: 12px;
+  line-height: 1.45;
+}
+
+.focus-metadata {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.focus-metadata div {
+  display: grid;
+  gap: 4px;
+}
+
+.focus-metadata span {
+  color: var(--muted);
+  font-size: 9px;
   font-weight: 800;
+}
+
+.focus-metadata strong {
+  font-size: 15px;
 }
 
 .section-title {
@@ -1673,18 +2065,27 @@ textarea:focus-visible,
   bottom: 10px;
   left: 12px;
   display: grid;
-  grid-template-columns: 1fr 1fr 56px 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) 62px;
+  align-items: center;
+  gap: 9px;
+  pointer-events: none;
+}
+
+.tab-cluster {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   align-items: center;
   min-height: 68px;
   padding: 5px 7px;
   border: 1px solid var(--stroke);
-  border-radius: 27px;
-  background: color-mix(in srgb, var(--panel-strong) 86%, transparent);
+  border-radius: 34px;
+  background: color-mix(in srgb, var(--panel-strong) 82%, transparent);
   box-shadow: 0 12px 32px var(--shadow);
   backdrop-filter: blur(24px) saturate(1.35);
+  pointer-events: auto;
 }
 
-.tab-bar > button {
+.tab-cluster > button {
   display: grid;
   place-items: center;
   gap: 3px;
@@ -1697,36 +2098,41 @@ textarea:focus-visible,
   background: transparent;
 }
 
-.tab-bar > button:not(.create-tab).active {
+.tab-cluster > button.active {
   color: var(--deep-green);
   background: rgb(25 163 132 / 0.11);
 }
 
-.tab-bar svg {
+.tab-cluster svg {
   width: 20px;
   height: 20px;
   stroke-width: 2.2;
 }
 
-.tab-bar span {
+.tab-cluster span {
   font-size: 8px;
   font-weight: 780;
 }
 
 .tab-bar .create-tab {
-  width: 50px;
-  height: 50px;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
   margin: 0 auto;
   border: 1px solid var(--stroke);
   border-radius: 50%;
-  color: #fff;
-  background: var(--deep-green);
-  box-shadow: 0 8px 18px rgb(7 107 92 / 0.25);
+  color: var(--ink);
+  background: color-mix(in srgb, var(--panel-strong) 88%, transparent);
+  box-shadow: 0 12px 30px var(--shadow);
+  backdrop-filter: blur(24px) saturate(1.35);
+  pointer-events: auto;
 }
 
 .tab-bar .create-tab svg {
-  width: 24px;
-  height: 24px;
+  width: 29px;
+  height: 29px;
+  stroke-width: 2;
 }
 
 .tone-blue {
@@ -1757,6 +2163,14 @@ textarea:focus-visible,
   color: var(--ink);
 }
 
+.is-dark .curriculum-popover {
+  background: rgb(24 31 37 / 0.94);
+}
+
+.is-dark .locale-choices button.selected {
+  background: rgb(255 255 255 / 0.12);
+}
+
 @media (max-width: 820px) {
   .showcase {
     display: block;
@@ -1766,6 +2180,10 @@ textarea:focus-visible,
   }
 
   .showcase-context {
+    display: none;
+  }
+
+  .site-language-menu {
     display: none;
   }
 
