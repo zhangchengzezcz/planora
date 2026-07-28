@@ -1129,6 +1129,131 @@ textarea:focus-visible,
   gap: 8px;
 }
 
+.home-task-list {
+  overflow: hidden;
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: 0 8px 24px var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.home-task-row {
+  display: grid;
+  gap: 12px;
+  padding: 17px;
+  cursor: pointer;
+}
+
+.home-task-row + .home-task-row {
+  border-top: 1px solid rgb(111 120 133 / 0.14);
+}
+
+.home-task-heading {
+  display: grid;
+  grid-template-columns: 30px 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.home-task-complete {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  color: #899198;
+  background: transparent;
+}
+
+.home-task-complete svg {
+  width: 25px;
+  height: 25px;
+  stroke-width: 2.35;
+}
+
+.home-task-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.home-task-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.home-task-copy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.home-task-copy strong,
+.home-task-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-task-copy strong {
+  font-size: 14px;
+}
+
+.home-task-copy small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.home-task-actions {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.home-task-actions > svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  stroke-width: 2.5;
+}
+
+.home-task-status {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding-left: 42px;
+}
+
+.home-task-status > span {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.home-task-status small {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.home-task-status strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-task-row > .progress-track {
+  margin-left: 42px;
+}
+
 .plain-section,
 .mini-calendar,
 .profile-card,
@@ -1149,22 +1274,38 @@ textarea:focus-visible,
   backdrop-filter: blur(18px);
 }
 
-.progress-section {
-  padding: 16px;
+.learning-progress-panel {
+  padding: 20px;
 }
 
-.subject-progress + .subject-progress {
-  margin-top: 13px;
+.progress-group-title {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.learning-subjects {
+  display: grid;
+  gap: 15px;
+}
+
+.subject-progress {
+  display: grid;
+  gap: 8px;
 }
 
 .subject-progress > div {
-  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 11px;
   font-weight: 700;
 }
 
 .subject-progress strong {
-  color: var(--blue);
   font-size: 11px;
 }
 
@@ -1183,31 +1324,67 @@ textarea:focus-visible,
   transition: width 220ms ease;
 }
 
-.insight-grid {
+.learning-divider {
+  height: 1px;
+  margin: 18px 0;
+  border: 0;
+  background: rgb(111 120 133 / 0.14);
+}
+
+.task-completion-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  margin-top: 17px;
-  padding-top: 15px;
-  border-top: 1px solid rgb(111 120 133 / 0.14);
 }
 
-.insight-grid div {
+.task-completion-row > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.task-completion-row span {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.task-completion-row strong {
+  color: var(--green);
+  font-size: 10px;
+}
+
+.learning-insights-grid {
   display: grid;
-  gap: 3px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
 }
 
-.insight-grid strong {
+.learning-insight {
+  display: grid;
+  min-width: 0;
+  min-height: 82px;
+  align-content: start;
+  gap: 7px;
+}
+
+.learning-insight svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.6;
+}
+
+.learning-insight strong {
   overflow: hidden;
   font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
-.insight-grid span {
+.learning-insight span {
   color: var(--muted);
   font-size: 8px;
   font-weight: 700;
+  line-height: 1.35;
 }
 
 .mini-calendar {
@@ -2421,6 +2598,10 @@ textarea:focus-visible,
 
 .tone-ink {
   color: var(--ink);
+}
+
+.tone-red {
+  color: #e6404c;
 }
 
 .is-dark .curriculum-popover {

@@ -10,7 +10,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Circle,
+  CircleAlert,
   Clock3,
+  FileSearch,
   FileText,
   FlaskConical,
   Gauge,
@@ -356,6 +358,29 @@ function sortTasks(items: PlanoraItem[], sortOrder: SortOrder) {
   });
 }
 
+function taskTracksProgress(task: PlanoraItem) {
+  return !["exam", "event", "custom"].includes(task.type);
+}
+
+function fallsInCurrentWeek(value?: string) {
+  if (!value) return false;
+
+  const date = new Date(`${value}T12:00:00`);
+  const today = new Date();
+  const daysSinceMonday = (today.getDay() + 6) % 7;
+  const weekStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() - daysSinceMonday,
+    0,
+    0,
+    0,
+    0,
+  );
+  const weekEnd = new Date(weekStart.getTime() + 7 * dayMs);
+  return date >= weekStart && date < weekEnd;
+}
+
 export function PlanoraDemo() {
   const [tasks, setTasks] = useState<PlanoraItem[]>(seedTasks);
   const [settings, setSettings] = useState<DemoSettings>(defaultSettings);
@@ -561,7 +586,6 @@ export function PlanoraDemo() {
                     {screen.kind === "tab" && tab === "home" && (
                       <HomeScreen
                         tasks={tasks}
-                        settings={settings}
                         curriculum={curriculum}
                         onCurriculumChange={setCurriculum}
                         onOpenTask={(taskId) =>
@@ -899,7 +923,6 @@ function ScreenHeader({
 
 function HomeScreen({
   tasks,
-  settings,
   curriculum,
   onCurriculumChange,
   onOpenTask,
@@ -909,7 +932,6 @@ function HomeScreen({
   onCreate,
 }: {
   tasks: PlanoraItem[];
-  settings: DemoSettings;
   curriculum: Curriculum;
   onCurriculumChange: (curriculum: Curriculum) => void;
   onOpenTask: (taskId: string) => void;
@@ -925,19 +947,71 @@ function HomeScreen({
     "smart",
   );
   const focus = openTasks[0];
-  const completed = tasks.filter((task) => task.completed).length;
+  const upcomingProgressTasks = openTasks
+    .filter(taskTracksProgress)
+    .slice(0, 4);
+  const upcomingTimelineItems = openTasks
+    .filter((task) => !taskTracksProgress(task))
+    .slice(0, 4);
   const subjectProgress = Object.entries(
-    tasks.reduce<Record<string, number[]>>((groups, task) => {
-      groups[task.subject] ??= [];
-      groups[task.subject].push(task.completed ? 100 : task.progress);
+    tasks.filter(taskTracksProgress).reduce<
+      Record<string, { values: number[]; color: string }>
+    >((groups, task) => {
+      groups[task.subject] ??= {
+        values: [],
+        color: taskMeta[task.type].color,
+      };
+      groups[task.subject].values.push(task.completed ? 100 : task.progress);
       return groups;
     }, {}),
   )
-    .slice(0, 3)
-    .map(([subject, values]) => ({
+    .map(([subject, group]) => ({
       subject,
-      value: Math.round(values.reduce((sum, value) => sum + value, 0) / values.length),
-    }));
+      value: Math.round(
+        group.values.reduce((sum, value) => sum + value, 0) /
+          group.values.length,
+      ),
+      color: group.color,
+    }))
+    .sort((a, b) => a.subject.localeCompare(b.subject));
+  const weeklyTasks = tasks.filter((task) =>
+    fallsInCurrentWeek(task.deadline ?? localISO(new Date())),
+  );
+  const completedThisWeek = weeklyTasks.filter((task) => task.completed).length;
+  const subjectActivity = tasks.reduce<Record<string, number>>(
+    (counts, task) => {
+      if (!task.completed || weeklyTasks.includes(task)) {
+        counts[task.subject] = (counts[task.subject] ?? 0) + 1;
+      }
+      return counts;
+    },
+    {},
+  );
+  const mostActiveSubject =
+    Object.entries(subjectActivity).sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    )[0]?.[0] ?? t("暂无");
+  const upcomingSevenDayCount = openTasks.filter((task) => {
+    const days = daysUntil(task.deadline);
+    return days !== null && days >= 0 && days < 7;
+  }).length;
+  const overdueCount = openTasks.filter(
+    (task) => (daysUntil(task.deadline) ?? 0) < 0,
+  ).length;
+  const workload =
+    upcomingSevenDayCount <= 2
+      ? { label: t("低"), color: "green" }
+      : upcomingSevenDayCount <= 5
+        ? { label: t("中等"), color: "amber" }
+        : { label: t("高"), color: "red" };
+  const shortItemCount =
+    locale === "en"
+      ? `${upcomingSevenDayCount} ${
+          upcomingSevenDayCount === 1 ? "item" : "items"
+        }`
+      : locale === "ja"
+        ? `${upcomingSevenDayCount}件`
+        : `${upcomingSevenDayCount} 项`;
 
   return (
     <div className="screen scroll-screen">
@@ -1073,64 +1147,114 @@ function HomeScreen({
               </div>
               <div>
                 <span>
-                  {focus.progressKind === "stage" ? t("阶段") : t("进度")}
+                  {taskTracksProgress(focus)
+                    ? focus.progressKind === "stage"
+                      ? t("阶段")
+                      : t("进度")
+                    : t("类型")}
                 </span>
                 <strong>
-                  {focus.progressKind === "stage"
-                    ? t(focus.stage)
-                    : `${focus.progress}%`}
+                  {taskTracksProgress(focus)
+                    ? focus.progressKind === "stage"
+                      ? t(focus.stage)
+                      : `${focus.progress}%`
+                    : t(taskMeta[focus.type].title)}
                 </strong>
               </div>
             </div>
           </section>
 
-          <SectionTitle
-            title={t("即将到来的任务")}
-            value={
-              locale === "en"
-                ? `${openTasks.length} items`
-                : `${openTasks.length} ${t("项")}`
-            }
-          />
-          <div className="stack-list">
-            {openTasks.slice(1, 4).map((task) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                density={settings.density}
-                showPercentage={settings.showPercentage}
-                showNotes={false}
-                onOpen={() => onOpenTask(task.id)}
+          {upcomingProgressTasks.length > 0 && (
+            <>
+              <SectionTitle title={t("即将到来的任务")} />
+              <HomeTaskList
+                tasks={upcomingProgressTasks}
+                onOpenTask={onOpenTask}
+                onToggleTask={onToggleTask}
               />
-            ))}
-          </div>
+            </>
+          )}
 
-          <SectionTitle
-            title={t("学习进度")}
-            value={`${completed} / ${tasks.length}`}
-          />
-          <section className="plain-section progress-section">
-            {subjectProgress.map((subject, index) => (
-              <div className="subject-progress" key={subject.subject}>
-                <div>
-                  <span>{subject.subject}</span>
-                  <strong>{subject.value}%</strong>
-                </div>
-                <ProgressBar
-                  value={subject.value}
-                  color={["blue", "green", "amber"][index % 3]}
-                />
-              </div>
-            ))}
-            <div className="insight-grid">
-              <Insight value={`${completed}`} label={t("本周完成")} />
-              <Insight
-                value={openTasks[0]?.subject ?? t("暂无")}
-                label={t("当前重点")}
+          {upcomingTimelineItems.length > 0 && (
+            <>
+              <SectionTitle title={t("时间与事件")} />
+              <HomeTaskList
+                tasks={upcomingTimelineItems}
+                onOpenTask={onOpenTask}
+                onToggleTask={onToggleTask}
               />
-              <Insight
-                value={`${openTasks.filter((task) => (daysUntil(task.deadline) ?? 99) <= 7).length}`}
-                label={t("未来七天")}
+            </>
+          )}
+
+          <SectionTitle title={t("学习进度")} />
+          <section className="plain-section learning-progress-panel">
+            {subjectProgress.length > 0 && (
+              <>
+                <p className="progress-group-title">{t("科目进度")}</p>
+                <div className="learning-subjects">
+                  {subjectProgress.map((subject) => (
+                    <div className="subject-progress" key={subject.subject}>
+                      <div>
+                        <span>{subject.subject}</span>
+                        <strong className={`tone-${subject.color}`}>
+                          {subject.value}%
+                        </strong>
+                      </div>
+                      <ProgressBar
+                        value={subject.value}
+                        color={subject.color}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <hr className="learning-divider" />
+              </>
+            )}
+
+            <p className="progress-group-title">{t("任务完成")}</p>
+            <div className="task-completion-row">
+              <div>
+                <span>{t("本周")}</span>
+                <strong>
+                  {completedThisWeek} / {weeklyTasks.length}
+                </strong>
+              </div>
+              <ProgressBar
+                value={
+                  weeklyTasks.length
+                    ? (completedThisWeek / weeklyTasks.length) * 100
+                    : 0
+                }
+                color="green"
+              />
+            </div>
+
+            <hr className="learning-divider" />
+
+            <div className="learning-insights-grid">
+              <LearningInsight
+                icon={CheckCircle2}
+                value={`${completedThisWeek}`}
+                label={t("本周完成")}
+                color="green"
+              />
+              <LearningInsight
+                icon={BookOpen}
+                value={mostActiveSubject}
+                label={t("最活跃科目")}
+                color="blue"
+              />
+              <LearningInsight
+                icon={CalendarDays}
+                value={`${workload.label} · ${shortItemCount}`}
+                label={t("未来任务负载")}
+                color={workload.color}
+              />
+              <LearningInsight
+                icon={CircleAlert}
+                value={`${overdueCount}`}
+                label={t("已逾期")}
+                color={overdueCount > 0 ? "red" : "green"}
               />
             </div>
           </section>
@@ -1144,6 +1268,110 @@ function HomeScreen({
         </>
       )}
     </div>
+  );
+}
+
+function HomeTaskList({
+  tasks,
+  onOpenTask,
+  onToggleTask,
+}: {
+  tasks: PlanoraItem[];
+  onOpenTask: (taskId: string) => void;
+  onToggleTask: (task: PlanoraItem) => void;
+}) {
+  return (
+    <div className="home-task-list">
+      {tasks.map((task) => (
+        <HomeTaskRow
+          key={task.id}
+          task={task}
+          onOpen={() => onOpenTask(task.id)}
+          onToggle={() => onToggleTask(task)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function HomeTaskRow({
+  task,
+  onOpen,
+  onToggle,
+}: {
+  task: PlanoraItem;
+  onOpen: () => void;
+  onToggle: () => void;
+}) {
+  const { locale, t } = useDemoCopy();
+  const meta = taskMeta[task.type];
+  const tracksProgress = taskTracksProgress(task);
+
+  return (
+    <article
+      className="home-task-row"
+      onClick={onOpen}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") onOpen();
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      <div className="home-task-heading">
+        <button
+          className="home-task-complete"
+          type="button"
+          aria-label={t("完成任务")}
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggle();
+          }}
+        >
+          <Circle />
+        </button>
+
+        <span className={`home-task-icon tone-${meta.color}`}>
+          <FileSearch />
+        </span>
+
+        <span className="home-task-copy">
+          <strong>{task.title}</strong>
+          <small>{task.subject}</small>
+        </span>
+
+        <span className="home-task-actions">
+          <PriorityBadge priority={task.priority} />
+          <ChevronRight aria-hidden="true" />
+        </span>
+      </div>
+
+      <div className="home-task-status">
+        <span>
+          <small>{t("截止日期")}</small>
+          <strong>{formatDay(task.deadline, locale)}</strong>
+        </span>
+        <span>
+          <small>
+            {tracksProgress
+              ? task.progressKind === "stage"
+                ? t("阶段")
+                : t("进度")
+              : t("类型")}
+          </small>
+          <strong className={`tone-${meta.color}`}>
+            {tracksProgress
+              ? task.progressKind === "stage"
+                ? t(task.stage)
+                : `${task.progress}%`
+              : t(meta.title)}
+          </strong>
+        </span>
+      </div>
+
+      {tracksProgress && task.progressKind === "percentage" && (
+        <ProgressBar value={task.progress} color={meta.color} />
+      )}
+    </article>
   );
 }
 
@@ -2546,9 +2774,20 @@ function ProgressBar({ value, color }: { value: number; color: string }) {
   );
 }
 
-function Insight({ value, label }: { value: string; label: string }) {
+function LearningInsight({
+  icon: Icon,
+  value,
+  label,
+  color,
+}: {
+  icon: LucideIcon;
+  value: string;
+  label: string;
+  color: string;
+}) {
   return (
-    <div>
+    <div className="learning-insight">
+      <Icon className={`tone-${color}`} />
       <strong>{value}</strong>
       <span>{label}</span>
     </div>
