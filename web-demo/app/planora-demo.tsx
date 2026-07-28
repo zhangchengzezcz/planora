@@ -1,7 +1,9 @@
 "use client";
 
 import {
+  BadgeCheck,
   Bell,
+  BookMarked,
   BookOpen,
   CalendarDays,
   Check,
@@ -11,13 +13,13 @@ import {
   ChevronRight,
   Circle,
   CircleAlert,
+  CircleUserRound,
   Clock3,
   FileSearch,
-  FileText,
+  Flag,
   FlaskConical,
   Gauge,
   Globe2,
-  GraduationCap,
   HardDrive,
   HeartHandshake,
   Home,
@@ -25,11 +27,13 @@ import {
   Lightbulb,
   ListChecks,
   Menu,
+  Mic,
   Moon,
   Palette,
   Plus,
   RotateCcw,
   Search,
+  Settings,
   Settings2,
   Share2,
   Sparkles,
@@ -75,6 +79,9 @@ type TaskType =
 type Priority = "low" | "medium" | "high";
 type Curriculum = "ib" | "igcse";
 type Theme = "classic" | "ocean" | "forest" | "sunset";
+type DisplayMode = "system" | "light" | "dark";
+type BackgroundStyle = "sky" | "ocean" | "mint" | "rose";
+type AccentColor = "blue" | "green" | "amber" | "pink";
 type Density = "comfortable" | "compact";
 type SortOrder = "smart" | "deadline" | "priority" | "title";
 type Screen =
@@ -85,7 +92,7 @@ type Screen =
   | { kind: "create" }
   | {
       kind: "settings";
-      section: "appearance" | "display" | "language";
+      section: "home" | "appearance" | "display";
     };
 
 interface PlanoraItem {
@@ -107,6 +114,9 @@ interface PlanoraItem {
 interface DemoSettings {
   theme: Theme;
   dark: boolean;
+  displayMode: DisplayMode;
+  background: BackgroundStyle;
+  accent: AccentColor;
   density: Density;
   sortOrder: SortOrder;
   showCompleted: boolean;
@@ -140,12 +150,12 @@ const taskMeta: Record<
 > = {
   assignment: {
     title: "作业",
-    icon: FileText,
+    icon: BookMarked,
     color: "blue",
     defaultStage: "进行中",
   },
   practical: {
-    title: "实践",
+    title: "实验实践",
     icon: TestTube2,
     color: "green",
     defaultStage: "准备",
@@ -182,12 +192,12 @@ const taskMeta: Record<
   },
   exam: {
     title: "考试",
-    icon: GraduationCap,
+    icon: BadgeCheck,
     color: "purple",
     defaultStage: "复习中",
   },
   event: {
-    title: "活动",
+    title: "事件",
     icon: CalendarDays,
     color: "teal",
     defaultStage: "待参加",
@@ -209,6 +219,9 @@ const priorities: Record<Priority, { title: string; weight: number }> = {
 const defaultSettings: DemoSettings = {
   theme: "classic",
   dark: false,
+  displayMode: "system",
+  background: "sky",
+  accent: "green",
   density: "comfortable",
   sortOrder: "smart",
   showCompleted: true,
@@ -225,7 +238,86 @@ function offsetISO(offset: number) {
   return localISO(new Date(Date.now() + offset * dayMs));
 }
 
-function seedTasks(): PlanoraItem[] {
+function seedTasks(curriculum: Curriculum = "igcse"): PlanoraItem[] {
+  if (curriculum === "igcse") {
+    return [
+      {
+        id: "igcse-english-coursework",
+        title: "English Coursework Draft",
+        subject: "English as a Second Language",
+        type: "assignment",
+        priority: "high",
+        deadline: offsetISO(2),
+        plannedDate: offsetISO(0),
+        progressKind: "percentage",
+        progress: 65,
+        stage: "进行中",
+        notes: "完成论点段落并核对引用格式。",
+        completed: false,
+        recurring: false,
+      },
+      {
+        id: "igcse-math-assignment",
+        title: "Algebra Problem Set",
+        subject: "Mathematics",
+        type: "assignment",
+        priority: "high",
+        deadline: offsetISO(1),
+        plannedDate: offsetISO(0),
+        progressKind: "percentage",
+        progress: 35,
+        stage: "进行中",
+        notes: "完成二次函数与不等式练习。",
+        completed: false,
+        recurring: false,
+      },
+      {
+        id: "igcse-physics-practical",
+        title: "Physics Practical Report",
+        subject: "Physics",
+        type: "practical",
+        priority: "medium",
+        deadline: offsetISO(7),
+        plannedDate: offsetISO(3),
+        progressKind: "stage",
+        progress: 45,
+        stage: "Data Collection",
+        notes: "整理实验数据并完成误差分析。",
+        completed: false,
+        recurring: false,
+      },
+      {
+        id: "igcse-chemistry-revision",
+        title: "Weekly Chemistry Revision",
+        subject: "Chemistry",
+        type: "revision",
+        priority: "medium",
+        deadline: offsetISO(5),
+        plannedDate: offsetISO(2),
+        progressKind: "percentage",
+        progress: 20,
+        stage: "第一轮",
+        notes: "复习化学计量并完成一组真题。",
+        completed: false,
+        recurring: true,
+      },
+      {
+        id: "igcse-biology-exam",
+        title: "Biology Mock Exam",
+        subject: "Biology",
+        type: "exam",
+        priority: "low",
+        deadline: offsetISO(14),
+        progressKind: "stage",
+        progress: 0,
+        stage: "复习中",
+        notes: "覆盖细胞、生物运输与遗传。",
+        completed: false,
+        recurring: false,
+      },
+    ];
+  }
+
   return [
     {
       id: "physics-ia",
@@ -382,7 +474,9 @@ function fallsInCurrentWeek(value?: string) {
 }
 
 export function PlanoraDemo() {
-  const [tasks, setTasks] = useState<PlanoraItem[]>(seedTasks);
+  const [tasks, setTasks] = useState<PlanoraItem[]>(() =>
+    seedTasks("igcse"),
+  );
   const [settings, setSettings] = useState<DemoSettings>(defaultSettings);
   const [tab, setTab] = useState<Tab>("home");
   const [screen, setScreen] = useState<Screen>({ kind: "tab" });
@@ -391,6 +485,7 @@ export function PlanoraDemo() {
   const [introComplete, setIntroComplete] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [deviceScale, setDeviceScale] = useState(defaultDeviceScale);
+  const [systemDark, setSystemDark] = useState(false);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -452,6 +547,14 @@ export function PlanoraDemo() {
   }, []);
 
   useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const update = () => setSystemDark(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
     if (hydrated)
       window.localStorage.setItem(STORAGE_TASKS, JSON.stringify(tasks));
   }, [tasks, hydrated]);
@@ -482,7 +585,7 @@ export function PlanoraDemo() {
   }
 
   function resetDemo() {
-    const nextTasks = seedTasks();
+    const nextTasks = seedTasks(curriculum);
     setTasks(nextTasks);
     setSettings(defaultSettings);
     setTab("home");
@@ -505,6 +608,10 @@ export function PlanoraDemo() {
     screen.kind === "task"
       ? tasks.find((task) => task.id === screen.taskId)
       : undefined;
+  const effectiveDark =
+    settings.displayMode === "system"
+      ? systemDark
+      : settings.displayMode === "dark";
   const deviceStageStyle = {
     "--device-scale": deviceScale,
     "--device-stage-width": `${deviceWidth * deviceScale}px`,
@@ -515,8 +622,8 @@ export function PlanoraDemo() {
     <LocaleContext.Provider value={locale}>
       <main
         lang={locale}
-        className={`showcase theme-${settings.theme} ${
-          settings.dark ? "is-dark" : ""
+        className={`showcase theme-${settings.theme} background-${settings.background} accent-${settings.accent} ${
+          effectiveDark ? "is-dark" : ""
         }`}
       >
         {introComplete && (
@@ -573,7 +680,7 @@ export function PlanoraDemo() {
           <div className="device">
             <div className="device-speaker" aria-hidden="true" />
             <div className="device-screen">
-              <StatusBar dark={settings.dark} />
+              <StatusBar dark={effectiveDark} />
               <div className="app-content">
                 {!hydrated ? null : !introComplete ? (
                   <Onboarding
@@ -587,7 +694,10 @@ export function PlanoraDemo() {
                       <HomeScreen
                         tasks={tasks}
                         curriculum={curriculum}
-                        onCurriculumChange={setCurriculum}
+                        onCurriculumChange={(nextCurriculum) => {
+                          setCurriculum(nextCurriculum);
+                          setTasks(seedTasks(nextCurriculum));
+                        }}
                         onOpenTask={(taskId) =>
                           setScreen({ kind: "task", taskId })
                         }
@@ -622,7 +732,6 @@ export function PlanoraDemo() {
                     {screen.kind === "tab" && tab === "profile" && (
                       <ProfileScreen
                         tasks={tasks}
-                        settings={settings}
                         curriculum={curriculum}
                         onOpenSettings={(section) =>
                           setScreen({ kind: "settings", section })
@@ -634,6 +743,12 @@ export function PlanoraDemo() {
                         task={activeTask}
                         onBack={() => setScreen({ kind: "tab" })}
                         onChange={updateTask}
+                        onDelete={() => {
+                          setTasks((current) =>
+                            current.filter((task) => task.id !== activeTask.id),
+                          );
+                          setScreen({ kind: "tab" });
+                        }}
                       />
                     )}
                     {screen.kind === "today" && (
@@ -660,8 +775,17 @@ export function PlanoraDemo() {
                         settings={settings}
                         locale={locale}
                         onChange={setSettings}
-                        onLocaleChange={setLocale}
-                        onBack={() => setScreen({ kind: "tab" })}
+                        onNavigate={(section) =>
+                          setScreen({ kind: "settings", section })
+                        }
+                        onBack={() =>
+                          screen.section === "home"
+                            ? setScreen({ kind: "tab" })
+                            : setScreen({
+                                kind: "settings",
+                                section: "home",
+                              })
+                        }
                       />
                     )}
                     {screen.kind === "create" && (
@@ -898,26 +1022,66 @@ function StatusBar({ dark }: { dark: boolean }) {
 function ScreenHeader({
   title,
   subtitle,
-  onBack,
 }: {
   title: string;
   subtitle?: string;
-  onBack?: () => void;
 }) {
-  const { t } = useDemoCopy();
   return (
-    <header className={`screen-header ${onBack ? "with-back" : ""}`}>
-      {onBack && (
-        <button className="icon-button back-button" type="button" onClick={onBack}>
-          <ChevronLeft />
-          <span className="sr-only">{t("返回")}</span>
-        </button>
-      )}
+    <header className="screen-header">
       <div>
         <h2>{title}</h2>
         {subtitle && <p>{subtitle}</p>}
       </div>
     </header>
+  );
+}
+
+function DetailNavigationBar({
+  title,
+  onBack,
+  actionTitle,
+  onAction,
+}: {
+  title: string;
+  onBack: () => void;
+  actionTitle?: string;
+  onAction?: () => void;
+}) {
+  const { t } = useDemoCopy();
+  return (
+    <header className="detail-navigation">
+      <button
+        className="icon-button back-button"
+        type="button"
+        onClick={onBack}
+        aria-label={t("返回")}
+      >
+        <ChevronLeft />
+      </button>
+      <strong>{title}</strong>
+      {actionTitle ? (
+        <button className="navigation-action" type="button" onClick={onAction}>
+          {actionTitle}
+        </button>
+      ) : (
+        <span aria-hidden="true" />
+      )}
+    </header>
+  );
+}
+
+function PageHeading({
+  title,
+  subtitle,
+}: {
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div className="page-heading">
+      <h2>{title}</h2>
+      {subtitle && <p>{subtitle}</p>}
+    </div>
   );
 }
 
@@ -1361,7 +1525,7 @@ function HomeTaskRow({
           <strong className={`tone-${meta.color}`}>
             {tracksProgress
               ? task.progressKind === "stage"
-                ? t(task.stage)
+                ? stageTitle(task.stage, locale)
                 : `${task.progress}%`
               : t(meta.title)}
           </strong>
@@ -1454,36 +1618,102 @@ function TaskRow({
     <article
       className={`task-row ${task.completed ? "is-complete" : ""} ${density}`}
       onClick={onOpen}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") onOpen();
+      }}
+      role="button"
+      tabIndex={0}
     >
-      <div className={`task-icon tone-${meta.color}`}>
-        <Icon />
-      </div>
-      <div className="task-copy">
-        <div className="task-title-line">
+      <div className="task-row-heading">
+        <div className={`task-icon tone-${meta.color}`}>
+          <Icon />
+        </div>
+        <div className="task-copy">
           <h3>{task.title}</h3>
+          <p>{task.subject}</p>
+        </div>
+        <div className="task-side">
           <span className={`type-pill tone-${meta.color}`}>
             {t(meta.title)}
           </span>
+          <PriorityBadge priority={task.priority} compact />
         </div>
-        <p>{task.subject}</p>
-        <div className="task-metrics">
-          <span>
-            <CalendarDays />
-            {formatDay(task.deadline, locale)}
-          </span>
-          <span>
+      </div>
+      <div className="task-metrics">
+        <span>
+          <small>{t("完成时间")}</small>
+          <strong>{formatDay(task.deadline, locale)}</strong>
+        </span>
+        <span>
+          <small>
+            {task.progressKind === "percentage" && showPercentage
+              ? t("进度")
+              : t("类型")}
+          </small>
+          <strong className={`tone-${meta.color}`}>
             {task.progressKind === "percentage" && showPercentage
               ? `${task.progress}%`
-              : t(task.stage)}
-          </span>
-        </div>
-        {showNotes && density === "comfortable" && task.notes && (
-          <p className="task-note">{t(task.notes)}</p>
-        )}
+              : task.progressKind === "stage"
+                ? stageTitle(task.stage, locale)
+                : t(meta.title)}
+          </strong>
+        </span>
       </div>
-      <div className="task-side">
+      {showNotes && density === "comfortable" && task.notes && (
+        <p className="task-note">{t(task.notes)}</p>
+      )}
+    </article>
+  );
+}
+
+function SearchResultRow({
+  task,
+  onOpen,
+}: {
+  task: PlanoraItem;
+  onOpen: () => void;
+}) {
+  const { locale, t } = useDemoCopy();
+  const meta = taskMeta[task.type];
+  const Icon = meta.icon;
+  return (
+    <article
+      className="search-result-row"
+      onClick={onOpen}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") onOpen();
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      <div className="search-result-heading">
+        <span className={`task-icon tone-${meta.color}`}>
+          <Icon />
+        </span>
+        <span className="search-result-copy">
+          <strong>{task.title}</strong>
+          <small>{task.subject}</small>
+        </span>
         <PriorityBadge priority={task.priority} compact />
+        <ChevronRight aria-hidden="true" />
       </div>
+      <div className="search-result-metrics">
+        <span>
+          <small>{t("截止日期")}</small>
+          <strong>{formatDay(task.deadline, locale)}</strong>
+        </span>
+        <span>
+          <small>{taskTracksProgress(task) ? t("进度") : t("类型")}</small>
+          <strong>
+            {taskTracksProgress(task)
+              ? task.progressKind === "stage"
+                ? stageTitle(task.stage, locale)
+                : `${task.progress}%`
+              : t(meta.title)}
+          </strong>
+        </span>
+      </div>
+      {task.notes && <p>{t(task.notes)}</p>}
     </article>
   );
 }
@@ -1499,7 +1729,10 @@ function SearchScreen({
   const [query, setQuery] = useState("");
   const [subject, setSubject] = useState("all");
   const [type, setType] = useState("all");
+  const [deadline, setDeadline] = useState("all");
   const [status, setStatus] = useState("all");
+  const [priority, setPriority] = useState("all");
+  const [searchFocused, setSearchFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const subjects = [...new Set(tasks.map((task) => task.subject))];
 
@@ -1509,8 +1742,19 @@ function SearchScreen({
       tasks.filter((task) => {
         if (subject !== "all" && task.subject !== subject) return false;
         if (type !== "all" && task.type !== type) return false;
+        if (priority !== "all" && task.priority !== priority) return false;
         if (status === "open" && task.completed) return false;
         if (status === "completed" && !task.completed) return false;
+        const remaining = daysUntil(task.deadline);
+        if (deadline === "overdue" && !(remaining !== null && remaining < 0))
+          return false;
+        if (deadline === "today" && remaining !== 0) return false;
+        if (
+          deadline === "week" &&
+          !(remaining !== null && remaining >= 0 && remaining < 7)
+        )
+          return false;
+        if (deadline === "none" && task.deadline) return false;
         if (!normalized) return true;
         return [task.title, task.subject, task.notes, task.stage]
           .join(" ")
@@ -1519,7 +1763,7 @@ function SearchScreen({
       }),
       "smart",
     );
-  }, [query, status, subject, tasks, type]);
+  }, [deadline, priority, query, status, subject, tasks, type]);
 
   return (
     <div className="screen scroll-screen search-screen">
@@ -1534,21 +1778,29 @@ function SearchScreen({
             ref={inputRef}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
             placeholder={t("搜索")}
             inputMode="search"
           />
+          <span className="search-microphone" aria-hidden="true">
+            <Mic />
+          </span>
         </label>
-        <button
-          className="search-close"
-          type="button"
-          onClick={() => {
-            setQuery("");
-            inputRef.current?.blur();
-          }}
-          aria-label={t("清除搜索并收起键盘")}
-        >
-          <X />
-        </button>
+        {searchFocused && (
+          <button
+            className="search-close"
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              inputRef.current?.blur();
+              setSearchFocused(false);
+            }}
+            aria-label={t("收起键盘")}
+          >
+            <X />
+          </button>
+        )}
       </div>
       <div className="filter-scroll">
         <FilterSelect
@@ -1573,6 +1825,18 @@ function SearchScreen({
           ]}
         />
         <FilterSelect
+          icon={CalendarDays}
+          value={deadline}
+          onChange={setDeadline}
+          options={[
+            ["all", t("截止日期")],
+            ["overdue", t("逾期")],
+            ["today", t("今天")],
+            ["week", t("未来七天")],
+            ["none", t("无截止日期")],
+          ]}
+        />
+        <FilterSelect
           icon={CheckCircle2}
           value={status}
           onChange={setStatus}
@@ -1582,19 +1846,27 @@ function SearchScreen({
             ["completed", t("已完成")],
           ]}
         />
+        <FilterSelect
+          icon={Flag}
+          value={priority}
+          onChange={setPriority}
+          options={[
+            ["all", t("优先级")],
+            ["high", t("高")],
+            ["medium", t("中")],
+            ["low", t("低")],
+          ]}
+        />
       </div>
       <SectionTitle
         title={query ? t("搜索结果") : t("所有项目")}
         value={`${results.length}`}
       />
-      <div className="search-results">
+      <div className="search-results search-result-panel">
         {results.map((task) => (
-          <TaskRow
+          <SearchResultRow
             key={task.id}
             task={task}
-            density="compact"
-            showPercentage
-            showNotes={false}
             onOpen={() => onOpenTask(task.id)}
           />
         ))}
@@ -1638,15 +1910,13 @@ function FilterSelect({
 
 function ProfileScreen({
   tasks,
-  settings,
   curriculum,
   onOpenSettings,
 }: {
   tasks: PlanoraItem[];
-  settings: DemoSettings;
   curriculum: Curriculum;
   onOpenSettings: (
-    section: "appearance" | "display" | "language",
+    section: "home" | "appearance" | "display",
   ) => void;
 }) {
   const { locale, t } = useDemoCopy();
@@ -1664,27 +1934,31 @@ function ProfileScreen({
         </div>
       </section>
 
-      <SectionTitle title={t("设置")} />
+      <SectionTitle title={t("个人资料")} />
       <section className="settings-list">
         <SettingsRow
-          icon={Palette}
-          title={t("外观")}
-          value={themeTitle(settings.theme, locale)}
-          onClick={() => onOpenSettings("appearance")}
+          icon={CircleUserRound}
+          title={t("姓名")}
+          value="Mitty"
+          onClick={() => undefined}
         />
         <SettingsRow
-          icon={Settings2}
-          title={t("任务显示")}
-          value={
-            settings.density === "comfortable" ? t("舒适") : t("紧凑")
-          }
-          onClick={() => onOpenSettings("display")}
+          icon={BookOpen}
+          title={t("课程体系")}
+          value={curriculum.toUpperCase()}
+          onClick={() => undefined}
         />
         <SettingsRow
-          icon={Globe2}
-          title={t("语言")}
-          value={localeLabel(locale, locale)}
-          onClick={() => onOpenSettings("language")}
+          icon={BookMarked}
+          title={t("我的科目")}
+          value={`${subjects.length}`}
+          onClick={() => undefined}
+        />
+        <SettingsRow
+          icon={Settings}
+          title={t("设置")}
+          value=""
+          onClick={() => onOpenSettings("home")}
         />
       </section>
 
@@ -1777,24 +2051,51 @@ function SettingsScreen({
   settings,
   locale,
   onChange,
-  onLocaleChange,
+  onNavigate,
   onBack,
 }: {
-  section: "appearance" | "display" | "language";
+  section: "home" | "appearance" | "display";
   settings: DemoSettings;
   locale: DemoLocale;
   onChange: (settings: DemoSettings) => void;
-  onLocaleChange: (locale: DemoLocale) => void;
+  onNavigate: (section: "home" | "appearance" | "display") => void;
   onBack: () => void;
 }) {
   const { t } = useDemoCopy();
+  if (section === "home") {
+    return (
+      <div className="screen scroll-screen detail-page">
+        <DetailNavigationBar title="" onBack={onBack} />
+        <PageHeading
+          title={t("设置")}
+          subtitle={t("调整 Planora 的显示方式和任务列表偏好。")}
+        />
+        <SectionTitle title={t("偏好设置")} />
+        <section className="settings-list">
+          <SettingsRow
+            icon={Palette}
+            title={t("外观")}
+            value={`${displayModeTitle(settings.displayMode, locale)} · ${backgroundTitle(settings.background, locale)}`}
+            onClick={() => onNavigate("appearance")}
+          />
+          <SettingsRow
+            icon={Settings2}
+            title={t("任务显示")}
+            value={`${settings.density === "comfortable" ? t("舒适") : t("紧凑")} · ${sortOrderTitle(settings.sortOrder, locale)}`}
+            onClick={() => onNavigate("display")}
+          />
+        </section>
+      </div>
+    );
+  }
+
   if (section === "appearance") {
     return (
-      <div className="screen scroll-screen">
-        <ScreenHeader
+      <div className="screen scroll-screen detail-page">
+        <DetailNavigationBar title="" onBack={onBack} />
+        <PageHeading
           title={t("外观")}
-          subtitle={t("选择颜色主题与显示模式。")}
-          onBack={onBack}
+          subtitle={t("调整 Planora 在这台设备上的显示方式。")}
         />
         <SectionTitle title={t("颜色主题")} />
         <div className="theme-grid">
@@ -1815,55 +2116,73 @@ function SettingsScreen({
         </div>
         <SectionTitle title={t("显示模式")} />
         <section className="segmented-setting">
-          <button
-            className={!settings.dark ? "selected" : ""}
-            type="button"
-            onClick={() => onChange({ ...settings, dark: false })}
-          >
-            <Sun />
-            {t("浅色")}
-          </button>
-          <button
-            className={settings.dark ? "selected" : ""}
-            type="button"
-            onClick={() => onChange({ ...settings, dark: true })}
-          >
-            <Moon />
-            {t("深色")}
-          </button>
-        </section>
-      </div>
-    );
-  }
-
-  if (section === "language") {
-    return (
-      <div className="screen scroll-screen">
-        <ScreenHeader title={t("语言")} onBack={onBack} />
-        <section className="settings-radio-list language-settings-list">
-          {demoLocales.map((item) => (
+          {(["system", "light", "dark"] as DisplayMode[]).map((mode) => (
             <button
+              className={settings.displayMode === mode ? "selected" : ""}
               type="button"
-              key={item}
-              onClick={() => onLocaleChange(item)}
+              key={mode}
+              onClick={() =>
+                onChange({
+                  ...settings,
+                  displayMode: mode,
+                  dark: mode === "dark",
+                })
+              }
             >
-              <span>{localeLabel(item, locale)}</span>
-              {locale === item ? <CheckCircle2 /> : <Circle />}
+              {mode === "system" ? <Settings2 /> : mode === "light" ? <Sun /> : <Moon />}
+              {displayModeTitle(mode, locale)}
             </button>
           ))}
+        </section>
+        <SectionTitle title={t("背景")} />
+        <div className="background-grid">
+          {(["sky", "ocean", "mint", "rose"] as BackgroundStyle[]).map(
+            (background) => (
+              <button
+                type="button"
+                key={background}
+                className={`background-option background-preview-${background} ${
+                  settings.background === background ? "selected" : ""
+                }`}
+                onClick={() => onChange({ ...settings, background })}
+              >
+                <span />
+                <strong>{backgroundTitle(background, locale)}</strong>
+                {settings.background === background && <Check />}
+              </button>
+            ),
+          )}
+        </div>
+        <SectionTitle title={t("强调色")} />
+        <section className="accent-options">
+          {(["blue", "green", "amber", "pink"] as AccentColor[]).map(
+            (accent) => (
+              <button
+                type="button"
+                key={accent}
+                className={`accent-${accent} ${
+                  settings.accent === accent ? "selected" : ""
+                }`}
+                onClick={() => onChange({ ...settings, accent })}
+                aria-label={accentTitle(accent, locale)}
+              >
+                {settings.accent === accent && <Check />}
+              </button>
+            ),
+          )}
         </section>
       </div>
     );
   }
 
   return (
-    <div className="screen scroll-screen">
-      <ScreenHeader
+    <div className="screen scroll-screen detail-page">
+      <DetailNavigationBar title="" onBack={onBack} />
+      <PageHeading
         title={t("任务显示")}
-        subtitle={t("控制任务列表的外观与排序。")}
-        onBack={onBack}
+        subtitle={t("这些选项只改变任务列表，不会修改任务内容。")}
       />
-      <SectionTitle title={t("列表密度")} />
+      <SectionTitle title={t("任务外观")} />
       <section className="segmented-setting">
         {(["comfortable", "compact"] as Density[]).map((density) => (
           <button
@@ -1878,26 +2197,23 @@ function SettingsScreen({
         ))}
       </section>
       <SectionTitle title={t("排序")} />
-      <section className="settings-radio-list">
-        {(
-          [
-            ["smart", t("智能排序")],
-            ["deadline", t("截止日期")],
-            ["priority", t("优先级")],
-            ["title", t("标题")],
-          ] as [SortOrder, string][]
-        ).map(([order, title]) => (
-          <button
-            type="button"
-            key={order}
-            onClick={() => onChange({ ...settings, sortOrder: order })}
-          >
-            <span>{title}</span>
-            {settings.sortOrder === order ? <CheckCircle2 /> : <Circle />}
-          </button>
-        ))}
-      </section>
-      <SectionTitle title={t("内容")} />
+      <label className="sort-select">
+        <select
+          value={settings.sortOrder}
+          onChange={(event) =>
+            onChange({
+              ...settings,
+              sortOrder: event.target.value as SortOrder,
+            })
+          }
+        >
+          <option value="smart">{t("智能排序")}</option>
+          <option value="deadline">{t("截止日期")}</option>
+          <option value="priority">{t("优先级")}</option>
+          <option value="title">{t("标题")}</option>
+        </select>
+      </label>
+      <SectionTitle title={t("显示内容")} />
       <section className="toggle-list">
         <ToggleRow
           title={t("显示已完成任务")}
@@ -1915,6 +2231,23 @@ function SettingsScreen({
           onChange={(showNotes) => onChange({ ...settings, showNotes })}
         />
       </section>
+      <button
+        className="reset-display-button"
+        type="button"
+        onClick={() =>
+          onChange({
+            ...settings,
+            density: defaultSettings.density,
+            sortOrder: defaultSettings.sortOrder,
+            showCompleted: defaultSettings.showCompleted,
+            showPercentage: defaultSettings.showPercentage,
+            showNotes: defaultSettings.showNotes,
+          })
+        }
+      >
+        <RotateCcw />
+        {t("恢复默认任务显示")}
+      </button>
     </div>
   );
 }
@@ -1945,12 +2278,16 @@ function TaskDetailScreen({
   task,
   onBack,
   onChange,
+  onDelete,
 }: {
   task: PlanoraItem;
   onBack: () => void;
   onChange: (task: PlanoraItem) => void;
+  onDelete: () => void;
 }) {
   const { locale, t } = useDemoCopy();
+  const [editing, setEditing] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const meta = taskMeta[task.type];
   const Icon = meta.icon;
   const stages = [
@@ -1963,8 +2300,13 @@ function TaskDetailScreen({
   ];
 
   return (
-    <div className="screen scroll-screen detail-screen">
-      <ScreenHeader title={t("任务详情")} onBack={onBack} />
+    <div className="screen scroll-screen detail-screen detail-page">
+      <DetailNavigationBar
+        title={t("任务详情")}
+        actionTitle={editing ? t("完成") : t("编辑")}
+        onAction={() => setEditing((value) => !value)}
+        onBack={onBack}
+      />
       <div className="detail-title">
         <span className={`task-icon large tone-${meta.color}`}>
           <Icon />
@@ -1975,90 +2317,187 @@ function TaskDetailScreen({
         </div>
         <PriorityBadge priority={task.priority} />
       </div>
-      <section className="detail-list">
-        <DetailLine icon={LayoutGrid} title={t("类型")} value={t(meta.title)} />
-        <DetailLine
-          icon={CalendarDays}
-          title={t("截止日期")}
-          value={formatDay(task.deadline, locale, true)}
-        />
-        <DetailLine
-          icon={Clock3}
-          title={t("计划完成")}
-          value={
-            task.plannedDate
-              ? formatDay(task.plannedDate, locale, true)
-              : t("未安排")
-          }
-        />
-        <DetailLine
-          icon={Bell}
-          title={t("提醒")}
-          value={t("提前 1 天 · 当天")}
-        />
-      </section>
-
-      <SectionTitle title={t("进度")} />
-      <section className="detail-progress">
-        {task.progressKind === "percentage" ? (
-          <>
-            <div>
-              <span>{t("完成度")}</span>
-              <strong>{task.progress}%</strong>
-            </div>
+      {editing ? (
+        <section className="form-panel detail-edit-panel">
+          <FormField label={t("标题")}>
             <input
-              type="range"
-              min="0"
-              max="100"
-              step="5"
-              value={task.progress}
+              value={task.title}
               onChange={(event) =>
-                onChange({ ...task, progress: Number(event.target.value) })
+                onChange({ ...task, title: event.target.value })
               }
             />
-            <ProgressBar value={task.progress} color={meta.color} />
-          </>
-        ) : (
-          <div className="stage-picker">
-            {stages.map((stage, index) => {
-              const activeIndex = Math.max(0, stages.indexOf(task.stage));
-              const done = index < activeIndex;
-              const active = stage === task.stage;
-              return (
+          </FormField>
+          <FormField label={t("科目")}>
+            <input
+              value={task.subject}
+              onChange={(event) =>
+                onChange({ ...task, subject: event.target.value })
+              }
+            />
+          </FormField>
+          <FormField label={t("截止日期")}>
+            <input
+              type="date"
+              value={task.deadline ?? ""}
+              onChange={(event) =>
+                onChange({ ...task, deadline: event.target.value || undefined })
+              }
+            />
+          </FormField>
+          <FormField label={t("计划完成日期")}>
+            <input
+              type="date"
+              value={task.plannedDate ?? ""}
+              onChange={(event) =>
+                onChange({
+                  ...task,
+                  plannedDate: event.target.value || undefined,
+                })
+              }
+            />
+          </FormField>
+          <FormField label={t("优先级")}>
+            <div className="segmented-inline">
+              {(["low", "medium", "high"] as Priority[]).map((priority) => (
                 <button
                   type="button"
-                  key={stage}
-                  className={active ? "active" : done ? "done" : ""}
-                  onClick={() =>
-                    onChange({
-                      ...task,
-                      stage,
-                      progress: Math.round(((index + 1) / stages.length) * 100),
-                    })
-                  }
+                  key={priority}
+                  className={task.priority === priority ? "selected" : ""}
+                  onClick={() => onChange({ ...task, priority })}
                 >
-                  {done ? <CheckCircle2 /> : active ? <Gauge /> : <Circle />}
-                  <span>{t(stage)}</span>
+                  {t(priorities[priority].title)}
                 </button>
-              );
-            })}
-          </div>
-        )}
-      </section>
+              ))}
+            </div>
+          </FormField>
+          <FormField label={t("备注")}>
+            <textarea
+              rows={4}
+              value={task.notes}
+              onChange={(event) =>
+                onChange({ ...task, notes: event.target.value })
+              }
+            />
+          </FormField>
+        </section>
+      ) : (
+        <>
+          <section className="detail-list">
+            <DetailLine icon={LayoutGrid} title={t("类型")} value={t(meta.title)} />
+            <DetailLine
+              icon={CalendarDays}
+              title={t("截止日期")}
+              value={formatDay(task.deadline, locale, true)}
+            />
+            <DetailLine
+              icon={Clock3}
+              title={t("计划完成日期")}
+              value={
+                task.plannedDate
+                  ? formatDay(task.plannedDate, locale, true)
+                  : t("未安排")
+              }
+            />
+            <DetailLine
+              icon={RotateCcw}
+              title={t("重复")}
+              value={task.recurring ? t("每周") : t("不重复")}
+            />
+            <DetailLine
+              icon={Flag}
+              title={t("优先级")}
+              value={t(priorities[task.priority].title)}
+            />
+            <DetailLine
+              icon={Bell}
+              title={t("提醒")}
+              value={t("提前 1 天 · 当天")}
+              showsChevron
+            />
+            <DetailLine
+              icon={Clock3}
+              title={t("创建时间")}
+              value={formatDay(offsetISO(-60), locale)}
+            />
+          </section>
 
-      <SectionTitle title={t("备注")} />
-      <section className="notes-panel">
-        {task.notes ? t(task.notes) : t("暂无备注")}
-      </section>
+          <section className="detail-progress">
+            {task.progressKind === "percentage" ? (
+              <>
+                <div>
+                  <span>
+                    <strong>{t("学习进度")}</strong>
+                    <small>{t("进度")}</small>
+                  </span>
+                  <strong>{task.progress}%</strong>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={task.progress}
+                  onChange={(event) =>
+                    onChange({ ...task, progress: Number(event.target.value) })
+                  }
+                />
+                <ProgressBar value={task.progress} color={meta.color} />
+              </>
+            ) : (
+              <div className="stage-picker">
+                {stages.map((stage, index) => {
+                  const activeIndex = Math.max(0, stages.indexOf(task.stage));
+                  const done = index < activeIndex;
+                  const active = stage === task.stage;
+                  return (
+                    <button
+                      type="button"
+                      key={stage}
+                      className={active ? "active" : done ? "done" : ""}
+                      onClick={() =>
+                        onChange({
+                          ...task,
+                          stage,
+                          progress: Math.round(
+                            ((index + 1) / stages.length) * 100,
+                          ),
+                        })
+                      }
+                    >
+                      {done ? <CheckCircle2 /> : active ? <Gauge /> : <Circle />}
+                      <span>{stageTitle(stage, locale)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </section>
 
-      <button
-        className="primary-button full"
-        type="button"
-        onClick={() => onChange({ ...task, completed: !task.completed })}
-      >
-        {task.completed ? <RotateCcw /> : <CheckCircle2 />}
-        {task.completed ? t("重新打开任务") : t("标记为已完成")}
-      </button>
+          <SectionTitle title={t("备注")} />
+          <section className="notes-panel">
+            {task.notes ? t(task.notes) : t("暂无备注")}
+          </section>
+
+          <button
+            className="primary-button full"
+            type="button"
+            onClick={() => onChange({ ...task, completed: !task.completed })}
+          >
+            {task.completed ? <RotateCcw /> : <CheckCircle2 />}
+            {task.completed ? t("重新打开任务") : t("标记为已完成")}
+          </button>
+          <button
+            className={`delete-task-button ${confirmingDelete ? "confirming" : ""}`}
+            type="button"
+            onClick={() => {
+              if (confirmingDelete) onDelete();
+              else setConfirmingDelete(true);
+            }}
+          >
+            {confirmingDelete ? t("再次点击确认删除") : t("删除任务")}
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -2067,16 +2506,19 @@ function DetailLine({
   icon: Icon,
   title,
   value,
+  showsChevron = false,
 }: {
   icon: LucideIcon;
   title: string;
   value: string;
+  showsChevron?: boolean;
 }) {
   return (
     <div>
       <Icon />
       <span>{title}</span>
       <strong>{value}</strong>
+      {showsChevron && <ChevronRight aria-hidden="true" />}
     </div>
   );
 }
@@ -2107,13 +2549,13 @@ function TodayScreen({
   const empty = overdue.length + due.length + planned.length === 0;
 
   return (
-    <div className="screen scroll-screen">
-      <ScreenHeader
+    <div className="screen scroll-screen detail-page">
+      <DetailNavigationBar title={t("今天")} onBack={onBack} />
+      <PageHeading
         title={t("今天")}
         subtitle={new Intl.DateTimeFormat(dateLocale(locale), {
           dateStyle: "full",
         }).format(new Date())}
-        onBack={onBack}
       />
       {empty && (
         <div className="simple-empty">
@@ -2159,8 +2601,9 @@ function WeekScreen({
     .sort((a, b) => b.count - a.count)[0];
 
   return (
-    <div className="screen scroll-screen">
-      <ScreenHeader
+    <div className="screen scroll-screen detail-page">
+      <DetailNavigationBar title={t("本周")} onBack={onBack} />
+      <PageHeading
         title={t("本周")}
         subtitle={
           busiest?.count
@@ -2171,7 +2614,6 @@ function WeekScreen({
                 : `最忙：${formatDay(busiest.day, locale, true)} · ${busiest.count} 项任务`
             : t("本周还没有安排")
         }
-        onBack={onBack}
       />
       <div className="week-list">
         {days.map((day) => {
@@ -2183,15 +2625,11 @@ function WeekScreen({
               <h3>{formatDay(day, locale, true)}</h3>
               {dayTasks.length ? (
                 dayTasks.map((task) => (
-                  <button
-                    type="button"
+                  <PlanningTaskRow
                     key={task.id}
+                    task={task}
                     onClick={() => onOpenTask(task.id)}
-                  >
-                    <span className={`week-dot tone-${taskMeta[task.type].color}`} />
-                    <span>{task.title}</span>
-                    <small>{task.subject}</small>
-                  </button>
+                  />
                 ))
               ) : (
                 <p>{t("无安排")}</p>
@@ -2226,17 +2664,43 @@ function PlanningGroup({
       <SectionTitle title={title} value={`${tasks.length}`} />
       <div className="stack-list">
         {tasks.map((task) => (
-          <TaskRow
+          <PlanningTaskRow
             key={task.id}
             task={task}
-            density="compact"
-            showPercentage
-            showNotes={false}
-            onOpen={() => onOpenTask(task.id)}
+            onClick={() => onOpenTask(task.id)}
           />
         ))}
       </div>
     </>
+  );
+}
+
+function PlanningTaskRow({
+  task,
+  onClick,
+}: {
+  task: PlanoraItem;
+  onClick: () => void;
+}) {
+  const { t } = useDemoCopy();
+  const meta = taskMeta[task.type];
+  return (
+    <button
+      className={`planning-task-row tone-${meta.color}`}
+      type="button"
+      onClick={onClick}
+    >
+      <Circle className="planning-complete-icon" />
+      <span className="planning-task-copy">
+        <strong>{task.title}</strong>
+        <small>
+          {task.subject}
+          {task.recurring ? ` · ${t("重复")}` : ""}
+        </small>
+      </span>
+      <PriorityBadge priority={task.priority} />
+      <ChevronRight aria-hidden="true" />
+    </button>
   );
 }
 
@@ -2273,6 +2737,10 @@ function CreateScreen({
   );
   const [notes, setNotes] = useState("");
   const [recurring, setRecurring] = useState(false);
+  const availableTaskTypes: TaskType[] =
+    curriculum === "ib"
+      ? ["assignment", "ia", "ee", "tok", "cas", "exam", "event", "custom"]
+      : ["assignment", "practical", "revision", "exam", "event", "custom"];
 
   function chooseType(nextType: TaskType) {
     setType(nextType);
@@ -2303,21 +2771,17 @@ function CreateScreen({
 
   return (
     <div className="create-overlay">
-      <div className="create-topbar">
+      <div className={`create-topbar ${mode === "select" ? "select-mode" : ""}`}>
         {mode !== "select" ? (
           <button className="icon-button" type="button" onClick={() => setMode("select")}>
             <ChevronLeft />
           </button>
         ) : (
-          <span />
+          <h2>{t("新建任务")}</h2>
         )}
-        <h2>
-          {mode === "select"
-            ? t("新建任务")
-            : mode === "quick"
-              ? t("快速新建")
-              : t(taskMeta[type].title)}
-        </h2>
+        {mode !== "select" && (
+          <h2>{mode === "quick" ? t("快速新建") : t(taskMeta[type].title)}</h2>
+        )}
         <button
           className="icon-button"
           type="button"
@@ -2338,7 +2802,7 @@ function CreateScreen({
             </div>
           </button>
           <div className="type-grid">
-            {(Object.keys(taskMeta) as TaskType[]).map((taskType) => {
+            {availableTaskTypes.map((taskType) => {
               const meta = taskMeta[taskType];
               const Icon = meta.icon;
               return (
@@ -2802,4 +3266,82 @@ function themeTitle(theme: Theme, locale: DemoLocale) {
     sunset: "日落",
   }[theme];
   return copy(locale, source);
+}
+
+function displayModeTitle(mode: DisplayMode, locale: DemoLocale) {
+  const source = {
+    system: "跟随系统",
+    light: "浅色",
+    dark: "深色",
+  }[mode];
+  return copy(locale, source);
+}
+
+function backgroundTitle(
+  background: BackgroundStyle,
+  locale: DemoLocale,
+) {
+  const source = {
+    sky: "极光",
+    ocean: "天空",
+    mint: "薄荷",
+    rose: "玫瑰",
+  }[background];
+  return copy(locale, source);
+}
+
+function accentTitle(accent: AccentColor, locale: DemoLocale) {
+  const source = {
+    blue: "蓝色",
+    green: "绿色",
+    amber: "橙色",
+    pink: "粉色",
+  }[accent];
+  return copy(locale, source);
+}
+
+function sortOrderTitle(order: SortOrder, locale: DemoLocale) {
+  const source = {
+    smart: "智能排序",
+    deadline: "截止日期",
+    priority: "优先级",
+    title: "标题",
+  }[order];
+  return copy(locale, source);
+}
+
+function stageTitle(stage: string, locale: DemoLocale) {
+  const translated: Record<string, Record<DemoLocale, string>> = {
+    "Research Question": {
+      "zh-Hans": "研究问题",
+      en: "Research Question",
+      ja: "研究課題",
+    },
+    Methodology: {
+      "zh-Hans": "研究方法",
+      en: "Methodology",
+      ja: "研究方法",
+    },
+    "Data Collection": {
+      "zh-Hans": "数据收集",
+      en: "Data Collection",
+      ja: "データ収集",
+    },
+    Analysis: {
+      "zh-Hans": "分析",
+      en: "Analysis",
+      ja: "分析",
+    },
+    Evaluation: {
+      "zh-Hans": "评估",
+      en: "Evaluation",
+      ja: "評価",
+    },
+    "Final Submission": {
+      "zh-Hans": "最终提交",
+      en: "Final Submission",
+      ja: "最終提出",
+    },
+  };
+  return translated[stage]?.[locale] ?? copy(locale, stage);
 }
