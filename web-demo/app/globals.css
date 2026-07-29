@@ -2933,24 +2933,38 @@ textarea:focus-visible,
 
 .sort-select {
   position: relative;
-  display: block;
-  min-height: 52px;
-  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  height: 42px;
+  min-height: 42px;
+  padding: 0 12px;
   border: 1px solid var(--stroke);
-  border-radius: 18px;
-  background: var(--panel);
-  box-shadow: 0 8px 24px var(--shadow);
-  backdrop-filter: blur(18px);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--panel-strong) 72%, var(--muted) 12%);
 }
 
 .sort-select select {
-  width: 100%;
-  min-height: 52px;
+  width: auto;
+  height: 40px;
+  min-height: 0;
+  padding: 0 8px 0 0;
   border: 0;
   outline: 0;
   background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  line-height: 1;
   font-size: 12px;
   font-weight: 700;
+  cursor: pointer;
+}
+
+.sort-select > svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  pointer-events: none;
 }
 
 .reset-display-button {

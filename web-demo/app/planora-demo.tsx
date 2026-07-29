@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronsUpDown,
   Circle,
   CircleAlert,
   CircleUserRound,
@@ -2199,6 +2200,7 @@ function SettingsScreen({
       <SectionTitle title={t("排序")} />
       <label className="sort-select">
         <select
+          aria-label={t("排序")}
           value={settings.sortOrder}
           onChange={(event) =>
             onChange({
@@ -2212,6 +2214,7 @@ function SettingsScreen({
           <option value="priority">{t("优先级")}</option>
           <option value="title">{t("标题")}</option>
         </select>
+        <ChevronsUpDown aria-hidden="true" />
       </label>
       <SectionTitle title={t("显示内容")} />
       <section className="toggle-list">
