@@ -124,6 +124,7 @@ const english: Record<string, string> = {
   "这些选项只改变任务列表，不会修改任务内容。":
     "These options only change the task list and never modify task content.",
   "任务外观": "Task Appearance",
+  "恢复默认外观": "Reset Appearance",
   "列表密度": "List Density",
   "排序": "Sort",
   "智能排序": "Smart Sort",
@@ -344,6 +345,7 @@ const japanese: Record<string, string> = {
   "这些选项只改变任务列表，不会修改任务内容。":
     "これらの設定はタスクリストの表示だけを変更し、タスク内容は変更しません。",
   "任务外观": "タスクの外観",
+  "恢复默认外观": "外観をリセット",
   "列表密度": "リスト密度",
   "排序": "並べ替え",
   "智能排序": "スマート順",

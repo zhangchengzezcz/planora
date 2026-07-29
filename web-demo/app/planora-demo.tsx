@@ -2172,6 +2172,23 @@ function SettingsScreen({
             ),
           )}
         </section>
+        <button
+          className="reset-appearance-button"
+          type="button"
+          onClick={() =>
+            onChange({
+              ...settings,
+              theme: defaultSettings.theme,
+              dark: defaultSettings.dark,
+              displayMode: defaultSettings.displayMode,
+              background: defaultSettings.background,
+              accent: defaultSettings.accent,
+            })
+          }
+        >
+          <RotateCcw />
+          {t("恢复默认外观")}
+        </button>
       </div>
     );
   }
