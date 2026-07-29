@@ -1921,6 +1921,7 @@ function ProfileScreen({
   ) => void;
 }) {
   const { locale, t } = useDemoCopy();
+  const [notice, setNotice] = useState<string | null>(null);
   const subjects = [...new Set(tasks.map((task) => task.subject))];
   return (
     <div className="screen scroll-screen">
@@ -1941,19 +1942,29 @@ function ProfileScreen({
           icon={CircleUserRound}
           title={t("姓名")}
           value="Mitty"
-          onClick={() => undefined}
+          onClick={() =>
+            setNotice(
+              t("网页演示中暂不支持修改姓名，请在 iOS App 中体验完整功能。"),
+            )
+          }
         />
         <SettingsRow
           icon={BookOpen}
           title={t("课程体系")}
           value={curriculum.toUpperCase()}
-          onClick={() => undefined}
+          onClick={() =>
+            setNotice(t("请在首页点击右上角的 IB/IGCSE 按钮切换课程体系。"))
+          }
         />
         <SettingsRow
           icon={BookMarked}
           title={t("我的科目")}
           value={`${subjects.length}`}
-          onClick={() => undefined}
+          onClick={() =>
+            setNotice(
+              t("网页演示中暂不支持编辑科目，请在 iOS App 中体验完整功能。"),
+            )
+          }
         />
         <SettingsRow
           icon={Settings}
@@ -1987,17 +1998,39 @@ function ProfileScreen({
         </div>
 
         <div className="backup-actions">
-          <button type="button">
+          <button
+            type="button"
+            onClick={() =>
+              setNotice(
+                t(
+                  "网页演示不会创建或读取本地备份文件，请在 iOS App 中使用任务备份。",
+                ),
+              )
+            }
+          >
             <Download />
             <span>{t("保存备份")}</span>
           </button>
-          <button type="button">
+          <button
+            type="button"
+            onClick={() =>
+              setNotice(
+                t(
+                  "网页演示不会创建或读取本地备份文件，请在 iOS App 中使用任务备份。",
+                ),
+              )
+            }
+          >
             <Upload />
             <span>{t("导入备份")}</span>
           </button>
         </div>
 
-        <button className="backup-restore" type="button" disabled>
+        <button
+          className="backup-restore unavailable"
+          type="button"
+          onClick={() => setNotice(t("当前网页演示没有可恢复的自动备份。"))}
+        >
           <RotateCcw />
           <span>{t("恢复最近自动备份")}</span>
         </button>
@@ -2012,6 +2045,39 @@ function ProfileScreen({
             <strong>{tasks.filter((task) => task.subject === subject).length}</strong>
           </div>
         ))}
+      </section>
+
+      {notice && (
+        <DemoNotice message={notice} onClose={() => setNotice(null)} />
+      )}
+    </div>
+  );
+}
+
+function DemoNotice({
+  message,
+  onClose,
+}: {
+  message: string;
+  onClose: () => void;
+}) {
+  const { t } = useDemoCopy();
+  return (
+    <div
+      className="demo-notice-layer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="demo-notice-title"
+    >
+      <section className="demo-notice-card">
+        <span className="demo-notice-icon">
+          <CircleAlert />
+        </span>
+        <h3 id="demo-notice-title">{t("网页演示提示")}</h3>
+        <p>{message}</p>
+        <button type="button" onClick={onClose} autoFocus>
+          {t("知道了")}
+        </button>
       </section>
     </div>
   );

@@ -137,6 +137,18 @@ const english: Record<string, string> = {
   "显示进度百分比": "Show Progress Percentage",
   "显示备注": "Show Notes",
   "恢复默认任务显示": "Restore Default Task Display",
+  "网页演示提示": "Browser Demo",
+  "网页演示中暂不支持修改姓名，请在 iOS App 中体验完整功能。":
+    "Name editing is not available in the browser demo. Use the iOS app for the complete experience.",
+  "请在首页点击右上角的 IB/IGCSE 按钮切换课程体系。":
+    "Use the IB/IGCSE button in the top-right corner of Home to switch curriculum.",
+  "网页演示中暂不支持编辑科目，请在 iOS App 中体验完整功能。":
+    "Subject editing is not available in the browser demo. Use the iOS app for the complete experience.",
+  "网页演示不会创建或读取本地备份文件，请在 iOS App 中使用任务备份。":
+    "The browser demo does not create or read local backup files. Use task backup in the iOS app.",
+  "当前网页演示没有可恢复的自动备份。":
+    "There is no automatic backup to restore in the browser demo.",
+  "知道了": "OK",
   "任务详情": "Task Details",
   "编辑": "Edit",
   "完成": "Done",
@@ -358,6 +370,18 @@ const japanese: Record<string, string> = {
   "显示进度百分比": "進捗率を表示",
   "显示备注": "メモを表示",
   "恢复默认任务显示": "タスク表示を初期設定に戻す",
+  "网页演示提示": "ブラウザデモ",
+  "网页演示中暂不支持修改姓名，请在 iOS App 中体验完整功能。":
+    "ブラウザデモでは名前を変更できません。完全な機能は iOS アプリでご利用ください。",
+  "请在首页点击右上角的 IB/IGCSE 按钮切换课程体系。":
+    "ホーム右上の IB/IGCSE ボタンからカリキュラムを切り替えてください。",
+  "网页演示中暂不支持编辑科目，请在 iOS App 中体验完整功能。":
+    "ブラウザデモでは科目を編集できません。完全な機能は iOS アプリでご利用ください。",
+  "网页演示不会创建或读取本地备份文件，请在 iOS App 中使用任务备份。":
+    "ブラウザデモではローカルのバックアップファイルを作成・読み込みできません。iOS アプリのタスクバックアップをご利用ください。",
+  "当前网页演示没有可恢复的自动备份。":
+    "ブラウザデモには復元できる自動バックアップがありません。",
+  "知道了": "OK",
   "任务详情": "タスク詳細",
   "编辑": "編集",
   "完成": "完了",
