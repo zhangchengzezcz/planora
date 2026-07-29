@@ -1564,31 +1564,49 @@ textarea:focus-visible,
 .calendar-date,
 .calendar-empty-day {
   min-width: 0;
-  height: 34px;
+  height: 38px;
 }
 
 .calendar-date {
+  position: relative;
   display: grid;
   align-content: center;
   justify-items: center;
   gap: 2px;
   padding: 0;
   border: 0;
-  border-radius: 50%;
   color: var(--ink);
   background: transparent;
 }
 
+.calendar-date::before {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: transparent;
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
 .calendar-date.selected {
   color: #fff;
+}
+
+.calendar-date.selected::before {
   background: var(--deep-green);
 }
 
-.calendar-date.today {
+.calendar-date.today:not(.selected)::before {
   box-shadow: inset 0 0 0 1px var(--deep-green);
 }
 
 .calendar-date strong {
+  position: relative;
+  z-index: 1;
   font-size: 10px;
   font-weight: 600;
 }
@@ -1598,6 +1616,8 @@ textarea:focus-visible,
 }
 
 .calendar-date-dots {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
