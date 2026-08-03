@@ -261,6 +261,7 @@ struct TaskDetailView: View {
 
 struct TaskCompletionButton: View {
     @Bindable var task: PlanoraTask
+    var expandsHitArea = false
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
@@ -268,14 +269,24 @@ struct TaskCompletionButton: View {
             task.setCompleted(!task.isCompleted)
             PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
         } label: {
-            Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                .font(.title3.weight(.semibold))
-                .foregroundStyle(task.isCompleted ? Color.planoraGreen : Color.gray)
-                .frame(width: 36, height: 36)
-                .contentShape(Circle())
+            if expandsHitArea {
+                completionIndicator
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle())
+            } else {
+                completionIndicator
+                    .frame(width: 36, height: 36)
+                    .contentShape(Circle())
+            }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"))
+    }
+
+    private var completionIndicator: some View {
+        Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+            .font(.title3.weight(.semibold))
+            .foregroundStyle(task.isCompleted ? Color.planoraGreen : Color.gray)
     }
 }
 

@@ -375,55 +375,55 @@ private struct TodayFocusCard: View {
     let task: PlanoraTask
 
     var body: some View {
-        GlassPanel {
-            VStack(alignment: .leading, spacing: 18) {
-                HStack(spacing: 12) {
-                    TaskCompletionButton(task: task)
+        GlassPanel(padding: 0) {
+            DashboardTaskInteraction(store: store, task: task) {
+                focusContent
+                    .padding(20)
+            }
+        }
+    }
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(String(localized: "Current Focus"))
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(Color.planoraBlue)
-                            .textCase(.uppercase)
+    private var focusContent: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(String(localized: "Current Focus"))
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Color.planoraBlue)
+                        .textCase(.uppercase)
 
-                        Text(task.title)
-                            .font(.title2.weight(.bold))
-                            .foregroundStyle(Color.planoraInk)
+                    Text(task.title)
+                        .font(.title2.weight(.bold))
+                        .foregroundStyle(Color.planoraInk)
 
-                        Text(task.subject.planoraDisplaySubjectName)
-                            .font(.callout.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 8) {
-                        PriorityPill(priority: task.priority)
-
-                        NavigationLink {
-                            TaskDetailView(store: store, task: task)
-                        } label: {
-                            Image(systemName: "chevron.right")
-                                .font(.headline.weight(.bold))
-                                .foregroundStyle(Color.planoraBlue)
-                                .frame(width: 36, height: 36)
-                                .background(Color.planoraBlue.opacity(0.12), in: Circle())
-                        }
-                        .buttonStyle(.plain)
-                    }
+                    Text(task.subject.planoraDisplaySubjectName)
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(.secondary)
                 }
 
-                Text(focusText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                Spacer()
 
-                TaskStatusGrid(task: task)
+                VStack(alignment: .trailing, spacing: 8) {
+                    PriorityPill(priority: task.priority)
 
-                if task.tracksProgress, let progress = task.progressState.percentageValue {
-                    ProgressView(value: progress)
-                        .tint(task.type.tint)
+                    Image(systemName: "chevron.right")
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(Color.planoraBlue)
+                        .frame(width: 36, height: 36)
+                        .background(Color.planoraBlue.opacity(0.12), in: Circle())
                 }
+            }
+
+            Text(focusText)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            TaskStatusGrid(task: task)
+
+            if task.tracksProgress, let progress = task.progressState.percentageValue {
+                ProgressView(value: progress)
+                    .tint(task.type.tint)
             }
         }
     }
@@ -458,6 +458,51 @@ private struct TodayFocusCard: View {
     }
 }
 
+private struct DashboardTaskInteraction<Content: View>: View {
+    private let completionRegionWidth: CGFloat = 62
+    let store: PlanoraStore
+    let task: PlanoraTask
+    let content: Content
+
+    init(
+        store: PlanoraStore,
+        task: PlanoraTask,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.store = store
+        self.task = task
+        self.content = content()
+    }
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            NavigationLink {
+                TaskDetailView(store: store, task: task)
+            } label: {
+                content
+                    .padding(.leading, completionRegionWidth)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(DashboardTaskNavigationButtonStyle())
+            .accessibilityHint(String(localized: "Open task details"))
+
+            TaskCompletionButton(task: task, expandsHitArea: true)
+                .frame(width: completionRegionWidth)
+                .frame(maxHeight: .infinity)
+        }
+    }
+}
+
+private struct DashboardTaskNavigationButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.72 : 1)
+            .scaleEffect(configuration.isPressed ? 0.985 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
 // MARK: - Task Rows
 
 private struct TaskList: View {
@@ -470,7 +515,7 @@ private struct TaskList: View {
                 TaskRow(store: store, task: task)
 
                 if index != tasks.indices.last {
-                    Divider().padding(.leading, 56)
+                    Divider().padding(.leading, 62)
                 }
             }
         }
@@ -482,51 +527,46 @@ private struct TaskRow: View {
     let task: PlanoraTask
 
     var body: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 14) {
-                TaskCompletionButton(task: task)
-
-                Image(systemName: "doc.text.magnifyingglass")
-                    .font(.headline)
-                    .foregroundStyle(task.type.tint)
-                    .frame(width: 42, height: 42)
-                    .background(task.type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(task.title)
+        DashboardTaskInteraction(store: store, task: task) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 14) {
+                    Image(systemName: "doc.text.magnifyingglass")
                         .font(.headline)
-                        .foregroundStyle(Color.planoraInk)
+                        .foregroundStyle(task.type.tint)
+                        .frame(width: 42, height: 42)
+                        .background(task.type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
-                    Text(task.subject.planoraDisplaySubjectName)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(task.title)
+                            .font(.headline)
+                            .foregroundStyle(Color.planoraInk)
 
-                Spacer()
+                        Text(task.subject.planoraDisplaySubjectName)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
 
-                VStack(alignment: .trailing, spacing: 8) {
-                    PriorityPill(priority: task.priority)
+                    Spacer()
 
-                    NavigationLink {
-                        TaskDetailView(store: store, task: task)
-                    } label: {
+                    VStack(alignment: .trailing, spacing: 8) {
+                        PriorityPill(priority: task.priority)
+
                         Image(systemName: "chevron.right")
                             .font(.caption.weight(.bold))
                             .foregroundStyle(.secondary)
                             .frame(width: 30, height: 30)
                     }
-                    .buttonStyle(.plain)
+                }
+
+                TaskStatusGrid(task: task)
+
+                if task.tracksProgress, let progress = task.progressState.percentageValue {
+                    ProgressView(value: progress)
+                        .tint(task.type.tint)
                 }
             }
-
-            TaskStatusGrid(task: task)
-
-            if task.tracksProgress, let progress = task.progressState.percentageValue {
-                ProgressView(value: progress)
-                    .tint(task.type.tint)
-            }
+            .padding(18)
         }
-        .padding(18)
     }
 }
 
