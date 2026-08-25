@@ -66,9 +66,9 @@ enum TaskBackupError: LocalizedError {
         case .missingTaskData:
             String(localized: "The JSON file is readable, but its Planora task data is missing or incomplete.")
         case .emptyBackup:
-            String(localized: "This backup contains no tasks, so nothing was imported.")
+            String(localized: "This backup contains no Planora data, so nothing was imported.")
         case .unsupportedVersion:
-            String(localized: "Planora currently imports version 8 backups only.")
+            String(localized: "Planora currently imports version 9 backups only.")
         }
     }
 
@@ -85,12 +85,18 @@ enum TaskBackupError: LocalizedError {
 
 @MainActor
 enum TaskBackupCodec {
-    static let currentVersion = 8
+    static let currentVersion = 9
 
-    static func json(for tasks: [PlanoraTask]) throws -> String {
+    static func json(
+        for tasks: [PlanoraTask],
+        courses: [PlanoraCourse] = [],
+        units: [PlanoraUnit] = []
+    ) throws -> String {
         let backup = PlanoraTaskBackup(
             exportedAt: Date(),
-            tasks: tasks.map(PlanoraTaskBackupItem.init(task:))
+            tasks: tasks.map(PlanoraTaskBackupItem.init(task:)),
+            courses: courses.map(PlanoraCourseBackupItem.init(course:)),
+            units: units.map(PlanoraUnitBackupItem.init(unit:))
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -105,6 +111,10 @@ enum TaskBackupCodec {
     }
 
     static func tasks(from text: String) throws -> [PlanoraTask] {
+        try content(from: text).tasks
+    }
+
+    static func content(from text: String) throws -> PlanoraBackupContent {
         let payload = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let data = payload.data(using: .utf8) else {
             throw TaskBackupError.unreadableFile
@@ -146,21 +156,36 @@ enum TaskBackupCodec {
             throw TaskBackupError.missingTaskData
         }
 
-        let tasks = backup.tasks.map(\.task)
+        let content = PlanoraBackupContent(
+            tasks: backup.tasks.map(\.task),
+            courses: backup.courses.map(\.course),
+            units: backup.units.map(\.unit)
+        )
 
-        guard !tasks.isEmpty else {
+        guard !content.tasks.isEmpty || !content.courses.isEmpty || !content.units.isEmpty else {
             throw TaskBackupError.emptyBackup
         }
 
-        return tasks
+        return content
     }
+}
+
+struct PlanoraBackupContent {
+    var tasks: [PlanoraTask]
+    var courses: [PlanoraCourse]
+    var units: [PlanoraUnit]
 }
 
 // MARK: - Import
 
 @MainActor
 enum TaskBackupImporter {
-    static func preview(from url: URL, existingTasks: [PlanoraTask]) throws -> TaskImportPreview {
+    static func preview(
+        from url: URL,
+        existingTasks: [PlanoraTask],
+        existingCourses: [PlanoraCourse] = [],
+        existingUnits: [PlanoraUnit] = []
+    ) throws -> TaskImportPreview {
         let didAccess = url.startAccessingSecurityScopedResource()
         defer {
             if didAccess {
@@ -180,8 +205,8 @@ enum TaskBackupImporter {
             throw TaskBackupError.unreadableFile
         }
 
-        let importedTasks = try TaskBackupCodec.tasks(from: text)
-        return preview(tasks: importedTasks, existingTasks: existingTasks)
+        let content = try TaskBackupCodec.content(from: text)
+        return preview(content: content, existingTasks: existingTasks)
     }
 
     static func preview(tasks importedTasks: [PlanoraTask], existingTasks: [PlanoraTask]) -> TaskImportPreview {
@@ -199,10 +224,22 @@ enum TaskBackupImporter {
         return TaskImportPreview(tasks: importedTasks, duplicateCount: duplicateCount)
     }
 
+    static func preview(content: PlanoraBackupContent, existingTasks: [PlanoraTask]) -> TaskImportPreview {
+        let taskPreview = preview(tasks: content.tasks, existingTasks: existingTasks)
+        return TaskImportPreview(
+            tasks: content.tasks,
+            courses: content.courses,
+            units: content.units,
+            duplicateCount: taskPreview.duplicateCount
+        )
+    }
+
     static func importTasks(
         _ preview: TaskImportPreview,
         strategy: TaskImportStrategy,
         existingTasks: [PlanoraTask],
+        existingCourses: [PlanoraCourse] = [],
+        existingUnits: [PlanoraUnit] = [],
         into modelContext: ModelContext
     ) throws -> TaskImportResult {
         AutomaticTaskBackup.save(tasks: existingTasks)
@@ -212,7 +249,27 @@ enum TaskBackupImporter {
         var seriesIDMap: [UUID: UUID] = [:]
 
         do {
+            let courseIDMap = importCourses(
+                preview.courses,
+                strategy: strategy,
+                existing: existingCourses,
+                into: modelContext
+            )
+            let unitIDMap = importUnits(
+                preview.units,
+                courseIDMap: courseIDMap,
+                strategy: strategy,
+                existing: existingUnits,
+                into: modelContext
+            )
+
             for importedTask in preview.tasks {
+                if let courseID = importedTask.courseID {
+                    importedTask.courseID = courseIDMap[courseID] ?? courseID
+                }
+                if let unitID = importedTask.unitID {
+                    importedTask.unitID = unitIDMap[unitID] ?? unitID
+                }
                 let duplicate = importIndex.duplicate(of: importedTask)
 
                 switch strategy {
@@ -249,6 +306,76 @@ enum TaskBackupImporter {
             throw error
         }
     }
+
+    private static func importCourses(
+        _ imported: [PlanoraCourse],
+        strategy: TaskImportStrategy,
+        existing: [PlanoraCourse],
+        into modelContext: ModelContext
+    ) -> [UUID: UUID] {
+        var result: [UUID: UUID] = [:]
+        var available = existing
+
+        for course in imported {
+            let originalID = course.id
+            let duplicate = available.first { existingCourse in
+                existingCourse.id == originalID || (
+                    existingCourse.externalSourceRawValue == course.externalSourceRawValue &&
+                    existingCourse.externalIdentifier != nil &&
+                    existingCourse.externalIdentifier == course.externalIdentifier
+                )
+            }
+
+            if let duplicate, strategy != .importAsNew {
+                result[originalID] = duplicate.id
+                if strategy == .overwriteDuplicates {
+                    duplicate.applyImportedValues(from: course)
+                }
+            } else {
+                if strategy == .importAsNew || duplicate != nil { course.id = UUID() }
+                result[originalID] = course.id
+                modelContext.insert(course)
+                available.append(course)
+            }
+        }
+        return result
+    }
+
+    private static func importUnits(
+        _ imported: [PlanoraUnit],
+        courseIDMap: [UUID: UUID],
+        strategy: TaskImportStrategy,
+        existing: [PlanoraUnit],
+        into modelContext: ModelContext
+    ) -> [UUID: UUID] {
+        var result: [UUID: UUID] = [:]
+        var available = existing
+
+        for unit in imported {
+            let originalID = unit.id
+            unit.courseID = courseIDMap[unit.courseID] ?? unit.courseID
+            let duplicate = available.first { existingUnit in
+                existingUnit.id == originalID || (
+                    existingUnit.externalSourceRawValue == unit.externalSourceRawValue &&
+                    existingUnit.externalIdentifier != nil &&
+                    existingUnit.externalIdentifier == unit.externalIdentifier
+                )
+            }
+
+            if let duplicate, strategy != .importAsNew {
+                result[originalID] = duplicate.id
+                if strategy == .overwriteDuplicates {
+                    duplicate.applyImportedValues(from: unit)
+                }
+            } else {
+                if strategy == .importAsNew || duplicate != nil { unit.id = UUID() }
+                result[originalID] = unit.id
+                modelContext.insert(unit)
+                available.append(unit)
+            }
+        }
+        return result
+    }
 }
 
 private struct TaskImportIndex {
@@ -279,10 +406,24 @@ private struct TaskImportIndex {
 struct TaskImportPreview: Identifiable {
     let id = UUID()
     let tasks: [PlanoraTask]
+    let courses: [PlanoraCourse]
+    let units: [PlanoraUnit]
     let duplicateCount: Int
+
+    init(
+        tasks: [PlanoraTask],
+        courses: [PlanoraCourse] = [],
+        units: [PlanoraUnit] = [],
+        duplicateCount: Int
+    ) {
+        self.tasks = tasks
+        self.courses = courses
+        self.units = units
+        self.duplicateCount = duplicateCount
+    }
 }
 
-enum TaskImportStrategy {
+enum TaskImportStrategy: Equatable {
     case skipDuplicates
     case overwriteDuplicates
     case importAsNew
@@ -297,16 +438,24 @@ struct TaskImportResult {
 enum AutomaticTaskBackup {
     private static let key = "planora.automaticTaskBackup"
 
-    static func save(tasks: [PlanoraTask]) {
-        guard let json = try? TaskBackupCodec.json(for: tasks) else { return }
+    static func save(
+        tasks: [PlanoraTask],
+        courses: [PlanoraCourse] = [],
+        units: [PlanoraUnit] = []
+    ) {
+        guard let json = try? TaskBackupCodec.json(for: tasks, courses: courses, units: units) else { return }
         UserDefaults.standard.set(json, forKey: key)
     }
 
     static func tasks() throws -> [PlanoraTask] {
+        try content().tasks
+    }
+
+    static func content() throws -> PlanoraBackupContent {
         guard let json = UserDefaults.standard.string(forKey: key) else {
             throw TaskBackupError.emptyBackup
         }
-        return try TaskBackupCodec.tasks(from: json)
+        return try TaskBackupCodec.content(from: json)
     }
 
     static var isAvailable: Bool {
@@ -320,10 +469,19 @@ private struct PlanoraTaskBackup: Codable {
     var version = TaskBackupCodec.currentVersion
     var exportedAt: Date
     var tasks: [PlanoraTaskBackupItem]
+    var courses: [PlanoraCourseBackupItem]
+    var units: [PlanoraUnitBackupItem]
 
-    init(exportedAt: Date, tasks: [PlanoraTaskBackupItem]) {
+    init(
+        exportedAt: Date,
+        tasks: [PlanoraTaskBackupItem],
+        courses: [PlanoraCourseBackupItem],
+        units: [PlanoraUnitBackupItem]
+    ) {
         self.exportedAt = exportedAt
         self.tasks = tasks
+        self.courses = courses
+        self.units = units
     }
 
 }
@@ -353,6 +511,15 @@ private struct PlanoraTaskBackupItem: Codable {
     var plannedDate: Date?
     var deadlineDayIdentifier: String?
     var plannedDayIdentifier: String?
+    var externalSourceRawValue: String?
+    var externalIdentifier: String?
+    var externalURLString: String?
+    var externalUpdatedAt: Date?
+    var courseID: UUID?
+    var unitID: UUID?
+    var remoteStatusRawValue: String?
+    var needsRemoteReview: Bool
+    var archivedDate: Date?
 
     init(task: PlanoraTask) {
         id = task.id
@@ -379,6 +546,15 @@ private struct PlanoraTaskBackupItem: Codable {
         plannedDate = task.plannedDate
         deadlineDayIdentifier = task.deadlineDayIdentifier
         plannedDayIdentifier = task.plannedDayIdentifier
+        externalSourceRawValue = task.externalSourceRawValue
+        externalIdentifier = task.externalIdentifier
+        externalURLString = task.externalURLString
+        externalUpdatedAt = task.externalUpdatedAt
+        courseID = task.courseID
+        unitID = task.unitID
+        remoteStatusRawValue = task.remoteStatusRawValue
+        needsRemoteReview = task.needsRemoteReview
+        archivedDate = task.archivedDate
     }
 
     var task: PlanoraTask {
@@ -425,9 +601,112 @@ private struct PlanoraTaskBackupItem: Codable {
         restoredTask.recurrenceOccurrenceDate = recurrenceOccurrenceDate
         restoredTask.deadlineDayIdentifier = deadlineDayIdentifier
         restoredTask.plannedDayIdentifier = plannedDayIdentifier
+        restoredTask.externalSourceRawValue = externalSourceRawValue
+        restoredTask.externalIdentifier = externalIdentifier
+        restoredTask.externalURLString = externalURLString
+        restoredTask.externalUpdatedAt = externalUpdatedAt
+        restoredTask.courseID = courseID
+        restoredTask.unitID = unitID
+        restoredTask.remoteStatusRawValue = remoteStatusRawValue
+        restoredTask.needsRemoteReview = needsRemoteReview
+        restoredTask.archivedDate = archivedDate
         restoredTask.normalizeCalendarDates()
 
         return restoredTask
+    }
+}
+
+private struct PlanoraCourseBackupItem: Codable {
+    var id: UUID
+    var displayName: String
+    var originalName: String
+    var canonicalSubject: String
+    var levelRawValue: String?
+    var curriculumRawValue: String
+    var teacherNames: [String]
+    var externalSourceRawValue: String?
+    var externalIdentifier: String?
+    var externalURLString: String?
+    var isArchived: Bool
+    var needsRemoteReview: Bool
+    var lastSyncDate: Date?
+
+    init(course: PlanoraCourse) {
+        id = course.id
+        displayName = course.displayName
+        originalName = course.originalName
+        canonicalSubject = course.canonicalSubject
+        levelRawValue = course.levelRawValue
+        curriculumRawValue = course.curriculumRawValue
+        teacherNames = course.teacherNames
+        externalSourceRawValue = course.externalSourceRawValue
+        externalIdentifier = course.externalIdentifier
+        externalURLString = course.externalURLString
+        isArchived = course.isArchived
+        needsRemoteReview = course.needsRemoteReview
+        lastSyncDate = course.lastSyncDate
+    }
+
+    var course: PlanoraCourse {
+        PlanoraCourse(
+            id: id,
+            displayName: displayName,
+            originalName: originalName,
+            canonicalSubject: canonicalSubject,
+            level: levelRawValue.flatMap(CourseLevel.init(rawValue:)),
+            curriculum: Curriculum(rawValue: curriculumRawValue) ?? .ib,
+            teacherNames: teacherNames,
+            externalSource: externalSourceRawValue.flatMap(ExternalTaskSource.init(rawValue:)),
+            externalIdentifier: externalIdentifier,
+            externalURLString: externalURLString,
+            isArchived: isArchived,
+            needsRemoteReview: needsRemoteReview,
+            lastSyncDate: lastSyncDate
+        )
+    }
+}
+
+private struct PlanoraUnitBackupItem: Codable {
+    var id: UUID
+    var courseID: UUID
+    var title: String
+    var externalSourceRawValue: String?
+    var externalIdentifier: String?
+    var externalURLString: String?
+    var startDate: Date?
+    var endDate: Date?
+    var officialProgress: Double?
+    var isArchived: Bool
+    var lastSyncDate: Date?
+
+    init(unit: PlanoraUnit) {
+        id = unit.id
+        courseID = unit.courseID
+        title = unit.title
+        externalSourceRawValue = unit.externalSourceRawValue
+        externalIdentifier = unit.externalIdentifier
+        externalURLString = unit.externalURLString
+        startDate = unit.startDate
+        endDate = unit.endDate
+        officialProgress = unit.officialProgress
+        isArchived = unit.isArchived
+        lastSyncDate = unit.lastSyncDate
+    }
+
+    var unit: PlanoraUnit {
+        PlanoraUnit(
+            id: id,
+            courseID: courseID,
+            title: title,
+            externalSource: externalSourceRawValue.flatMap(ExternalTaskSource.init(rawValue:)),
+            externalIdentifier: externalIdentifier,
+            externalURLString: externalURLString,
+            startDate: startDate,
+            endDate: endDate,
+            officialProgress: officialProgress,
+            isArchived: isArchived,
+            lastSyncDate: lastSyncDate
+        )
     }
 }
 
@@ -437,6 +716,10 @@ private extension PlanoraTask {
             "id:\(id.uuidString)",
             "task:\(importFingerprint)"
         ]
+
+        if let externalSourceRawValue, let externalIdentifier {
+            keys.insert("external:\(externalSourceRawValue):\(externalIdentifier)", at: 0)
+        }
 
         if isRecurring, let occurrenceDayIdentifier {
             keys.append(
@@ -506,6 +789,10 @@ private extension PlanoraTask {
         recurrenceSeriesID = source.recurrenceSeriesID
         recurrenceSequence = source.recurrenceSequence
         recurrenceOccurrenceDate = source.recurrenceOccurrenceDate
+        externalSourceRawValue = source.externalSourceRawValue
+        externalIdentifier = source.externalIdentifier
+        externalURLString = source.externalURLString
+        externalUpdatedAt = source.externalUpdatedAt
         normalizeCalendarDates()
     }
 }

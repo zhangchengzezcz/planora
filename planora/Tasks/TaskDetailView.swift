@@ -1,3 +1,4 @@
+import Foundation
 import SwiftData
 import SwiftUI
 
@@ -8,6 +9,8 @@ struct TaskDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \PlanoraTask.createdDate) private var allTasks: [PlanoraTask]
+    @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
+    @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
     @State private var isShowingDeleteConfirmation = false
 
     var body: some View {
@@ -100,6 +103,14 @@ struct TaskDetailView: View {
         GlassPanel {
             VStack(spacing: 0) {
                 DetailRow(icon: "square.grid.2x2.fill", title: String(localized: "Type"), value: task.type.title, tint: task.type.tint)
+                if let course = courses.first(where: { $0.id == task.courseID }) {
+                    Divider().padding(.leading, 50)
+                    DetailRow(icon: "book.pages.fill", title: String(localized: "ManageBac Course"), value: course.displayName, tint: .planoraBlue)
+                }
+                if let unit = units.first(where: { $0.id == task.unitID }) {
+                    Divider().padding(.leading, 50)
+                    DetailRow(icon: "square.stack.3d.up.fill", title: String(localized: "Unit"), value: unit.title, tint: .planoraGreen)
+                }
                 Divider().padding(.leading, 50)
                 DetailRow(icon: "calendar", title: String(localized: "Deadline"), value: deadlineText, tint: task.type.tint)
                 Divider().padding(.leading, 50)
@@ -108,6 +119,10 @@ struct TaskDetailView: View {
                 DetailRow(icon: "repeat", title: String(localized: "Repeat"), value: task.recurrenceSummary, tint: .planoraBlue)
                 Divider().padding(.leading, 50)
                 DetailRow(icon: "flag.fill", title: String(localized: "Priority"), value: task.priority.title, tint: task.priority.tint)
+                if task.isManageBacTask {
+                    Divider().padding(.leading, 50)
+                    manageBacSourceRow
+                }
                 Divider().padding(.leading, 50)
                 NavigationLink {
                     TaskReminderEditorView(task: task)
@@ -124,6 +139,29 @@ struct TaskDetailView: View {
                 Divider().padding(.leading, 50)
                 DetailRow(icon: "clock.fill", title: String(localized: "Created"), value: PlanoraFormat.monthDay(task.createdDate), tint: .planoraDeepGreen)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var manageBacSourceRow: some View {
+        if let urlString = task.externalURLString, let url = URL(string: urlString) {
+            Link(destination: url) {
+                DetailRow(
+                    icon: "building.columns.fill",
+                    title: String(localized: "Source"),
+                    value: String(localized: "Open in ManageBac"),
+                    tint: .planoraBlue,
+                    showsChevron: true
+                )
+            }
+            .buttonStyle(.plain)
+        } else {
+            DetailRow(
+                icon: "building.columns.fill",
+                title: String(localized: "Source"),
+                value: "ManageBac",
+                tint: .planoraBlue
+            )
         }
     }
 
@@ -553,8 +591,12 @@ private struct EditTaskView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \PlanoraTask.createdDate) private var allTasks: [PlanoraTask]
+    @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
+    @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
     @State private var title: String
     @State private var selectedSubject: String
+    @State private var selectedCourseID: UUID?
+    @State private var selectedUnitID: UUID?
     @State private var selectedType: TaskType
     @State private var hasDeadline: Bool
     @State private var deadline: Date
@@ -575,6 +617,8 @@ private struct EditTaskView: View {
         self.task = task
         _title = State(initialValue: task.title)
         _selectedSubject = State(initialValue: task.subject)
+        _selectedCourseID = State(initialValue: task.courseID)
+        _selectedUnitID = State(initialValue: task.unitID)
         _selectedType = State(initialValue: task.type)
         _hasDeadline = State(initialValue: task.hasDeadline)
         _deadline = State(initialValue: task.deadline ?? Date())
@@ -614,6 +658,15 @@ private struct EditTaskView: View {
         return selectedType.stageOptions
     }
 
+    private var selectedCourse: PlanoraCourse? {
+        courses.first { $0.id == selectedCourseID && !$0.isArchived }
+    }
+
+    private var availableUnits: [PlanoraUnit] {
+        guard let selectedCourseID else { return [] }
+        return units.filter { $0.courseID == selectedCourseID && !$0.isArchived }
+    }
+
     private var canSave: Bool {
         !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !selectedSubject.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -633,6 +686,18 @@ private struct EditTaskView: View {
                 Picker(String(localized: "Subject"), selection: $selectedSubject) {
                     ForEach(subjectOptions, id: \.self) { subject in
                         Text(PlanoraFormat.subjectDisplayName(subject)).tag(subject)
+                    }
+                }
+
+                if let selectedCourse {
+                    LabeledContent(String(localized: "ManageBac Course"), value: selectedCourse.displayName)
+                    if !availableUnits.isEmpty {
+                        Picker(String(localized: "Unit"), selection: $selectedUnitID) {
+                            Text(String(localized: "No Unit")).tag(nil as UUID?)
+                            ForEach(availableUnits) { unit in
+                                Text(unit.title).tag(Optional(unit.id))
+                            }
+                        }
                     }
                 }
             }
@@ -757,6 +822,9 @@ private struct EditTaskView: View {
                 stageName = newType.defaultStage
             }
         }
+        .onChange(of: selectedSubject) { _, _ in
+            updateCourseSelection()
+        }
         .onChange(of: recurrenceRule) { _, newRule in
             if newRule != nil { hasDeadline = true }
         }
@@ -836,6 +904,8 @@ private struct EditTaskView: View {
 
         target.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
         target.subject = selectedSubject
+        target.courseID = selectedCourseID
+        target.unitID = selectedUnitID
         target.type = selectedType
         target.setDeadline(targetDeadline, enabled: hasDeadline)
         if target.id == task.id {
@@ -885,6 +955,16 @@ private struct EditTaskView: View {
             target.clampTimelineDatesToDeadline()
         } else if !preservesProgress {
             target.timelineData = nil
+        }
+    }
+
+    private func updateCourseSelection() {
+        let matchingCourse = courses.first {
+            !$0.isArchived && ($0.displayName == selectedSubject || $0.originalName == selectedSubject)
+        }
+        selectedCourseID = matchingCourse?.id
+        if let selectedUnitID, !availableUnits.contains(where: { $0.id == selectedUnitID }) {
+            self.selectedUnitID = nil
         }
     }
 }

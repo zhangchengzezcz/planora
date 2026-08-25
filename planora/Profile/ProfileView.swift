@@ -6,6 +6,8 @@ struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
     let store: PlanoraStore
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
+    @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
+    @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
     @State private var backupDocument = TaskBackupDocument()
     @State private var isShowingBackupExporter = false
     @State private var isShowingBackupImporter = false
@@ -197,7 +199,9 @@ struct ProfileView: View {
 
     private func prepareBackupExport() {
         do {
-            backupDocument = TaskBackupDocument(text: try TaskBackupCodec.json(for: tasks))
+            backupDocument = TaskBackupDocument(
+                text: try TaskBackupCodec.json(for: tasks, courses: courses, units: units)
+            )
             isShowingBackupExporter = true
         } catch {
             presentBackupAlert(
@@ -225,7 +229,12 @@ struct ProfileView: View {
     private func importBackup(from result: Result<URL, Error>) {
         do {
             let url = try result.get()
-            pendingImportPreview = try TaskBackupImporter.preview(from: url, existingTasks: tasks)
+            pendingImportPreview = try TaskBackupImporter.preview(
+                from: url,
+                existingTasks: tasks,
+                existingCourses: courses,
+                existingUnits: units
+            )
             isShowingImportOptions = true
         } catch {
             presentBackupAlert(
@@ -242,6 +251,8 @@ struct ProfileView: View {
                 preview,
                 strategy: strategy,
                 existingTasks: tasks,
+                existingCourses: courses,
+                existingUnits: units,
                 into: modelContext
             )
             PlanoraTaskPersistence.reconcile(fallbackTasks: tasks, in: modelContext)
@@ -261,10 +272,16 @@ struct ProfileView: View {
 
     private func restoreAutomaticBackup() {
         do {
-            let backupTasks = try AutomaticTaskBackup.tasks()
+            let content = try AutomaticTaskBackup.content()
+            let backupTasks = content.tasks
             let existingIDs = Set(tasks.map(\.id))
             let duplicateCount = backupTasks.filter { existingIDs.contains($0.id) }.count
-            pendingImportPreview = TaskImportPreview(tasks: backupTasks, duplicateCount: duplicateCount)
+            pendingImportPreview = TaskImportPreview(
+                tasks: backupTasks,
+                courses: content.courses,
+                units: content.units,
+                duplicateCount: duplicateCount
+            )
             isShowingImportOptions = true
         } catch {
             presentBackupAlert(
@@ -429,6 +446,22 @@ private struct SettingsHomeView: View {
                                 icon: "list.bullet.rectangle.portrait.fill",
                                 title: String(localized: "Task Display"),
                                 value: store.taskDisplaySettings.summary,
+                                showsChevron: true
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        Divider().padding(.leading, 52)
+
+                        NavigationLink {
+                            ManageBacSettingsView(store: store)
+                        } label: {
+                            SettingsRow(
+                                icon: "building.columns.fill",
+                                title: "ManageBac",
+                                value: ManageBacConnectionStorage.load() == nil
+                                    ? String(localized: "Not Connected")
+                                    : String(localized: "Connected"),
                                 showsChevron: true
                             )
                         }
@@ -743,8 +776,11 @@ private struct CurriculumEditView: View {
     @Environment(\.modelContext) private var modelContext
     let store: PlanoraStore
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
+    @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
+    @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
     @State private var pendingCurriculum: Curriculum?
-    @State private var isShowingCurriculumSwitchConfirmation = false
+    @State private var isShowingCurriculumSwitchReview = false
+    @State private var switchOptions = CurriculumSwitchOptions()
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -779,29 +815,43 @@ private struct CurriculumEditView: View {
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
         .planoraDetailNavigationBar()
         .background(PlanoraBackground())
-        .alert(String(localized: "Switch Curriculum?"), isPresented: $isShowingCurriculumSwitchConfirmation, presenting: pendingCurriculum) { curriculum in
-            Button(String(localized: "Switch"), role: .destructive) {
-                switchCurriculum(to: curriculum)
+        .sheet(isPresented: $isShowingCurriculumSwitchReview) {
+            if let pendingCurriculum {
+                CurriculumSwitchReviewView(
+                    currentCurriculum: store.curriculum,
+                    newCurriculum: pendingCurriculum,
+                    importedTaskCount: tasks.filter { $0.externalSource == .manageBac }.count,
+                    personalTaskCount: tasks.filter { $0.externalSource == nil && $0.type != .event }.count,
+                    personalEventCount: tasks.filter { $0.externalSource == nil && $0.type == .event }.count,
+                    options: $switchOptions,
+                    onCancel: {
+                        self.pendingCurriculum = nil
+                        isShowingCurriculumSwitchReview = false
+                    },
+                    onConfirm: {
+                        switchCurriculum(to: pendingCurriculum)
+                        isShowingCurriculumSwitchReview = false
+                    }
+                )
+                .presentationDetents([.large])
             }
-
-            Button(String(localized: "Cancel"), role: .cancel) {
-                pendingCurriculum = nil
-            }
-        } message: { _ in
-            Text(String(localized: "Switching curriculum deletes existing tasks for the current curriculum and resets subjects to the new curriculum defaults."))
         }
     }
 
     private func requestCurriculumSwitch(to curriculum: Curriculum) {
         guard store.curriculum != curriculum else { return }
         pendingCurriculum = curriculum
-        isShowingCurriculumSwitchConfirmation = true
+        switchOptions = CurriculumSwitchOptions()
+        isShowingCurriculumSwitchReview = true
     }
 
     private func switchCurriculum(to curriculum: Curriculum) {
         PlanoraTaskOperations.switchCurriculum(
             to: curriculum,
             tasks: tasks,
+            courses: courses,
+            units: units,
+            options: switchOptions,
             modelContext: modelContext,
             store: store
         )
@@ -865,15 +915,71 @@ private struct ChangeCurriculumCard: View {
                     Spacer()
                 }
 
-                Text(String(localized: "Changing curriculum resets subjects to the new curriculum defaults; existing tasks will not be kept."))
+                Text(String(localized: "Changing curriculum resets subjects. By default, personal tasks stay and previous ManageBac content is archived."))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
                 HStack(spacing: 8) {
                     MiniStatusPill(title: String(localized: "Subjects Reset"), tint: .planoraBlue)
-                    MiniStatusPill(title: String(localized: "Tasks Removed"), tint: .red)
-                    MiniStatusPill(title: String(localized: "Back Up Tasks"), tint: .planoraAmber)
+                    MiniStatusPill(title: String(localized: "Personal Tasks Kept"), tint: .planoraGreen)
+                    MiniStatusPill(title: String(localized: "Imported Content Archived"), tint: .planoraAmber)
+                }
+            }
+        }
+    }
+}
+
+private struct CurriculumSwitchReviewView: View {
+    let currentCurriculum: Curriculum
+    let newCurriculum: Curriculum
+    let importedTaskCount: Int
+    let personalTaskCount: Int
+    let personalEventCount: Int
+    @Binding var options: CurriculumSwitchOptions
+    let onCancel: () -> Void
+    let onConfirm: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    LabeledContent(String(localized: "From"), value: currentCurriculum.badge)
+                    LabeledContent(String(localized: "To"), value: newCurriculum.badge)
+                }
+
+                Section(String(localized: "ManageBac Content")) {
+                    Picker(String(localized: "Imported Content"), selection: $options.importedContentAction) {
+                        ForEach(ImportedCurriculumContentAction.allCases) { action in
+                            Text(action.title).tag(action)
+                        }
+                    }
+                    Text(PlanoraLocalization.format(String(localized: "managebac_task_count_format"), importedTaskCount))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Section(String(localized: "Personal Content")) {
+                    Toggle(String(localized: "Delete Personal Tasks"), isOn: $options.deletePersonalTasks)
+                    Toggle(String(localized: "Delete Personal Events"), isOn: $options.deletePersonalEvents)
+                    Text("\(personalTaskCount) \(String(localized: "tasks")) · \(personalEventCount) \(String(localized: "events"))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Section {
+                    Text(String(localized: "A local task backup is created before the curriculum changes."))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle(String(localized: "Review Curriculum Change"))
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(String(localized: "Cancel"), action: onCancel)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(String(localized: "Switch"), action: onConfirm)
                 }
             }
         }

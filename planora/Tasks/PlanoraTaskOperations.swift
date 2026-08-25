@@ -1,4 +1,27 @@
+import Foundation
 import SwiftData
+
+enum ImportedCurriculumContentAction: String, CaseIterable, Identifiable {
+    case keep
+    case archive
+    case delete
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .keep: String(localized: "Keep Imported Content")
+        case .archive: String(localized: "Archive Imported Content")
+        case .delete: String(localized: "Delete Imported Content")
+        }
+    }
+}
+
+struct CurriculumSwitchOptions {
+    var importedContentAction: ImportedCurriculumContentAction = .archive
+    var deletePersonalTasks = false
+    var deletePersonalEvents = false
+}
 
 @MainActor
 enum PlanoraTaskOperations {
@@ -61,18 +84,64 @@ enum PlanoraTaskOperations {
     static func switchCurriculum(
         to curriculum: Curriculum,
         tasks: [PlanoraTask],
+        courses: [PlanoraCourse],
+        units: [PlanoraUnit],
+        options: CurriculumSwitchOptions,
         modelContext: ModelContext,
         store: PlanoraStore
     ) {
-        let taskIDs = tasks.map(\.id)
-        AutomaticTaskBackup.save(tasks: tasks)
+        AutomaticTaskBackup.save(tasks: tasks, courses: courses, units: units)
+        var deletedTaskIDs: [UUID] = []
 
         for task in tasks {
-            modelContext.delete(task)
+            if task.externalSource == .manageBac {
+                switch options.importedContentAction {
+                case .keep:
+                    break
+                case .archive:
+                    task.archivedDate = Date()
+                case .delete:
+                    deletedTaskIDs.append(task.id)
+                    modelContext.delete(task)
+                }
+                continue
+            }
+
+            let shouldDelete = task.type == .event
+                ? options.deletePersonalEvents
+                : options.deletePersonalTasks
+            if shouldDelete {
+                deletedTaskIDs.append(task.id)
+                modelContext.delete(task)
+            }
+        }
+
+        for course in courses where course.externalSource == .manageBac {
+            switch options.importedContentAction {
+            case .keep:
+                break
+            case .archive:
+                course.isArchived = true
+            case .delete:
+                modelContext.delete(course)
+            }
+        }
+
+        for unit in units where unit.externalSource == .manageBac {
+            switch options.importedContentAction {
+            case .keep:
+                break
+            case .archive:
+                unit.isArchived = true
+            case .delete:
+                modelContext.delete(unit)
+            }
         }
 
         PlanoraTaskPersistence.save(modelContext)
-        Task { await TaskReminderScheduler.removeRequests(forTaskIDs: taskIDs) }
+        if !deletedTaskIDs.isEmpty {
+            Task { await TaskReminderScheduler.removeRequests(forTaskIDs: deletedTaskIDs) }
+        }
         store.selectCurriculum(curriculum)
     }
 }

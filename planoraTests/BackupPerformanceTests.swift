@@ -11,7 +11,7 @@ final class BackupPerformanceTests: XCTestCase {
         XCTAssertEqual(TaskType.assignment.symbol, "doc.richtext.fill")
     }
 
-    func testV8RoundTripPreservesReminderRecurrenceAndPlanningData() throws {
+    func testV9RoundTripPreservesReminderRecurrenceAndPlanningData() throws {
         let task = makeTask(index: 1)
         task.setPlannedDate(Date(timeIntervalSince1970: 1_800_000_000))
         task.reminders = [TaskReminder(timing: .daysBefore(3), hour: 8, minute: 30)]
@@ -36,7 +36,7 @@ final class BackupPerformanceTests: XCTestCase {
 
     func testOlderBackupVersionsAreRejected() throws {
         let json = try TaskBackupCodec.json(for: [makeTask(index: 1)])
-            .replacingOccurrences(of: "\"version\" : 8", with: "\"version\" : 7")
+            .replacingOccurrences(of: "\"version\" : 9", with: "\"version\" : 8")
 
         XCTAssertThrowsError(try TaskBackupCodec.tasks(from: json)) { error in
             guard case TaskBackupError.unsupportedVersion = error else {
@@ -53,8 +53,8 @@ final class BackupPerformanceTests: XCTestCase {
 
         for invalid in [
             "{broken",
-            "{\"version\":8,\"exportedAt\":\"2026-07-11T00:00:00Z\",\"tasks\":[]}",
-            "{\"version\":8,\"exportedAt\":\"2026-07-11T00:00:00Z\",\"tasks\":[{\"subject\":\"Physics\"}]}"
+            "{\"version\":9,\"exportedAt\":\"2026-07-11T00:00:00Z\",\"tasks\":[],\"courses\":[],\"units\":[]}",
+            "{\"version\":9,\"exportedAt\":\"2026-07-11T00:00:00Z\",\"tasks\":[{\"subject\":\"Physics\"}],\"courses\":[],\"units\":[]}"
         ] {
             XCTAssertThrowsError(try TaskBackupCodec.tasks(from: invalid))
             XCTAssertEqual(try context.fetchCount(FetchDescriptor<PlanoraTask>()), 1)

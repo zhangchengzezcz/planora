@@ -1,3 +1,4 @@
+import Foundation
 import SwiftData
 import SwiftUI
 
@@ -7,6 +8,7 @@ struct QuickCreateTaskView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
     @State private var title = ""
     @State private var selectedSubject = ""
     @State private var hasDeadline = true
@@ -94,6 +96,9 @@ struct QuickCreateTaskView: View {
             notes: "",
             importance: TaskPriority.medium.rawValue
         )
+        task.courseID = courses.first {
+            !$0.isArchived && ($0.displayName == selectedSubject || $0.originalName == selectedSubject)
+        }?.id
         task.reminders = hasDeadline
             ? QuickCreatePreferences.relativeReminders
             : []

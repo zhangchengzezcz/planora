@@ -352,6 +352,8 @@ enum RecurringTaskEngine {
         occurrence.recurrenceSequence = sequence
         occurrence.recurrenceOccurrenceDate = date
         occurrence.reminders = source.reminders.filter(\.isRelativeToDeadline)
+        occurrence.courseID = source.courseID
+        occurrence.unitID = source.unitID
         return occurrence
     }
 

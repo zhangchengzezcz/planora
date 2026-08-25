@@ -50,6 +50,18 @@
 		A00000000000000000000037 /* PlanningViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000037 /* PlanningViews.swift */; };
 		A00000000000000000000038 /* RecurrenceReminderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000038 /* RecurrenceReminderTests.swift */; };
 		A00000000000000000000039 /* BackupPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000039 /* BackupPerformanceTests.swift */; };
+		A00000000000000000000040 /* ExternalTaskSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000040 /* ExternalTaskSource.swift */; };
+		A00000000000000000000041 /* ManageBacModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000041 /* ManageBacModels.swift */; };
+		A00000000000000000000042 /* ManageBacTaskImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000042 /* ManageBacTaskImporter.swift */; };
+		A00000000000000000000043 /* ManageBacWebSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000043 /* ManageBacWebSession.swift */; };
+		A00000000000000000000044 /* ManageBacWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000044 /* ManageBacWebView.swift */; };
+		A00000000000000000000045 /* ManageBacSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000045 /* ManageBacSettingsView.swift */; };
+		A00000000000000000000046 /* ManageBacAutomaticSyncHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000046 /* ManageBacAutomaticSyncHost.swift */; };
+		A00000000000000000000047 /* ManageBacIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000047 /* ManageBacIntegrationTests.swift */; };
+		A00000000000000000000048 /* PlanoraCourse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000048 /* PlanoraCourse.swift */; };
+		A00000000000000000000049 /* PlanoraUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000049 /* PlanoraUnit.swift */; };
+		A00000000000000000000050 /* ManageBacCourseNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000050 /* ManageBacCourseNormalizer.swift */; };
+		A00000000000000000000051 /* ManageBacCoursesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000051 /* ManageBacCoursesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -108,6 +120,18 @@
 		B00000000000000000000037 /* PlanningViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanningViews.swift; sourceTree = "<group>"; };
 		B00000000000000000000038 /* RecurrenceReminderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceReminderTests.swift; sourceTree = "<group>"; };
 		B00000000000000000000039 /* BackupPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPerformanceTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000040 /* ExternalTaskSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalTaskSource.swift; sourceTree = "<group>"; };
+		B00000000000000000000041 /* ManageBacModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacModels.swift; sourceTree = "<group>"; };
+		B00000000000000000000042 /* ManageBacTaskImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacTaskImporter.swift; sourceTree = "<group>"; };
+		B00000000000000000000043 /* ManageBacWebSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacWebSession.swift; sourceTree = "<group>"; };
+		B00000000000000000000044 /* ManageBacWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacWebView.swift; sourceTree = "<group>"; };
+		B00000000000000000000045 /* ManageBacSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacSettingsView.swift; sourceTree = "<group>"; };
+		B00000000000000000000046 /* ManageBacAutomaticSyncHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacAutomaticSyncHost.swift; sourceTree = "<group>"; };
+		B00000000000000000000047 /* ManageBacIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacIntegrationTests.swift; sourceTree = "<group>"; };
+		B00000000000000000000048 /* PlanoraCourse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraCourse.swift; sourceTree = "<group>"; };
+		B00000000000000000000049 /* PlanoraUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraUnit.swift; sourceTree = "<group>"; };
+		B00000000000000000000050 /* ManageBacCourseNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacCourseNormalizer.swift; sourceTree = "<group>"; };
+		B00000000000000000000051 /* ManageBacCoursesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacCoursesView.swift; sourceTree = "<group>"; };
 		D00000000000000000000001 /* planoraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = planoraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -141,6 +165,7 @@
 				C00000000000000000000008 /* Create */,
 				C00000000000000000000002 /* Dashboard */,
 				C00000000000000000000003 /* Models */,
+				C00000000000000000000014 /* ManageBac */,
 				C00000000000000000000004 /* Onboarding */,
 				C00000000000000000000005 /* Profile */,
 				C00000000000000000000009 /* Search */,
@@ -192,12 +217,30 @@
 		C00000000000000000000003 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000040 /* ExternalTaskSource.swift */,
+				B00000000000000000000048 /* PlanoraCourse.swift */,
 				B00000000000000000000009 /* PlanoraModels.swift */,
 				B00000000000000000000021 /* PlanoraTask.swift */,
+				B00000000000000000000049 /* PlanoraUnit.swift */,
 				B00000000000000000000010 /* SubjectLibrary.swift */,
 				51D1D39E300A5618002A466E /* PlanoraTaskOrdering.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000014 /* ManageBac */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000046 /* ManageBacAutomaticSyncHost.swift */,
+				B00000000000000000000050 /* ManageBacCourseNormalizer.swift */,
+				B00000000000000000000051 /* ManageBacCoursesView.swift */,
+				B00000000000000000000041 /* ManageBacModels.swift */,
+				B00000000000000000000042 /* ManageBacTaskImporter.swift */,
+				B00000000000000000000043 /* ManageBacWebSession.swift */,
+				B00000000000000000000044 /* ManageBacWebView.swift */,
+				B00000000000000000000045 /* ManageBacSettingsView.swift */,
+			);
+			path = ManageBac;
 			sourceTree = "<group>";
 		};
 		C00000000000000000000004 /* Onboarding */ = {
@@ -289,6 +332,7 @@
 		C00000000000000000000013 /* planoraTests */ = {
 			isa = PBXGroup;
 			children = (
+				B00000000000000000000047 /* ManageBacIntegrationTests.swift */,
 				B00000000000000000000039 /* BackupPerformanceTests.swift */,
 				B00000000000000000000038 /* RecurrenceReminderTests.swift */,
 				51D1D3A0300A578F002A466E /* TaskOrderingTests.swift */,
@@ -414,6 +458,9 @@
 				A00000000000000000000019 /* PlanoraStore.swift in Sources */,
 				A00000000000000000000020 /* PlanoraTheme.swift in Sources */,
 				A00000000000000000000021 /* PlanoraTask.swift in Sources */,
+				A00000000000000000000048 /* PlanoraCourse.swift in Sources */,
+				A00000000000000000000049 /* PlanoraUnit.swift in Sources */,
+				A00000000000000000000040 /* ExternalTaskSource.swift in Sources */,
 				A00000000000000000000022 /* CreateTaskView.swift in Sources */,
 				51D1D39F300A5618002A466E /* PlanoraTaskOrdering.swift in Sources */,
 				A00000000000000000000023 /* EventSearchView.swift in Sources */,
@@ -430,11 +477,20 @@
 				A00000000000000000000035 /* RecurrenceEditorView.swift in Sources */,
 				A00000000000000000000036 /* QuickCreateTaskView.swift in Sources */,
 				A00000000000000000000037 /* PlanningViews.swift in Sources */,
+				A00000000000000000000041 /* ManageBacModels.swift in Sources */,
+				A00000000000000000000050 /* ManageBacCourseNormalizer.swift in Sources */,
+				A00000000000000000000051 /* ManageBacCoursesView.swift in Sources */,
+				A00000000000000000000042 /* ManageBacTaskImporter.swift in Sources */,
+				A00000000000000000000043 /* ManageBacWebSession.swift in Sources */,
+				A00000000000000000000044 /* ManageBacWebView.swift in Sources */,
+				A00000000000000000000045 /* ManageBacSettingsView.swift in Sources */,
+				A00000000000000000000046 /* ManageBacAutomaticSyncHost.swift in Sources */,
 			);
 		};
 		D00000000000000000000002 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				A00000000000000000000047 /* ManageBacIntegrationTests.swift in Sources */,
 				51D1D3A1300A578F002A466E /* TaskOrderingTests.swift in Sources */,
 				A00000000000000000000039 /* BackupPerformanceTests.swift in Sources */,
 				51D1D3A5300A596D002A466E /* TaskOperationTests.swift in Sources */,
@@ -579,7 +635,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 8;
-				DEVELOPMENT_TEAM = T75ZC285FP;
+				DEVELOPMENT_TEAM = TK2NMDS7ZC;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = planora/Info.plist;
@@ -595,7 +651,11 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.4.4;
-				OTHER_LDFLAGS = "$(inherited) -framework AppIntents";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					AppIntents,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchengze.planora.t75zc285fp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -615,7 +675,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 8;
-				DEVELOPMENT_TEAM = T75ZC285FP;
+				DEVELOPMENT_TEAM = TK2NMDS7ZC;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = planora/Info.plist;
@@ -631,7 +691,11 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.4.4;
-				OTHER_LDFLAGS = "$(inherited) -framework AppIntents";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					AppIntents,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchengze.planora.t75zc285fp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -659,7 +723,11 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				OTHER_LDFLAGS = "$(inherited) -framework AppIntents";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					AppIntents,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchengze.planora.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -684,7 +752,11 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				OTHER_LDFLAGS = "$(inherited) -framework AppIntents";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					AppIntents,
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchengze.planora.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

@@ -17,7 +17,7 @@ enum MainTab: Hashable {
     case profile
 }
 
-enum Curriculum: String, CaseIterable, Codable, Identifiable, Hashable {
+enum Curriculum: String, CaseIterable, Codable, Identifiable, Hashable, Sendable {
     case ib
     case igcse
 

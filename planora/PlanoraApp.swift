@@ -9,6 +9,6 @@ struct PlanoraApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: PlanoraTask.self)
+        .modelContainer(for: [PlanoraTask.self, PlanoraCourse.self, PlanoraUnit.self])
     }
 }

@@ -30,6 +30,15 @@ final class PlanoraTask {
     var plannedDate: Date?
     var deadlineDayIdentifier: String?
     var plannedDayIdentifier: String?
+    var externalSourceRawValue: String?
+    var externalIdentifier: String?
+    var externalURLString: String?
+    var externalUpdatedAt: Date?
+    var courseID: UUID?
+    var unitID: UUID?
+    var remoteStatusRawValue: String?
+    var needsRemoteReview: Bool = false
+    var archivedDate: Date?
 
     init(
         id: UUID = UUID(),
@@ -70,6 +79,15 @@ final class PlanoraTask {
         self.recurrenceOccurrenceDate = nil
         self.plannedDate = plannedDate
         self.plannedDayIdentifier = plannedDate.map { PlanoraCalendarDay(date: $0).identifier }
+        self.externalSourceRawValue = nil
+        self.externalIdentifier = nil
+        self.externalURLString = nil
+        self.externalUpdatedAt = nil
+        self.courseID = nil
+        self.unitID = nil
+        self.remoteStatusRawValue = nil
+        self.needsRemoteReview = false
+        self.archivedDate = nil
         if progressState.kind == .stage {
             self.timelineData = AcademicMilestone.encodedDefaults(
                 for: type,
@@ -111,6 +129,17 @@ final class PlanoraTask {
         get { TaskPriority(rawValue: importance) ?? .medium }
         set { importance = newValue.rawValue }
     }
+
+    var externalSource: ExternalTaskSource? {
+        get { externalSourceRawValue.flatMap(ExternalTaskSource.init(rawValue:)) }
+        set { externalSourceRawValue = newValue?.rawValue }
+    }
+
+    var isManageBacTask: Bool {
+        externalSource == .manageBac
+    }
+
+    var isArchived: Bool { archivedDate != nil }
 
     var timeline: [AcademicMilestone] {
         get {

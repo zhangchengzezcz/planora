@@ -1,3 +1,4 @@
+import Foundation
 import SwiftData
 import SwiftUI
 
@@ -137,8 +138,12 @@ private struct CreateTaskFormView: View {
     let onComplete: (() -> Void)?
 
     @Environment(\.modelContext) private var modelContext
+    @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
+    @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
     @State private var title = ""
     @State private var selectedSubject = ""
+    @State private var selectedCourseID: UUID?
+    @State private var selectedUnitID: UUID?
     @State private var hasDeadline: Bool
     @State private var deadline: Date
     @State private var hasPlannedDate = false
@@ -184,6 +189,15 @@ private struct CreateTaskFormView: View {
         !selectedSubject.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    private var selectedCourse: PlanoraCourse? {
+        courses.first { $0.id == selectedCourseID && !$0.isArchived }
+    }
+
+    private var availableUnits: [PlanoraUnit] {
+        guard let selectedCourseID else { return [] }
+        return units.filter { $0.courseID == selectedCourseID && !$0.isArchived }
+    }
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
@@ -203,6 +217,7 @@ private struct CreateTaskFormView: View {
                             ForEach(subjectOptions, id: \.self) { subject in
                                 SelectableChip(title: PlanoraFormat.subjectDisplayName(subject), isSelected: selectedSubject == subject) {
                                     selectedSubject = subject
+                                    updateCourseSelection()
                                     updateTitleFromSelectionIfNeeded()
                                 }
                             }
@@ -210,7 +225,23 @@ private struct CreateTaskFormView: View {
                         .onAppear {
                             if selectedSubject.isEmpty, let firstSubject = subjectOptions.first {
                                 selectedSubject = firstSubject
+                                updateCourseSelection()
                                 updateTitleFromSelectionIfNeeded()
+                            }
+                        }
+
+                        if let selectedCourse {
+                            Divider()
+
+                            LabeledContent(String(localized: "ManageBac Course"), value: selectedCourse.displayName)
+
+                            if !availableUnits.isEmpty {
+                                Picker(String(localized: "Unit"), selection: $selectedUnitID) {
+                                    Text(String(localized: "No Unit")).tag(nil as UUID?)
+                                    ForEach(availableUnits) { unit in
+                                        Text(unit.title).tag(Optional(unit.id))
+                                    }
+                                }
                             }
                         }
 
@@ -383,6 +414,8 @@ private struct CreateTaskFormView: View {
             importance: priority.rawValue,
             plannedDate: hasPlannedDate ? plannedDate : nil
         )
+        task.courseID = selectedCourseID
+        task.unitID = selectedUnitID
 
         modelContext.insert(task)
         task.replaceReminders(
@@ -409,6 +442,16 @@ private struct CreateTaskFormView: View {
 
     private var reminderSummary: String {
         reminders.isEmpty ? String(localized: "Not Set") : PlanoraLocalization.format(String(localized: "reminder_count_format"), reminders.count)
+    }
+
+    private func updateCourseSelection() {
+        let matchingCourse = courses.first {
+            !$0.isArchived && ($0.displayName == selectedSubject || $0.originalName == selectedSubject)
+        }
+        selectedCourseID = matchingCourse?.id
+        if let selectedUnitID, !availableUnits.contains(where: { $0.id == selectedUnitID }) {
+            self.selectedUnitID = nil
+        }
     }
 }
 

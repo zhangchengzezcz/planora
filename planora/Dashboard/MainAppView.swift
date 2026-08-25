@@ -85,6 +85,9 @@ struct MainAppView: View {
             }
         }
         .animation(.snappy, value: store.pendingDeletionUndo?.id)
+        .background {
+            ManageBacAutomaticSyncHost(store: store)
+        }
     }
 
     private func presentCreateFlow() {

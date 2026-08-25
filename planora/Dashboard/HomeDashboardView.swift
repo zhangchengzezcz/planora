@@ -7,6 +7,8 @@ struct HomeDashboardView: View {
     let store: PlanoraStore
     let onCreateRequested: () -> Void
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
+    @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
+    @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
     @State private var pendingCurriculum: Curriculum?
     @State private var isShowingCurriculumSwitchConfirmation = false
     @State private var calendarMonthDate = Date()
@@ -23,7 +25,7 @@ struct HomeDashboardView: View {
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
         .planoraHiddenNavigationBar()
         .background(PlanoraBackground())
-        .onAppear {
+        .task(priority: .utility) {
             refreshScheduledWorkIfNeeded()
         }
         .onChange(of: scenePhase) { _, newPhase in
@@ -33,7 +35,7 @@ struct HomeDashboardView: View {
             }
         }
         .alert(String(localized: "Switch Curriculum?"), isPresented: $isShowingCurriculumSwitchConfirmation, presenting: pendingCurriculum) { curriculum in
-            Button(String(localized: "Switch"), role: .destructive) {
+            Button(String(localized: "Switch")) {
                 switchCurriculum(to: curriculum)
             }
 
@@ -41,7 +43,7 @@ struct HomeDashboardView: View {
                 pendingCurriculum = nil
             }
         } message: { _ in
-            Text(String(localized: "Switching curriculum deletes existing tasks for the current curriculum and resets subjects to the new curriculum defaults."))
+            Text(String(localized: "Personal tasks and events will stay. Previous ManageBac content will be archived, and subjects will reset to the new curriculum defaults."))
         }
     }
 
@@ -173,6 +175,9 @@ struct HomeDashboardView: View {
         PlanoraTaskOperations.switchCurriculum(
             to: curriculum,
             tasks: tasks,
+            courses: courses,
+            units: units,
+            options: CurriculumSwitchOptions(),
             modelContext: modelContext,
             store: store
         )
@@ -197,31 +202,36 @@ private struct HomeDashboardSnapshot {
     init(tasks: [PlanoraTask], now: Date = Date(), calendar: Calendar = .current) {
         hasTasks = !tasks.isEmpty
 
-        let sortedTasks = tasks.planoraSorted { lhs, rhs in
-            PlanoraTaskOrdering.areInDashboardOrder(lhs, rhs)
-        }
-        var focusTask: PlanoraTask?
-        var upcomingProgressTasks: [PlanoraTask] = []
-        var upcomingTimelineItems: [PlanoraTask] = []
+        var incompleteTaskCandidates: [PlanoraTask] = []
         var deadlineTasks: [PlanoraTask] = []
 
-        for task in sortedTasks {
+        for task in tasks {
             if task.hasDeadline, task.deadline != nil {
                 deadlineTasks.append(task)
             }
-
-            guard !task.isCompleted else { continue }
-            if focusTask == nil {
-                focusTask = task
+            if !task.isCompleted {
+                incompleteTaskCandidates.append(task)
             }
+        }
+
+        let sortedIncompleteTasks = incompleteTaskCandidates.planoraSorted { lhs, rhs in
+            PlanoraTaskOrdering.areInDashboardOrder(lhs, rhs)
+        }
+        var upcomingProgressTasks: [PlanoraTask] = []
+        var upcomingTimelineItems: [PlanoraTask] = []
+        for task in sortedIncompleteTasks {
             if task.tracksProgress, upcomingProgressTasks.count < 4 {
                 upcomingProgressTasks.append(task)
             } else if !task.tracksProgress, upcomingTimelineItems.count < 4 {
                 upcomingTimelineItems.append(task)
             }
+
+            if upcomingProgressTasks.count == 4, upcomingTimelineItems.count == 4 {
+                break
+            }
         }
 
-        self.focusTask = focusTask
+        focusTask = sortedIncompleteTasks.first
         self.upcomingProgressTasks = upcomingProgressTasks
         self.upcomingTimelineItems = upcomingTimelineItems
         self.deadlineTasks = deadlineTasks
