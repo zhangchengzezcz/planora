@@ -1,5 +1,25 @@
 # Changelog / 更新说明
 
+## Unreleased - 2026-08-26
+
+### 中文
+
+- 新增 Mac Catalyst 桌面版本基础，不再将 iPhone Tab 界面直接放大到 Mac。
+- Mac 使用系统 `NavigationSplitView` 侧栏，可直接进入首页、今日、本周、任务、搜索、ManageBac 课程和设置。
+- Mac 新建任务使用独立桌面面板，并支持 `⌘N` 新建与 `⌘F` 搜索。
+- 补齐 String Catalog 中遗漏的格式化条目和 Mac 导航文本。
+- 修复英文 ManageBac 任务数量显示内部本地化键名的问题，并补齐 Unit / Units 与 Competitions 的中日文翻译。
+- iPhone 继续使用现有系统 TabView 与完整交互，不受桌面布局影响。
+
+### English
+
+- Added the Mac Catalyst desktop foundation instead of scaling the iPhone tab interface onto Mac.
+- Added a system `NavigationSplitView` sidebar for Home, Today, This Week, Tasks, Search, ManageBac Courses, and Settings.
+- Added a desktop task-creation sheet plus `⌘N` for New Task and `⌘F` for Search.
+- Completed previously missing formatted strings and Mac navigation entries in the String Catalog.
+- Fixed the English ManageBac task count showing an internal localization key and completed Japanese and Chinese translations for Unit / Units and Competitions.
+- Preserved the existing system TabView and full interaction model on iPhone.
+
 ## 1.4.4 - 2026-07-23
 
 ### 中文

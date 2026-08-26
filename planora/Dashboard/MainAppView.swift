@@ -9,6 +9,9 @@ struct MainAppView: View {
     @State private var searchFocusRequestID = 0
 
     var body: some View {
+#if targetEnvironment(macCatalyst)
+        MacMainView(store: store)
+#else
         TabView(selection: $store.selectedTab) {
             Tab(String(localized: "Home"), systemImage: "house.fill", value: MainTab.home) {
                 NavigationStack {
@@ -88,6 +91,7 @@ struct MainAppView: View {
         .background {
             ManageBacAutomaticSyncHost(store: store)
         }
+#endif
     }
 
     private func presentCreateFlow() {

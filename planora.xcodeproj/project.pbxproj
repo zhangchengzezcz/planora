@@ -62,6 +62,7 @@
 		A00000000000000000000049 /* PlanoraUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000049 /* PlanoraUnit.swift */; };
 		A00000000000000000000050 /* ManageBacCourseNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000050 /* ManageBacCourseNormalizer.swift */; };
 		A00000000000000000000051 /* ManageBacCoursesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000051 /* ManageBacCoursesView.swift */; };
+		A00000000000000000000052 /* MacMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000052 /* MacMainView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -132,6 +133,7 @@
 		B00000000000000000000049 /* PlanoraUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanoraUnit.swift; sourceTree = "<group>"; };
 		B00000000000000000000050 /* ManageBacCourseNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacCourseNormalizer.swift; sourceTree = "<group>"; };
 		B00000000000000000000051 /* ManageBacCoursesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacCoursesView.swift; sourceTree = "<group>"; };
+		B00000000000000000000052 /* MacMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMainView.swift; sourceTree = "<group>"; };
 		D00000000000000000000001 /* planoraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = planoraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -164,6 +166,7 @@
 				C00000000000000000000001 /* Components */,
 				C00000000000000000000008 /* Create */,
 				C00000000000000000000002 /* Dashboard */,
+				C00000000000000000000015 /* Mac */,
 				C00000000000000000000003 /* Models */,
 				C00000000000000000000014 /* ManageBac */,
 				C00000000000000000000004 /* Onboarding */,
@@ -226,6 +229,14 @@
 				51D1D39E300A5618002A466E /* PlanoraTaskOrdering.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		C00000000000000000000015 /* Mac */ = {
+			isa = PBXGroup;
+			children = (
+				B00000000000000000000052 /* MacMainView.swift */,
+			);
+			path = Mac;
 			sourceTree = "<group>";
 		};
 		C00000000000000000000014 /* ManageBac */ = {
@@ -436,6 +447,7 @@
 		000000000000000120000000 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				A00000000000000000000052 /* MacMainView.swift in Sources */,
 				A00000000000000000000001 /* DashboardComponents.swift in Sources */,
 				A00000000000000000000002 /* GlassPanel.swift in Sources */,
 				A00000000000000000000003 /* PlanoraBackground.swift in Sources */,
@@ -660,7 +672,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -700,7 +713,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;

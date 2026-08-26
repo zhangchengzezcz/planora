@@ -2,9 +2,9 @@
 
 **中文** | **English**
 
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.4.4 版本已经形成从创建、计划、提醒、重复执行到备份恢复的日常学习闭环，并完成大数据量性能优化与英文、简体中文、日文的完整本地化。
+Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.4.4 版本已经形成从创建、计划、提醒、重复执行到备份恢复的日常学习闭环，并开始提供为学校学习场景设计的 Mac 桌面工作区，同时完成大数据量性能优化与英文、简体中文、日文的完整本地化。
 
-Planora is a study planning app for IB and IGCSE students. Version 1.4.4 completes the daily loop from creation and planning through reminders, recurrence, completion, and recovery, with large-task-set performance improvements and complete English, Simplified Chinese, and Japanese localization.
+Planora is a study planning app for IB and IGCSE students. Version 1.4.4 completes the daily loop from creation and planning through reminders, recurrence, completion, and recovery, and now includes a Mac workspace designed for school use, with large-task-set performance improvements and complete English, Simplified Chinese, and Japanese localization.
 
 ## 交互式演示 / Interactive Demo
 
@@ -20,7 +20,7 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 
 - Version: **1.4.4**
 - Build: **8**
-- Platform: **iOS**
+- Platform: **iOS and macOS (Mac Catalyst)**
 - UI: SwiftUI, SwiftData, Observation, Liquid Glass-style custom surfaces
 - Status: Stable v1.4.4 daily academic planning workflow
 
@@ -52,6 +52,8 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - 系统 TabView 底栏：首页、任务、我的、搜索和 prominent 新建
 - iOS 27 SDK 系统 Liquid Glass Tab Bar 外观，底部位置和按压反馈由系统管理
 - 英文、简体中文与日文 String Catalog 完整本地化
+- Mac 专用侧栏工作区，直接访问首页、今日、本周、任务、搜索、ManageBac 课程和设置
+- Mac 支持 `⌘N` 新建任务与 `⌘F` 搜索，创建任务使用独立桌面面板
 - 本地 UserDefaults 保存学习空间与显示偏好，SwiftData 保存任务
 
 ### English
@@ -80,6 +82,8 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - System TabView bar with Home, Tasks, Profile, Search, and prominent Create
 - iOS 27 SDK system Liquid Glass Tab Bar appearance, with placement and press feedback managed by the system
 - Complete String Catalog localization in English, Simplified Chinese, and Japanese
+- A Mac sidebar workspace with direct access to Home, Today, This Week, Tasks, Search, ManageBac Courses, and Settings
+- Mac keyboard shortcuts for New Task (`⌘N`) and Search (`⌘F`), with task creation presented in a desktop sheet
 - Local UserDefaults persistence for profile and display preferences, plus SwiftData task storage
 
 ## 项目结构 / Project Structure
@@ -89,6 +93,8 @@ planora/
   Components/     Shared SwiftUI components and glass surfaces
   Create/         Task type selection and task creation form
   Dashboard/      Home dashboard and main app tab shell
+  Mac/            Mac Catalyst sidebar workspace and desktop navigation
+  ManageBac/      Read-only account connection, courses, units, and task import
   Models/         App phases, curriculum models, SwiftData task model, subject library
   Onboarding/     Welcome, feature intro, username, curriculum, and subject selection
   Profile/        Profile, subjects, appearance, task display, and backup settings
@@ -106,7 +112,7 @@ planora/
 
 1. 使用 Xcode 打开 `planora.xcodeproj`。
 2. 选择 `planora` scheme。
-3. 选择 iPhone 模拟器或真机运行。
+3. 选择 iPhone 模拟器、真机，或 `My Mac (Mac Catalyst)` 运行。
 4. 如需无签名构建，可在终端运行：
 
 ```bash
@@ -118,11 +124,21 @@ xcodebuild -project planora.xcodeproj \
   build CODE_SIGNING_ALLOWED=NO
 ```
 
+Mac Catalyst 构建：
+
+```bash
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+xcodebuild -project planora.xcodeproj \
+  -scheme planora \
+  -destination 'platform=macOS,variant=Mac Catalyst' \
+  build CODE_SIGNING_ALLOWED=NO
+```
+
 ### English
 
 1. Open `planora.xcodeproj` in Xcode.
 2. Select the `planora` scheme.
-3. Run on an iPhone simulator or device.
+3. Run on an iPhone simulator, device, or `My Mac (Mac Catalyst)`.
 4. For an unsigned command-line build:
 
 ```bash
@@ -131,6 +147,16 @@ xcodebuild -project planora.xcodeproj \
   -scheme planora \
   -destination 'generic/platform=iOS Simulator' \
   -configuration Debug \
+  build CODE_SIGNING_ALLOWED=NO
+```
+
+Mac Catalyst build:
+
+```bash
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+xcodebuild -project planora.xcodeproj \
+  -scheme planora \
+  -destination 'platform=macOS,variant=Mac Catalyst' \
   build CODE_SIGNING_ALLOWED=NO
 ```
 
