@@ -1,5 +1,39 @@
 # Changelog / 更新说明
 
+## 1.6.0 - 2026-08-26
+
+### 中文
+
+- 将 Mac 版本从 Mac Catalyst 重构为原生 macOS 27 App，同时保持 iPhone 现有界面与功能不变。
+- 使用系统 `NavigationSplitView` 构建固定侧栏，包含首页、今日、本周、任务与课程五个清晰入口。
+- 侧栏图标统一为简约的单色 SF Symbols，不修改应用图标。
+- 使用系统工具栏搜索、新建按钮、任务 `Table`、详情 Inspector、`Form` 和独立 Settings 场景，减少自定义装饰与桌面端复古感。
+- 加入系统 `ToolbarCommands`，隐藏工具栏后可以从“显示”菜单重新显示。
+- 新增 Mac 首页摘要、今日与本周列表、任务筛选与编辑、课程教师、Unit 和关联任务工作区。
+- Mac 课程页改为主侧栏加单一内容区，点击课程后在原位进入详情，避免三重栏位长期堆叠。
+- 教师姓名与邮箱分开显示：列表只展示姓名，详情将邮箱作为可选择的次级信息。
+- ManageBac 课程识别支持 PDP、PDP1、PDP2、GP、GPTPD 和 Global Perspectives，并改进课程名称标准化。
+- ManageBac 自动同步完成或失败后立即释放隐藏 WebKit 会话，降低后台资源占用。
+- ManageBac 连接页改为原生分步清单与完成摘要；已有课程会在本地重新规范名称，并清理重复教师记录，不会修改学校端数据。
+- Mac 首页、任务和课程统计改为单次快照与预计算，减少重复筛选和排序。
+- 补齐原生 Mac 工作区新增文本的英文、简体中文和日文本地化。
+
+### English
+
+- Rebuilt the Mac app as a native macOS 27 application instead of Mac Catalyst while preserving the existing iPhone UI and behavior.
+- Added a system `NavigationSplitView` sidebar with clear Home, Today, This Week, Tasks, and Courses destinations.
+- Standardized sidebar artwork on restrained monochrome SF Symbols without changing the app icon.
+- Adopted system toolbar search, New Task controls, a task `Table`, an Inspector, grouped forms, and a dedicated Settings scene.
+- Added `ToolbarCommands` so a hidden toolbar can always be restored from the View menu.
+- Added native Mac home summaries, Today and Week lists, task filtering and editing, plus a course workspace for teachers, units, and related tasks.
+- Reworked Mac Courses into a sidebar plus one content area, navigating to details in place instead of keeping three permanent columns.
+- Separated teacher names from email addresses; course lists show names while details present selectable email as secondary information.
+- Extended ManageBac course recognition for PDP, PDP1, PDP2, GP, GPTPD, and Global Perspectives with improved normalization.
+- Released the hidden ManageBac WebKit session immediately after automatic sync completes or fails to reduce background resource use.
+- Reworked ManageBac connection into a native step checklist with a completion summary; existing local courses are renormalized and duplicate teacher entries are removed without modifying school data.
+- Reworked Mac home, task, and course summaries around single-pass snapshots and precomputed counts.
+- Completed English, Simplified Chinese, and Japanese localization for the new native Mac workspace.
+
 ## 1.5.0 - 2026-08-26
 
 ### 中文

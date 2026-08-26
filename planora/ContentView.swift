@@ -2,7 +2,11 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @State private var store = PlanoraStore()
+    let store: PlanoraStore
+
+    init(store: PlanoraStore) {
+        self.store = store
+    }
 
     var body: some View {
         PlanoraRootView(store: store)
@@ -19,7 +23,7 @@ private struct PlanoraRootView: View {
 
     var body: some View {
         ZStack {
-            PlanoraBackground()
+            rootBackground
 
             Group {
                 switch store.phase {
@@ -43,10 +47,10 @@ private struct PlanoraRootView: View {
             }
             .transition(.opacity.combined(with: .scale(scale: 0.985)))
         }
-        .environment(\.planoraAppearance, store.appearanceSettings)
+        .environment(\.planoraAppearance, effectiveAppearance)
         .environment(\.planoraTaskDisplay, store.taskDisplaySettings)
-        .tint(store.appearanceSettings.accent.color)
-        .preferredColorScheme(store.appearanceSettings.displayMode.colorScheme)
+        .tint(effectiveTint)
+        .preferredColorScheme(effectiveColorScheme)
         .animation(.smooth(duration: 0.35), value: store.phase)
         .onOpenURL { url in
             importSharedBackup(from: url)
@@ -56,6 +60,43 @@ private struct PlanoraRootView: View {
         } message: {
             Text(importAlertMessage)
         }
+    }
+
+    @ViewBuilder
+    private var rootBackground: some View {
+#if os(macOS)
+        if store.phase == .dashboard {
+            Color(nsColor: .windowBackgroundColor)
+        } else {
+            PlanoraBackground()
+        }
+#else
+        PlanoraBackground()
+#endif
+    }
+
+    private var effectiveAppearance: PlanoraAppearanceSettings {
+#if os(macOS)
+        .default
+#else
+        store.appearanceSettings
+#endif
+    }
+
+    private var effectiveTint: Color {
+#if os(macOS)
+        .accentColor
+#else
+        store.appearanceSettings.accent.color
+#endif
+    }
+
+    private var effectiveColorScheme: ColorScheme? {
+#if os(macOS)
+        nil
+#else
+        store.appearanceSettings.displayMode.colorScheme
+#endif
     }
 
     private func importSharedBackup(from url: URL) {
@@ -92,7 +133,7 @@ private struct PlanoraRootView: View {
 }
 
 #Preview("Fresh Launch") {
-    ContentView()
+    ContentView(store: .previewOnboarding)
 }
 
 #Preview("Dashboard") {

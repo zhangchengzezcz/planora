@@ -104,14 +104,16 @@ struct SubjectSelectionView: View {
                 .padding(.bottom, PlanoraTheme.pageHorizontalPadding)
             }
         }
+#if os(iOS)
         .fullScreenCover(item: $manageBacFlow) { flow in
-            ManageBacConnectionFlowView(store: store, flow: flow) { snapshot in
-                manageBacFlow = nil
-                handleManageBacCompletion(snapshot)
-            } onCancel: {
-                manageBacFlow = nil
-            }
+            manageBacFlowContent(flow)
         }
+#else
+        .sheet(item: $manageBacFlow) { flow in
+            manageBacFlowContent(flow)
+                .frame(minWidth: 680, minHeight: 620)
+        }
+#endif
         .alert(
             String(localized: "Update Curriculum?"),
             isPresented: $isShowingCurriculumSuggestion,
@@ -126,6 +128,16 @@ struct SubjectSelectionView: View {
             }
         } message: { curriculum in
             Text(String(localized: "ManageBac suggests a different curriculum. Review the suggestion before changing your Planora learning space."))
+        }
+    }
+
+    @ViewBuilder
+    private func manageBacFlowContent(_ flow: ManageBacFlow) -> some View {
+        ManageBacConnectionFlowView(store: store, flow: flow) { snapshot in
+            manageBacFlow = nil
+            handleManageBacCompletion(snapshot)
+        } onCancel: {
+            manageBacFlow = nil
         }
     }
 

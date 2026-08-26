@@ -2,9 +2,9 @@
 
 **中文** | **English**
 
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.5.0 版本已经形成从创建、计划、提醒、重复执行到备份恢复的日常学习闭环，并开始提供为学校学习场景设计的 Mac 桌面工作区，同时完成大数据量性能优化与英文、简体中文、日文的完整本地化。
+Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.0 版本在完整日常学习闭环的基础上，加入使用最新 SwiftUI 桌面结构构建的原生 macOS 工作区，并继续提供英文、简体中文和日文完整本地化。
 
-Planora is a study planning app for IB and IGCSE students. Version 1.5.0 completes the daily loop from creation and planning through reminders, recurrence, completion, and recovery, and now includes a Mac workspace designed for school use, with large-task-set performance improvements and complete English, Simplified Chinese, and Japanese localization.
+Planora is a study planning app for IB and IGCSE students. Version 1.6.0 adds a native macOS workspace built with the latest SwiftUI desktop structure while preserving the complete daily planning loop and full English, Simplified Chinese, and Japanese localization.
 
 ## 交互式演示 / Interactive Demo
 
@@ -18,11 +18,11 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 
 ## 当前版本 / Current Version
 
-- Version: **1.5.0**
-- Build: **9**
-- Platform: **iOS and macOS (Mac Catalyst)**
-- UI: SwiftUI, SwiftData, Observation, Liquid Glass-style custom surfaces
-- Status: Stable v1.5.0 desktop and mobile academic planning workflow
+- Version: **1.6.0**
+- Build: **10**
+- Platform: **iOS and native macOS 27**
+- UI: SwiftUI, SwiftData, Observation, system navigation and platform-native surfaces
+- Status: Native desktop and mobile academic planning workflow
 
 ## 功能范围 / Scope
 
@@ -52,8 +52,10 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - 系统 TabView 底栏：首页、任务、我的、搜索和 prominent 新建
 - iOS 27 SDK 系统 Liquid Glass Tab Bar 外观，底部位置和按压反馈由系统管理
 - 英文、简体中文与日文 String Catalog 完整本地化
-- Mac 专用侧栏工作区，直接访问首页、今日、本周、任务、搜索、ManageBac 课程和设置
-- Mac 支持 `⌘N` 新建任务与 `⌘F` 搜索，创建任务使用独立桌面面板
+- 原生 macOS 27 侧栏工作区，直接访问首页、今日、本周、任务和课程
+- Mac 使用系统工具栏搜索、系统任务表格、详情检查器与独立设置窗口
+- Mac 支持 `⌘N` 新建任务与 `⌘F` 搜索，隐藏工具栏后可通过系统命令重新显示
+- ManageBac 课程工作区显示教师、Unit 与关联任务，并识别 PDP/PDP1/PDP2、GP/GPTPD 与 Global Perspectives
 - 本地 UserDefaults 保存学习空间与显示偏好，SwiftData 保存任务
 
 ### English
@@ -82,8 +84,10 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - System TabView bar with Home, Tasks, Profile, Search, and prominent Create
 - iOS 27 SDK system Liquid Glass Tab Bar appearance, with placement and press feedback managed by the system
 - Complete String Catalog localization in English, Simplified Chinese, and Japanese
-- A Mac sidebar workspace with direct access to Home, Today, This Week, Tasks, Search, ManageBac Courses, and Settings
-- Mac keyboard shortcuts for New Task (`⌘N`) and Search (`⌘F`), with task creation presented in a desktop sheet
+- A native macOS 27 sidebar workspace with direct access to Home, Today, This Week, Tasks, and Courses
+- System toolbar search, a native task table, a task inspector, and a dedicated Settings window on Mac
+- Mac keyboard shortcuts for New Task (`⌘N`) and Search (`⌘F`), with the system command available to restore a hidden toolbar
+- A ManageBac course workspace for teachers, units, and related tasks, including PDP/PDP1/PDP2, GP/GPTPD, and Global Perspectives recognition
 - Local UserDefaults persistence for profile and display preferences, plus SwiftData task storage
 
 ## 项目结构 / Project Structure
@@ -93,7 +97,7 @@ planora/
   Components/     Shared SwiftUI components and glass surfaces
   Create/         Task type selection and task creation form
   Dashboard/      Home dashboard and main app tab shell
-  Mac/            Mac Catalyst sidebar workspace and desktop navigation
+  Mac/            Native macOS sidebar, planning, task, course, and settings workspaces
   ManageBac/      Read-only account connection, courses, units, and task import
   Models/         App phases, curriculum models, SwiftData task model, subject library
   Onboarding/     Welcome, feature intro, username, curriculum, and subject selection
@@ -112,7 +116,7 @@ planora/
 
 1. 使用 Xcode 打开 `planora.xcodeproj`。
 2. 选择 `planora` scheme。
-3. 选择 iPhone 模拟器、真机，或 `My Mac (Mac Catalyst)` 运行。
+3. 选择 iPhone 模拟器、真机，或 `My Mac` 运行。
 4. 如需无签名构建，可在终端运行：
 
 ```bash
@@ -124,13 +128,13 @@ xcodebuild -project planora.xcodeproj \
   build CODE_SIGNING_ALLOWED=NO
 ```
 
-Mac Catalyst 构建：
+原生 macOS 构建：
 
 ```bash
 DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 xcodebuild -project planora.xcodeproj \
   -scheme planora \
-  -destination 'platform=macOS,variant=Mac Catalyst' \
+  -destination 'platform=macOS,arch=arm64' \
   build CODE_SIGNING_ALLOWED=NO
 ```
 
@@ -138,7 +142,7 @@ xcodebuild -project planora.xcodeproj \
 
 1. Open `planora.xcodeproj` in Xcode.
 2. Select the `planora` scheme.
-3. Run on an iPhone simulator, device, or `My Mac (Mac Catalyst)`.
+3. Run on an iPhone simulator, device, or `My Mac`.
 4. For an unsigned command-line build:
 
 ```bash
@@ -150,13 +154,13 @@ xcodebuild -project planora.xcodeproj \
   build CODE_SIGNING_ALLOWED=NO
 ```
 
-Mac Catalyst build:
+Native macOS build:
 
 ```bash
 DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 xcodebuild -project planora.xcodeproj \
   -scheme planora \
-  -destination 'platform=macOS,variant=Mac Catalyst' \
+  -destination 'platform=macOS,arch=arm64' \
   build CODE_SIGNING_ALLOWED=NO
 ```
 
@@ -164,11 +168,11 @@ xcodebuild -project planora.xcodeproj \
 
 ### 中文
 
-Planora 1.5.0 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用系统侧栏与桌面面板，内容直接嵌入背景，导航与滚动边缘效果交给 SwiftUI 管理。当前版本专注于完整、可靠且流畅的本地学习规划闭环。
+Planora 1.6.0 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、工具栏、表格、检查器与设置场景。界面减少装饰性背景和自定义按钮，让信息层级、窗口行为与键盘操作交给系统组件管理。
 
 ### English
 
-Planora 1.5.0 keeps the Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a system sidebar and desktop sheets, with SwiftUI managing navigation and scroll-edge behavior. This version focuses on a complete, reliable, and responsive local academic-planning workflow.
+Planora 1.6.0 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, toolbar, table, inspector, and Settings scene. Decorative backgrounds and custom controls are reduced so hierarchy, window behavior, and keyboard interaction remain system-managed.
 
 ## 后续计划 / Next Steps
 

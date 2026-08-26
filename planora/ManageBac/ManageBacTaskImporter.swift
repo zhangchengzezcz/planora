@@ -45,7 +45,7 @@ enum ManageBacTaskImporter {
                 course.canonicalSubject = normalized.canonicalSubject
                 course.level = normalized.level
                 course.curriculum = normalized.curriculum
-                course.teacherNames = record.teacherNames
+                course.teacherNames = normalizedTeacherNames(record.teacherNames)
                 course.externalURLString = record.detailURL
                 course.isArchived = false
                 course.needsRemoteReview = normalized.requiresReview
@@ -173,6 +173,63 @@ enum ManageBacTaskImporter {
             existingTasks: existingTasks,
             into: modelContext
         )
+    }
+
+    @discardableResult
+    static func refreshStoredCourseMetadata(in modelContext: ModelContext) throws -> Int {
+        let courses = try modelContext.fetch(FetchDescriptor<PlanoraCourse>())
+        let tasks = try modelContext.fetch(FetchDescriptor<PlanoraTask>())
+        let manageBacTasksByCourseID = Dictionary(grouping: tasks.filter { $0.externalSource == .manageBac }) { $0.courseID }
+        var changedCount = 0
+
+        for course in courses where course.externalSource == .manageBac {
+            let record = ManageBacCourseRecord(
+                remoteIdentifier: course.externalIdentifier ?? course.id.uuidString,
+                name: course.originalName,
+                teacherNames: course.teacherNames,
+                detailURL: course.externalURLString,
+                programmeText: course.curriculum == .igcse ? "IGCSE" : "IB Diploma"
+            )
+            let normalized = ManageBacCourseNormalizer.normalize(record, curriculum: course.curriculum)
+            let teachers = normalizedTeacherNames(course.teacherNames)
+            let courseChanged = course.displayName != normalized.displayName
+                || course.canonicalSubject != normalized.canonicalSubject
+                || course.level != normalized.level
+                || course.needsRemoteReview != normalized.requiresReview
+                || course.teacherNames != teachers
+
+            guard courseChanged else { continue }
+            course.displayName = normalized.displayName
+            course.canonicalSubject = normalized.canonicalSubject
+            course.level = normalized.level
+            course.needsRemoteReview = normalized.requiresReview
+            course.teacherNames = teachers
+            for task in manageBacTasksByCourseID[course.id] ?? [] {
+                task.subject = normalized.displayName
+            }
+            changedCount += 1
+        }
+
+        if changedCount > 0 {
+            try modelContext.save()
+        }
+        return changedCount
+    }
+
+    static func normalizedTeacherNames(_ names: [String]) -> [String] {
+        var seen = Set<String>()
+        return names.compactMap { rawName in
+            let withoutLabel = rawName.replacingOccurrences(
+                of: #"^teachers?\s*[:\-]?\s*"#,
+                with: "",
+                options: [.regularExpression, .caseInsensitive]
+            )
+            let name = withoutLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !name.isEmpty else { return nil }
+            let key = normalizedKey(name)
+            return seen.insert(key).inserted ? name : nil
+        }
+        .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
     }
 
     private static func applyRemoteValues(_ record: ManageBacTaskRecord, to task: PlanoraTask) {

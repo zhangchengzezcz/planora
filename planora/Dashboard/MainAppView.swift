@@ -9,7 +9,7 @@ struct MainAppView: View {
     @State private var searchFocusRequestID = 0
 
     var body: some View {
-#if targetEnvironment(macCatalyst)
+#if os(macOS)
         MacMainView(store: store)
 #else
         TabView(selection: $store.selectedTab) {

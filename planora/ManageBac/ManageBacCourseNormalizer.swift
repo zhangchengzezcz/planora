@@ -23,8 +23,11 @@ enum ManageBacProgrammeDetector {
         if source.range(of: #"\bigcse\b|\binternational\s+gcse\b"#, options: .regularExpression) != nil {
             igcseEvidence.append("IGCSE")
         }
-        if source.range(of: #"\bpdp\b"#, options: .regularExpression) != nil {
+        if source.range(of: #"\bpdp\s*[-_]?\s*[12]?\b"#, options: .regularExpression) != nil {
             igcseEvidence.append("PDP")
+        }
+        if source.range(of: #"\b(global\s+perspectives?|gp|gptpd)\b"#, options: .regularExpression) != nil {
+            igcseEvidence.append("Global Perspectives")
         }
 
         if !ibEvidence.isEmpty, !igcseEvidence.isEmpty {
@@ -36,7 +39,7 @@ enum ManageBacProgrammeDetector {
         if igcseEvidence.contains("IGCSE") {
             return ManageBacProgrammeDetection(curriculum: .igcse, confidence: .high, evidence: igcseEvidence)
         }
-        if igcseEvidence.contains("PDP") {
+        if igcseEvidence.contains("PDP") || igcseEvidence.contains("Global Perspectives") {
             return ManageBacProgrammeDetection(curriculum: .igcse, confidence: .medium, evidence: igcseEvidence)
         }
         return ManageBacProgrammeDetection(curriculum: nil, confidence: .low, evidence: [])
@@ -73,6 +76,7 @@ enum ManageBacCourseNormalizer {
             ("Business", ["business management", "business studies", "business"]),
             ("Geography", ["geography"]),
             ("History", ["history"]),
+            ("Global Perspectives", ["global perspectives", "global perspective", "gptpd", "gp pdp", "gp"]),
             ("English", ["english"]),
             ("Chinese", ["chinese", "mandarin"]),
             ("TOK", ["theory of knowledge", "tok"]),

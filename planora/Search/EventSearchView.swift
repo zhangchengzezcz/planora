@@ -384,8 +384,7 @@ private struct EventSearchField: View {
                     .font(.title3)
                     .foregroundStyle(Color.planoraInk)
                     .textFieldStyle(.plain)
-                    .textInputAutocapitalization(.never)
-                    .disableAutocorrection(true)
+                    .planoraSearchInputBehavior()
                     .submitLabel(.search)
                     .focused(isFocused)
                     .onSubmit {
@@ -421,6 +420,18 @@ private struct EventSearchField: View {
             }
         }
         .animation(.smooth(duration: 0.2), value: isFocused.wrappedValue)
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func planoraSearchInputBehavior() -> some View {
+#if os(iOS)
+        textInputAutocapitalization(.never)
+            .disableAutocorrection(true)
+#else
+        self
+#endif
     }
 }
 

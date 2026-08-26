@@ -432,9 +432,11 @@ private struct TimelineEditorView: View {
         .navigationTitle(String(localized: "Edit Timeline"))
         .planoraDetailNavigationBar()
         .toolbar {
+#if os(iOS)
             ToolbarItem(placement: .topBarLeading) {
                 EditButton()
             }
+#endif
 
             ToolbarItem(placement: .confirmationAction) {
                 Button(String(localized: "Save"), action: saveTimeline)

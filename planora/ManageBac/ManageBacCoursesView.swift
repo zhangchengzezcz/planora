@@ -75,7 +75,7 @@ private struct ManageBacCourseRow: View {
                     }
                     .lineLimit(1)
 
-                    Text(course.teacherNames.isEmpty ? String(localized: "Teacher not listed") : course.teacherNames.joined(separator: ", "))
+                    Text(course.teachers.isEmpty ? String(localized: "Teacher not listed") : course.teachers.map(\.name).joined(separator: ", "))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -146,17 +146,25 @@ struct ManageBacCourseDetailView: View {
                 if !course.teacherNames.isEmpty {
                     DashboardSection(title: String(localized: "Teachers")) {
                         VStack(spacing: 0) {
-                            ForEach(Array(course.teacherNames.enumerated()), id: \.offset) { index, name in
+                            ForEach(Array(course.teachers.enumerated()), id: \.element.id) { index, teacher in
                                 HStack(spacing: 12) {
                                     Image(systemName: "person.crop.circle.fill")
                                         .foregroundStyle(course.curriculum.tint)
-                                    Text(name)
-                                        .font(.body.weight(.medium))
-                                        .foregroundStyle(Color.planoraInk)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(teacher.name)
+                                            .font(.body.weight(.medium))
+                                            .foregroundStyle(Color.planoraInk)
+                                        if let email = teacher.email {
+                                            Text(email)
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                                .textSelection(.enabled)
+                                        }
+                                    }
                                     Spacer()
                                 }
                                 .padding(16)
-                                if index < course.teacherNames.count - 1 { Divider().padding(.leading, 48) }
+                                if index < course.teachers.count - 1 { Divider().padding(.leading, 48) }
                             }
                         }
                     }

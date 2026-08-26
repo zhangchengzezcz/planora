@@ -94,6 +94,84 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(result.confidence, .medium)
     }
 
+    func testProgrammeDetectionRecognizesNumberedPDPVariants() {
+        for value in ["PDP1 Mathematics", "PDP 2 English", "PDP-2 Chemistry"] {
+            let result = ManageBacProgrammeDetector.detect(
+                programmeText: value,
+                courses: [ManageBacCourseRecord(
+                    remoteIdentifier: value,
+                    name: value,
+                    teacherNames: [],
+                    detailURL: nil,
+                    programmeText: value
+                )]
+            )
+            XCTAssertEqual(result.curriculum, .igcse, value)
+            XCTAssertEqual(result.confidence, .medium, value)
+        }
+    }
+
+    func testGlobalPerspectivesAliasesNormalizeWithoutReview() {
+        for value in ["Global Perspectives", "GP PDP2", "GP PDP2 (Grade 10)", "GPTPD"] {
+            let record = ManageBacCourseRecord(
+                remoteIdentifier: value,
+                name: value,
+                teacherNames: [],
+                detailURL: nil,
+                programmeText: "PDP2"
+            )
+            let normalized = ManageBacCourseNormalizer.normalize(record, curriculum: .igcse)
+            XCTAssertEqual(normalized.canonicalSubject, "Global Perspectives", value)
+            XCTAssertEqual(normalized.displayName, "Global Perspectives", value)
+            XCTAssertFalse(normalized.requiresReview, value)
+        }
+    }
+
+    func testStoredManageBacCoursesAreRenormalizedWithoutNetworkAccess() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let course = PlanoraCourse(
+            displayName: "GP PDP2 (Grade 10)",
+            originalName: "GP PDP2 (Grade 10)",
+            curriculum: .igcse,
+            teacherNames: [
+                "Rehman Naseer naseer@example.com",
+                "Teachers Rehman Naseer naseer@example.com"
+            ],
+            externalSource: .manageBac,
+            externalIdentifier: "gp-pdp2"
+        )
+        let task = PlanoraTask(
+            title: "Perspective reflection",
+            subject: "GP PDP2 (Grade 10)",
+            type: .assignment,
+            deadline: nil,
+            hasDeadline: false,
+            progressState: .percentage(0),
+            notes: ""
+        )
+        task.externalSource = .manageBac
+        task.courseID = course.id
+        context.insert(course)
+        context.insert(task)
+        try context.save()
+
+        let changed = try ManageBacTaskImporter.refreshStoredCourseMetadata(in: context)
+
+        XCTAssertEqual(changed, 1)
+        XCTAssertEqual(course.displayName, "Global Perspectives")
+        XCTAssertEqual(course.canonicalSubject, "Global Perspectives")
+        XCTAssertFalse(course.needsRemoteReview)
+        XCTAssertEqual(course.teacherNames, ["Rehman Naseer naseer@example.com"])
+        XCTAssertEqual(task.subject, "Global Perspectives")
+    }
+
+    func testTeacherNameAndEmailArePresentedSeparately() {
+        let teacher = PlanoraTeacher(rawValue: "Rehman Naseer naseer@example.com")
+        XCTAssertEqual(teacher.name, "Rehman Naseer")
+        XCTAssertEqual(teacher.email, "naseer@example.com")
+    }
+
     func testSnapshotImportsCourseTeachersUnitsAndRemoteCompletion() throws {
         let container = try makeContainer()
         let context = container.mainContext

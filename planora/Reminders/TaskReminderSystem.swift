@@ -1,6 +1,10 @@
 import Foundation
-import UIKit
 import UserNotifications
+#if os(iOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 struct TaskReminder: Codable, Identifiable, Hashable {
     var id = UUID()
@@ -131,7 +135,7 @@ enum TaskReminderScheduler {
         guard !task.isCompleted else { return }
 
         let status = await authorizationStatus()
-        guard status == .authorized || status == .provisional || status == .ephemeral else { return }
+        guard notificationsAllowed(for: status) else { return }
 
         for reminder in task.reminders {
             guard let fireDate = reminder.fireDate(deadline: task.deadline), fireDate > Date() else { continue }
@@ -142,13 +146,13 @@ enum TaskReminderScheduler {
     static func reconcile(tasks: [PlanoraTask], requestLimit: Int = 48) async {
         let center = UNUserNotificationCenter.current()
         let status = await authorizationStatus()
-        let notificationsAllowed = status == .authorized || status == .provisional || status == .ephemeral
+        let isAllowed = notificationsAllowed(for: status)
         let activeTaskIDs = Set(tasks.filter { !$0.isCompleted }.map(\.id))
         let taskRequestIDs = await center.pendingNotificationRequests()
             .map(\.identifier)
             .filter { identifier in
                 guard identifier.hasPrefix(identifierPrefix) else { return false }
-                if notificationsAllowed,
+                if isAllowed,
                    isSnoozeRequest(identifier),
                    let taskID = taskID(fromRequestIdentifier: identifier),
                    activeTaskIDs.contains(taskID) {
@@ -161,7 +165,7 @@ enum TaskReminderScheduler {
         // Clear stale requests when access was revoked. If access is granted again,
         // the next reconciliation builds a fresh queue while valid snoozes survive
         // ordinary foreground refreshes.
-        guard status == .authorized || status == .provisional || status == .ephemeral else { return }
+        guard notificationsAllowed(for: status) else { return }
 
         let candidates = candidates(tasks: tasks, limit: requestLimit)
 
@@ -187,6 +191,14 @@ enum TaskReminderScheduler {
             }
             .prefix(max(limit, 0))
             .map { $0 }
+    }
+
+    private static func notificationsAllowed(for status: UNAuthorizationStatus) -> Bool {
+#if os(iOS)
+        status == .authorized || status == .provisional || status == .ephemeral
+#else
+        status == .authorized || status == .provisional
+#endif
     }
 
     static func removeRequests(forTaskID taskID: UUID) async {
@@ -292,6 +304,7 @@ enum TaskReminderScheduler {
     }
 }
 
+#if os(iOS)
 final class PlanoraAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     func application(
         _ application: UIApplication,
@@ -337,3 +350,46 @@ final class PlanoraAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
         }
     }
 }
+#elseif os(macOS)
+final class PlanoraAppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+        TaskReminderScheduler.configureCategories()
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .list, .sound])
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let interval: TimeInterval?
+        switch response.actionIdentifier {
+        case TaskReminderScheduler.snoozeHourAction:
+            interval = 60 * 60
+        case TaskReminderScheduler.snoozeTomorrowAction:
+            interval = 24 * 60 * 60
+        default:
+            interval = nil
+        }
+
+        guard let interval else {
+            completionHandler()
+            return
+        }
+
+        Task {
+            await TaskReminderScheduler.snooze(content: response.notification.request.content, after: interval)
+            completionHandler()
+        }
+    }
+}
+#endif

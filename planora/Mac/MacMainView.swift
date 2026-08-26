@@ -1,44 +1,36 @@
 import SwiftData
 import SwiftUI
 
-#if targetEnvironment(macCatalyst)
+#if os(macOS)
 struct MacMainView: View {
     @Bindable var store: PlanoraStore
     @Environment(\.modelContext) private var modelContext
     @State private var selection: MacDestination? = .home
     @State private var isShowingCreateFlow = false
-    @State private var searchFocusRequestID = 0
+    @State private var searchText = ""
 
     var body: some View {
         NavigationSplitView {
-            MacSidebar(store: store, selection: $selection)
-                .navigationSplitViewColumnWidth(min: 220, ideal: 250, max: 300)
+            MacSidebar(selection: $selection)
+                .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
         } detail: {
-            NavigationStack {
-                destinationView
-            }
-            .id(selection)
+            destinationView
+                .navigationTitle((selection ?? .home).title)
         }
         .navigationSplitViewStyle(.balanced)
-        .background(PlanoraBackground())
+        .searchable(text: $searchText, placement: .toolbar, prompt: String(localized: "Search Tasks"))
+        .onSubmit(of: .search) { selection = .tasks }
+        .onChange(of: searchText) { _, value in
+            if !value.isEmpty { selection = .tasks }
+        }
         .toolbar {
-            ToolbarItem(placement: .secondaryAction) {
-                Button {
-                    selection = .search
-                    searchFocusRequestID += 1
-                } label: {
-                    Label(String(localized: "Search"), systemImage: "magnifyingglass")
-                }
-                .keyboardShortcut("f", modifiers: .command)
-            }
-
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     isShowingCreateFlow = true
                 } label: {
                     Label(String(localized: "New Task"), systemImage: "plus")
                 }
-                .keyboardShortcut("n", modifiers: .command)
+                .help(String(localized: "New Task"))
             }
         }
         .sheet(isPresented: $isShowingCreateFlow) {
@@ -48,51 +40,42 @@ struct MacMainView: View {
                     onClose: { isShowingCreateFlow = false },
                     onComplete: {
                         isShowingCreateFlow = false
-                        selection = .home
+                        selection = .tasks
                     }
                 )
             }
-            .frame(minWidth: 680, idealWidth: 760, minHeight: 620, idealHeight: 760)
+            .frame(minWidth: 680, idealWidth: 760, minHeight: 620, idealHeight: 740)
         }
         .overlay(alignment: .bottom) {
             if let undo = store.pendingDeletionUndo {
-                MacDeletedTaskUndoBanner(count: undo.count) {
-                    restore(undo)
-                }
-                .padding(20)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                MacDeletedTaskUndoBanner(count: undo.count) { restore(undo) }
+                    .padding(16)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .animation(.snappy, value: store.pendingDeletionUndo?.id)
+        .onReceive(NotificationCenter.default.publisher(for: .planoraCreateTask)) { _ in
+            isShowingCreateFlow = true
+        }
         .onChange(of: store.selectedTab) { _, tab in
-            guard tab == .tasks else { return }
-            selection = .tasks
+            if tab == .tasks { selection = .tasks }
         }
-        .background {
-            ManageBacAutomaticSyncHost(store: store)
-        }
+        .background { ManageBacAutomaticSyncHost(store: store) }
     }
 
     @ViewBuilder
     private var destinationView: some View {
         switch selection ?? .home {
         case .home:
-            HomeDashboardView(store: store) {
-                isShowingCreateFlow = true
-            }
+            MacHomeView(store: store, createTask: { isShowingCreateFlow = true })
         case .today:
-            TodayPlanningView(store: store)
+            MacPlanningView(store: store, mode: .today)
         case .week:
-            WeekPlanningView(store: store)
+            MacPlanningView(store: store, mode: .week)
         case .tasks:
-            TaskListView(store: store)
-        case .search:
-            EventSearchView(store: store, isActive: true, focusRequestID: searchFocusRequestID)
-                .onAppear { searchFocusRequestID += 1 }
+            MacTaskWorkspaceView(store: store, searchText: searchText)
         case .courses:
-            ManageBacCoursesView(store: store)
-        case .profile:
-            ProfileView(store: store)
+            MacCoursesWorkspaceView(store: store)
         }
     }
 
@@ -102,27 +85,18 @@ struct MacMainView: View {
             return
         }
         for task in restoredTasks { modelContext.insert(task) }
-        let currentTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? restoredTasks
-        for restoredTask in restoredTasks {
-            guard let seriesID = restoredTask.recurrenceSeriesID else { continue }
-            let series = currentTasks.filter { $0.recurrenceSeriesID == seriesID }
-            RecurringTaskEngine.restoreSeriesRule(from: restoredTask, in: series)
-            RecurringTaskEngine.includeOccurrence(restoredTask, in: series)
-        }
         PlanoraTaskPersistence.save(modelContext)
         store.clearDeletionUndo()
-        PlanoraTaskPersistence.reconcile(fallbackTasks: currentTasks, in: modelContext)
+        PlanoraTaskPersistence.reconcile(fallbackTasks: restoredTasks, in: modelContext)
     }
 }
 
-private enum MacDestination: String, CaseIterable, Identifiable {
+enum MacDestination: String, CaseIterable, Identifiable {
     case home
     case today
     case week
     case tasks
-    case search
     case courses
-    case profile
 
     var id: String { rawValue }
 
@@ -132,75 +106,40 @@ private enum MacDestination: String, CaseIterable, Identifiable {
         case .today: String(localized: "Today")
         case .week: String(localized: "This Week")
         case .tasks: String(localized: "Tasks")
-        case .search: String(localized: "Search")
-        case .courses: String(localized: "ManageBac Courses")
-        case .profile: String(localized: "Me")
+        case .courses: String(localized: "Courses")
         }
     }
 
     var systemImage: String {
         switch self {
-        case .home: "house.fill"
-        case .today: "sun.max.fill"
-        case .week: "calendar.badge.clock"
+        case .home: "house"
+        case .today: "sun.max"
+        case .week: "calendar"
         case .tasks: "checklist"
-        case .search: "magnifyingglass"
-        case .courses: "books.vertical.fill"
-        case .profile: "person.crop.circle.fill"
+        case .courses: "books.vertical"
         }
     }
 }
 
 private struct MacSidebar: View {
-    let store: PlanoraStore
     @Binding var selection: MacDestination?
 
     var body: some View {
         List(selection: $selection) {
-            Section {
-                sidebarLink(.home)
-                sidebarLink(.today)
-                sidebarLink(.week)
+            Section(String(localized: "Overview")) { link(.home) }
+            Section(String(localized: "Planning")) {
+                link(.today)
+                link(.week)
             }
-
-            Section(String(localized: "Learning")) {
-                sidebarLink(.tasks)
-                sidebarLink(.search)
-                sidebarLink(.courses)
-            }
-
-            Section(String(localized: "Settings")) {
-                sidebarLink(.profile)
+            Section(String(localized: "Workspace")) {
+                link(.tasks)
+                link(.courses)
             }
         }
         .listStyle(.sidebar)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            HStack(spacing: 12) {
-                PlanoraLogoMark(size: 42)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(verbatim: "Planora")
-                        .font(.headline.weight(.bold))
-                        .foregroundStyle(Color.planoraInk)
-                    Text(store.userName.isEmpty ? String(localized: "Learning Space") : store.userName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-
-                Spacer(minLength: 0)
-
-                Text(store.curriculum.badge)
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(store.curriculum.tint)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(.bar)
-        }
     }
 
-    private func sidebarLink(_ destination: MacDestination) -> some View {
+    private func link(_ destination: MacDestination) -> some View {
         Label(destination.title, systemImage: destination.systemImage)
             .tag(destination)
     }
@@ -212,16 +151,14 @@ private struct MacDeletedTaskUndoBanner: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: "trash.fill")
-                .foregroundStyle(.secondary)
+            Image(systemName: "trash")
             Text(PlanoraLocalization.format(String(localized: "tasks_deleted_format"), count))
-                .font(.subheadline.weight(.semibold))
             Button(String(localized: "Undo"), action: undo)
                 .buttonStyle(.borderedProminent)
         }
-        .padding(12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .shadow(color: .black.opacity(0.12), radius: 16, y: 6)
+        .padding(10)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+        .shadow(radius: 8, y: 3)
     }
 }
 #endif

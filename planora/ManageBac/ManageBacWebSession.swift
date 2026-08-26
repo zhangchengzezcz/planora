@@ -69,6 +69,14 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         phase = .failed(.cancelled)
     }
 
+    func teardown() {
+        webView.stopLoading()
+        webView.navigationDelegate = nil
+        webView.uiDelegate = nil
+        webView.loadHTMLString("", baseURL: nil)
+        onSnapshotReady = nil
+    }
+
     func clearWebsiteData() async {
         webView.stopLoading()
         let dataStore = WKWebsiteDataStore.default()

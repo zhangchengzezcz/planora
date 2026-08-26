@@ -74,9 +74,14 @@ private struct ReminderConfigurationView: View {
     ]
 
     private var notificationsAllowed: Bool {
+#if os(iOS)
         authorizationStatus == .authorized
             || authorizationStatus == .provisional
             || authorizationStatus == .ephemeral
+#else
+        authorizationStatus == .authorized
+            || authorizationStatus == .provisional
+#endif
     }
 
     private var hasRelativeReminder: Bool {
@@ -252,8 +257,13 @@ private struct ReminderConfigurationView: View {
     }
 
     private func openSettings() {
+#if os(iOS)
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
+#elseif os(macOS)
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension") else { return }
+        NSWorkspace.shared.open(url)
+#endif
     }
 }
 

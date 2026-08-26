@@ -90,6 +90,29 @@ final class PlanoraCourse {
         needsRemoteReview = source.needsRemoteReview
         lastSyncDate = source.lastSyncDate
     }
+
+    var teachers: [PlanoraTeacher] {
+        teacherNames.map(PlanoraTeacher.init(rawValue:))
+    }
+}
+
+nonisolated struct PlanoraTeacher: Hashable, Identifiable, Sendable {
+    let name: String
+    let email: String?
+
+    var id: String { "\(name)|\(email ?? "")" }
+
+    init(rawValue: String) {
+        let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        let emailRange = value.range(
+            of: #"[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}"#,
+            options: [.regularExpression, .caseInsensitive]
+        )
+        email = emailRange.map { String(value[$0]) }
+        let parsedName = emailRange.map { value.replacingCharacters(in: $0, with: "") }
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines.union(.punctuationCharacters)) }
+        name = parsedName.flatMap { $0.isEmpty ? nil : $0 } ?? value
+    }
 }
 
 enum CourseLevel: String, Codable, CaseIterable, Sendable {

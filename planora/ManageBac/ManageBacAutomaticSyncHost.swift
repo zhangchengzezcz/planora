@@ -6,7 +6,7 @@ struct ManageBacAutomaticSyncHost: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @Query(sort: \PlanoraTask.createdDate) private var tasks: [PlanoraTask]
-    @State private var session = ManageBacWebSession()
+    @State private var session: ManageBacWebSession?
     @State private var snapshot = ManageBacConnectionStorage.load()
     @State private var lastAttemptDate: Date?
     @State private var isSyncing = false
@@ -15,7 +15,7 @@ struct ManageBacAutomaticSyncHost: View {
 
     var body: some View {
         Group {
-            if snapshot != nil {
+            if let session, isSyncing {
                 ManageBacWebView(session: session)
                     .frame(width: 1, height: 1)
                     .opacity(0.001)
@@ -24,6 +24,7 @@ struct ManageBacAutomaticSyncHost: View {
             }
         }
         .task {
+            refreshStoredCourseMetadata()
             synchronizeIfNeeded()
         }
         .onReceive(NotificationCenter.default.publisher(for: .manageBacConnectionDidChange)) { _ in
@@ -34,10 +35,12 @@ struct ManageBacAutomaticSyncHost: View {
             guard newPhase == .active else { return }
             synchronizeIfNeeded()
         }
-        .onChange(of: session.phase) { _, newPhase in
+        .onChange(of: session?.phase) { _, newPhase in
             switch newPhase {
             case .completed, .failed, .needsLogin:
                 isSyncing = false
+                session?.teardown()
+                session = nil
             default:
                 break
             }
@@ -50,12 +53,22 @@ struct ManageBacAutomaticSyncHost: View {
               let snapshot else { return }
 
         let referenceDate = max(snapshot.lastSyncDate, lastAttemptDate ?? .distantPast)
-        guard Date().timeIntervalSince(referenceDate) >= 5 * 60 else { return }
+        guard Date().timeIntervalSince(referenceDate) >= 15 * 60 else { return }
 
         isSyncing = true
         lastAttemptDate = Date()
-        session.onSnapshotReady = importSnapshot
-        session.startSilentSync(snapshot: snapshot)
+        let newSession = ManageBacWebSession()
+        newSession.onSnapshotReady = importSnapshot
+        session = newSession
+        newSession.startSilentSync(snapshot: snapshot)
+    }
+
+    private func refreshStoredCourseMetadata() {
+        guard (try? ManageBacTaskImporter.refreshStoredCourseMetadata(in: modelContext)) != nil else { return }
+        let importedCourses = (try? modelContext.fetch(FetchDescriptor<PlanoraCourse>())) ?? []
+        for course in importedCourses where course.externalSource == .manageBac && !course.isArchived {
+            store.addCustomSubject(course.displayName)
+        }
     }
 
     private func importSnapshot(_ snapshot: ManageBacSyncSnapshot) throws -> ManageBacImportSummary {

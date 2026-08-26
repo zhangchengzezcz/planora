@@ -63,6 +63,12 @@
 		A00000000000000000000050 /* ManageBacCourseNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000050 /* ManageBacCourseNormalizer.swift */; };
 		A00000000000000000000051 /* ManageBacCoursesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000051 /* ManageBacCoursesView.swift */; };
 		A00000000000000000000052 /* MacMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000052 /* MacMainView.swift */; };
+		A00000000000000000000053 /* MacHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000053 /* MacHomeView.swift */; };
+		A00000000000000000000054 /* MacTaskWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000054 /* MacTaskWorkspaceView.swift */; };
+		A00000000000000000000055 /* MacPlanningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000055 /* MacPlanningView.swift */; };
+		A00000000000000000000056 /* MacCoursesWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000056 /* MacCoursesWorkspaceView.swift */; };
+		A00000000000000000000057 /* MacSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000057 /* MacSettingsView.swift */; };
+		A00000000000000000000059 /* ManageBacConnectionFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000059 /* ManageBacConnectionFlowView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -134,6 +140,12 @@
 		B00000000000000000000050 /* ManageBacCourseNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacCourseNormalizer.swift; sourceTree = "<group>"; };
 		B00000000000000000000051 /* ManageBacCoursesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacCoursesView.swift; sourceTree = "<group>"; };
 		B00000000000000000000052 /* MacMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMainView.swift; sourceTree = "<group>"; };
+		B00000000000000000000053 /* MacHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacHomeView.swift; sourceTree = "<group>"; };
+		B00000000000000000000054 /* MacTaskWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacTaskWorkspaceView.swift; sourceTree = "<group>"; };
+		B00000000000000000000055 /* MacPlanningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPlanningView.swift; sourceTree = "<group>"; };
+		B00000000000000000000056 /* MacCoursesWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCoursesWorkspaceView.swift; sourceTree = "<group>"; };
+		B00000000000000000000057 /* MacSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSettingsView.swift; sourceTree = "<group>"; };
+		B00000000000000000000059 /* ManageBacConnectionFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageBacConnectionFlowView.swift; sourceTree = "<group>"; };
 		D00000000000000000000001 /* planoraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = planoraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -235,6 +247,11 @@
 			isa = PBXGroup;
 			children = (
 				B00000000000000000000052 /* MacMainView.swift */,
+				B00000000000000000000053 /* MacHomeView.swift */,
+				B00000000000000000000054 /* MacTaskWorkspaceView.swift */,
+				B00000000000000000000055 /* MacPlanningView.swift */,
+				B00000000000000000000056 /* MacCoursesWorkspaceView.swift */,
+				B00000000000000000000057 /* MacSettingsView.swift */,
 			);
 			path = Mac;
 			sourceTree = "<group>";
@@ -243,6 +260,7 @@
 			isa = PBXGroup;
 			children = (
 				B00000000000000000000046 /* ManageBacAutomaticSyncHost.swift */,
+				B00000000000000000000059 /* ManageBacConnectionFlowView.swift */,
 				B00000000000000000000050 /* ManageBacCourseNormalizer.swift */,
 				B00000000000000000000051 /* ManageBacCoursesView.swift */,
 				B00000000000000000000041 /* ManageBacModels.swift */,
@@ -447,7 +465,13 @@
 		000000000000000120000000 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				A00000000000000000000059 /* ManageBacConnectionFlowView.swift in Sources */,
 				A00000000000000000000052 /* MacMainView.swift in Sources */,
+				A00000000000000000000053 /* MacHomeView.swift in Sources */,
+				A00000000000000000000054 /* MacTaskWorkspaceView.swift in Sources */,
+				A00000000000000000000055 /* MacPlanningView.swift in Sources */,
+				A00000000000000000000056 /* MacCoursesWorkspaceView.swift in Sources */,
+				A00000000000000000000057 /* MacSettingsView.swift in Sources */,
 				A00000000000000000000001 /* DashboardComponents.swift in Sources */,
 				A00000000000000000000002 /* GlassPanel.swift in Sources */,
 				A00000000000000000000003 /* PlanoraBackground.swift in Sources */,
@@ -646,11 +670,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = TK2NMDS7ZC;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = planora/Info.plist;
+				"INFOPLIST_FILE[sdk=macosx*]" = planora/Mac/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -662,18 +687,20 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				MARKETING_VERSION = 1.5.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.6.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
 					AppIntents,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchengze.planora.t75zc285fp;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.zhangchengze.planora.mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -687,11 +714,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = TK2NMDS7ZC;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = planora/Info.plist;
+				"INFOPLIST_FILE[sdk=macosx*]" = planora/Mac/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -703,18 +731,20 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				MARKETING_VERSION = 1.5.0;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				MARKETING_VERSION = 1.6.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
 					AppIntents,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchengze.planora.t75zc285fp;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=macosx*]" = com.zhangchengze.planora.mac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
-				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;

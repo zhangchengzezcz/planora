@@ -128,13 +128,6 @@ struct ProfileView: View {
                 .buttonStyle(.plain)
                 Divider().padding(.leading, 52)
                 NavigationLink {
-                    SubjectEditView(store: store)
-                } label: {
-                    SettingsRow(icon: "book.pages", title: String(localized: "My Subjects"), value: "\(store.selectedSubjectTitles.count)", showsChevron: true)
-                }
-                .buttonStyle(.plain)
-                Divider().padding(.leading, 52)
-                NavigationLink {
                     SettingsHomeView(store: store)
                 } label: {
                     SettingsRow(
@@ -856,45 +849,6 @@ private struct CurriculumEditView: View {
             store: store
         )
         pendingCurriculum = nil
-    }
-}
-
-private struct SubjectEditView: View {
-    let store: PlanoraStore
-
-    private let columns = [
-        GridItem(.adaptive(minimum: 136), spacing: 12)
-    ]
-
-    var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(String(localized: "My Subjects"))
-                        .font(.largeTitle.weight(.bold))
-                        .foregroundStyle(Color.planoraInk)
-
-                    Text(PlanoraLocalization.format(String(localized: "curriculum_subjects_format"), store.curriculum.title))
-                        .font(.callout.weight(.medium))
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.top, 18)
-
-                DashboardSection(title: String(localized: "Subjects")) {
-                    SubjectPicker(store: store, columns: columns)
-                    .padding(18)
-                }
-
-                DashboardSection(title: String(localized: "Extra Learning")) {
-                    ExtraLearningPicker(store: store, columns: columns)
-                    .padding(18)
-                }
-            }
-            .padding(.bottom, 32)
-        }
-        .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
-        .planoraDetailNavigationBar()
-        .background(PlanoraBackground())
     }
 }
 
