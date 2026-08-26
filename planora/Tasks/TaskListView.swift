@@ -129,11 +129,16 @@ enum PlanoraTaskListProjection {
         from tasks: [PlanoraTask],
         settings: PlanoraTaskDisplaySettings
     ) -> [PlanoraTask] {
-        tasks
-            .filter { settings.showsCompletedTasks || !$0.isCompleted }
-            .planoraSorted { lhs, rhs in
-                PlanoraTaskOrdering.areInListOrder(lhs, rhs, sortOrder: settings.sortOrder)
-            }
+        let visibleTasks: [PlanoraTask]
+        if settings.showsCompletedTasks {
+            visibleTasks = tasks
+        } else {
+            visibleTasks = tasks.filter { !$0.isCompleted }
+        }
+
+        return visibleTasks.planoraSorted { lhs, rhs in
+            PlanoraTaskOrdering.areInListOrder(lhs, rhs, sortOrder: settings.sortOrder)
+        }
     }
 }
 

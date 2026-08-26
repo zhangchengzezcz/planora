@@ -63,45 +63,22 @@ struct TodayPlanningView: View {
     let store: PlanoraStore
     @Query(sort: \PlanoraTask.createdDate) private var tasks: [PlanoraTask]
 
-    private var today: DateInterval {
-        let start = Calendar.current.startOfDay(for: Date())
-        return DateInterval(start: start, duration: 86_400)
-    }
-
-    private var overdue: [PlanoraTask] {
-        tasks.filter {
-            !$0.isCompleted && $0.hasDeadline && ($0.deadline ?? .distantFuture) < today.start
-        }.sorted(by: planningSort)
-    }
-
-    private var dueToday: [PlanoraTask] {
-        tasks.filter {
-            !$0.isCompleted && $0.deadline.map(today.contains) == true
-        }.sorted(by: planningSort)
-    }
-
-    private var plannedToday: [PlanoraTask] {
-        tasks.filter { task in
-            !task.isCompleted
-                && task.plannedDate.map(today.contains) == true
-                && !dueToday.contains(where: { $0.id == task.id })
-        }.sorted(by: planningSort)
-    }
-
     var body: some View {
+        let snapshot = TodayPlanningSnapshot(tasks: tasks)
+
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 PlanningHeader(
                     title: String(localized: "Today"),
-                    subtitle: Date().formatted(date: .complete, time: .omitted)
+                    subtitle: snapshot.titleDate.formatted(date: .complete, time: .omitted)
                 )
 
-                if overdue.isEmpty && dueToday.isEmpty && plannedToday.isEmpty {
+                if snapshot.isEmpty {
                     PlanningEmptyState(title: String(localized: "Nothing Planned Today"))
                 } else {
-                    PlanningTaskSection(title: String(localized: "Overdue"), tasks: overdue, store: store, tint: .red)
-                    PlanningTaskSection(title: String(localized: "Due Today"), tasks: dueToday, store: store, tint: .planoraAmber)
-                    PlanningTaskSection(title: String(localized: "Planned Today"), tasks: plannedToday, store: store, tint: .planoraGreen)
+                    PlanningTaskSection(title: String(localized: "Overdue"), tasks: snapshot.overdue, store: store, tint: .red)
+                    PlanningTaskSection(title: String(localized: "Due Today"), tasks: snapshot.dueToday, store: store, tint: .planoraAmber)
+                    PlanningTaskSection(title: String(localized: "Planned Today"), tasks: snapshot.plannedToday, store: store, tint: .planoraGreen)
                 }
             }
             .padding(.top, 12)
@@ -112,64 +89,24 @@ struct TodayPlanningView: View {
         .planoraDetailNavigationBar()
         .background(PlanoraBackground())
     }
-
-    private func planningSort(_ lhs: PlanoraTask, _ rhs: PlanoraTask) -> Bool {
-        PlanoraTaskOrdering.areInPlanningOrder(
-            PlanoraTaskSortKey(task: lhs),
-            PlanoraTaskSortKey(task: rhs)
-        )
-    }
 }
 
 struct WeekPlanningView: View {
     let store: PlanoraStore
     @Query(sort: \PlanoraTask.createdDate) private var tasks: [PlanoraTask]
 
-    private var days: [Date] {
-        let calendar = Calendar.current
-        let start = calendar.dateInterval(of: .weekOfYear, for: Date())?.start ?? calendar.startOfDay(for: Date())
-        return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: start) }
-    }
-
-    private var incompleteTasks: [PlanoraTask] { tasks.filter { !$0.isCompleted } }
-
-    private var scheduledTaskCount: Int {
-        days.reduce(0) { $0 + tasks(on: $1).count }
-    }
-
-    private var busiestDay: Date? {
-        guard scheduledTaskCount > 0 else { return nil }
-        return days.max { tasks(on: $0).count < tasks(on: $1).count }
-    }
-
-    private var summaryText: String {
-        if let busiestDay {
-            return PlanoraLocalization.format(
-                String(localized: "busiest_day_format"),
-                busiestDay.formatted(.dateTime.weekday(.wide)),
-                tasks(on: busiestDay).count
-            )
-        }
-
-        return incompleteTasks.isEmpty
-            ? String(localized: "No tasks this week")
-            : String(localized: "No scheduled tasks this week")
-    }
-
-    private var unscheduled: [PlanoraTask] {
-        incompleteTasks.filter { $0.plannedDate == nil }
-    }
-
     var body: some View {
+        let snapshot = WeekPlanningSnapshot(tasks: tasks)
+
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 PlanningHeader(
                     title: String(localized: "This Week"),
-                    subtitle: summaryText
+                    subtitle: snapshot.summaryText
                 )
 
-                ForEach(days, id: \.self) { day in
-                    let dayTasks = tasks(on: day)
+                ForEach(snapshot.days, id: \.self) { day in
+                    let dayTasks = snapshot.tasks(on: day)
                     if dayTasks.isEmpty {
                         WeekDayEmptyState(day: day)
                     } else {
@@ -184,8 +121,8 @@ struct WeekPlanningView: View {
                 }
 
                 PlanningTaskSection(
-                    title: PlanoraLocalization.format(String(localized: "unscheduled_tasks_format"), unscheduled.count),
-                    tasks: unscheduled,
+                    title: PlanoraLocalization.format(String(localized: "unscheduled_tasks_format"), snapshot.unscheduled.count),
+                    tasks: snapshot.unscheduled,
                     store: store,
                     tint: .gray
                 )
@@ -198,14 +135,104 @@ struct WeekPlanningView: View {
         .planoraDetailNavigationBar()
         .background(PlanoraBackground())
     }
+}
 
-    private func tasks(on day: Date) -> [PlanoraTask] {
-        let calendar = Calendar.current
-        return incompleteTasks.filter { task in
-            if let plannedDate = task.plannedDate {
-                return calendar.isDate(plannedDate, inSameDayAs: day)
+private struct TodayPlanningSnapshot {
+    let titleDate: Date
+    let overdue: [PlanoraTask]
+    let dueToday: [PlanoraTask]
+    let plannedToday: [PlanoraTask]
+
+    var isEmpty: Bool {
+        overdue.isEmpty && dueToday.isEmpty && plannedToday.isEmpty
+    }
+
+    init(tasks: [PlanoraTask], now: Date = Date(), calendar: Calendar = .current) {
+        titleDate = now
+        let start = calendar.startOfDay(for: now)
+        let interval = DateInterval(start: start, duration: 86_400)
+        var overdue: [PlanoraTask] = []
+        var dueToday: [PlanoraTask] = []
+        var plannedToday: [PlanoraTask] = []
+
+        for task in tasks where !task.isCompleted {
+            if task.hasDeadline, let deadline = task.deadline, deadline < start {
+                overdue.append(task)
             }
-            return task.deadline.map { calendar.isDate($0, inSameDayAs: day) } == true
+
+            if task.deadline.map(interval.contains) == true {
+                dueToday.append(task)
+            } else if task.plannedDate.map(interval.contains) == true {
+                plannedToday.append(task)
+            }
+        }
+
+        self.overdue = PlanoraPlanningSorter.sorted(overdue)
+        self.dueToday = PlanoraPlanningSorter.sorted(dueToday)
+        self.plannedToday = PlanoraPlanningSorter.sorted(plannedToday)
+    }
+}
+
+private struct WeekPlanningSnapshot {
+    let days: [Date]
+    let unscheduled: [PlanoraTask]
+    let summaryText: String
+
+    private let tasksByDay: [Date: [PlanoraTask]]
+
+    init(tasks: [PlanoraTask], now: Date = Date(), calendar: Calendar = .current) {
+        let start = calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? calendar.startOfDay(for: now)
+        let days = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: start) }
+        let weekDays = Set(days.map { calendar.startOfDay(for: $0) })
+        var tasksByDay: [Date: [PlanoraTask]] = [:]
+        var unscheduled: [PlanoraTask] = []
+        var incompleteCount = 0
+
+        for task in tasks where !task.isCompleted {
+            incompleteCount += 1
+            if task.plannedDate == nil {
+                unscheduled.append(task)
+            }
+
+            let schedulingDate = task.plannedDate ?? task.deadline
+            guard let schedulingDate else { continue }
+            let day = calendar.startOfDay(for: schedulingDate)
+            guard weekDays.contains(day) else { continue }
+            tasksByDay[day, default: []].append(task)
+        }
+
+        for day in tasksByDay.keys {
+            tasksByDay[day] = PlanoraPlanningSorter.sorted(tasksByDay[day] ?? [])
+        }
+
+        self.days = days
+        self.unscheduled = unscheduled
+        self.tasksByDay = tasksByDay
+
+        if let busiestDay = days.max(by: { (tasksByDay[$0]?.count ?? 0) < (tasksByDay[$1]?.count ?? 0) }),
+           let busiestCount = tasksByDay[busiestDay]?.count,
+           busiestCount > 0 {
+            summaryText = PlanoraLocalization.format(
+                String(localized: "busiest_day_format"),
+                busiestDay.formatted(.dateTime.weekday(.wide)),
+                busiestCount
+            )
+        } else {
+            summaryText = incompleteCount == 0
+                ? String(localized: "No tasks this week")
+                : String(localized: "No scheduled tasks this week")
+        }
+    }
+
+    func tasks(on day: Date) -> [PlanoraTask] {
+        tasksByDay[Calendar.current.startOfDay(for: day)] ?? []
+    }
+}
+
+private enum PlanoraPlanningSorter {
+    static func sorted(_ tasks: [PlanoraTask]) -> [PlanoraTask] {
+        tasks.planoraSorted { lhs, rhs in
+            PlanoraTaskOrdering.areInPlanningOrder(lhs, rhs)
         }
     }
 }

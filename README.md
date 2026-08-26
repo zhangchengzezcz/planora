@@ -2,9 +2,9 @@
 
 **中文** | **English**
 
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.4.4 版本已经形成从创建、计划、提醒、重复执行到备份恢复的日常学习闭环，并开始提供为学校学习场景设计的 Mac 桌面工作区，同时完成大数据量性能优化与英文、简体中文、日文的完整本地化。
+Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.5.0 版本已经形成从创建、计划、提醒、重复执行到备份恢复的日常学习闭环，并开始提供为学校学习场景设计的 Mac 桌面工作区，同时完成大数据量性能优化与英文、简体中文、日文的完整本地化。
 
-Planora is a study planning app for IB and IGCSE students. Version 1.4.4 completes the daily loop from creation and planning through reminders, recurrence, completion, and recovery, and now includes a Mac workspace designed for school use, with large-task-set performance improvements and complete English, Simplified Chinese, and Japanese localization.
+Planora is a study planning app for IB and IGCSE students. Version 1.5.0 completes the daily loop from creation and planning through reminders, recurrence, completion, and recovery, and now includes a Mac workspace designed for school use, with large-task-set performance improvements and complete English, Simplified Chinese, and Japanese localization.
 
 ## 交互式演示 / Interactive Demo
 
@@ -18,11 +18,11 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 
 ## 当前版本 / Current Version
 
-- Version: **1.4.4**
-- Build: **8**
+- Version: **1.5.0**
+- Build: **9**
 - Platform: **iOS and macOS (Mac Catalyst)**
 - UI: SwiftUI, SwiftData, Observation, Liquid Glass-style custom surfaces
-- Status: Stable v1.4.4 daily academic planning workflow
+- Status: Stable v1.5.0 desktop and mobile academic planning workflow
 
 ## 功能范围 / Scope
 
@@ -164,11 +164,11 @@ xcodebuild -project planora.xcodeproj \
 
 ### 中文
 
-Planora 1.4.4 继续追求 Apple 风格的简洁和清晰：内容直接嵌入背景，卡片和按钮保持轻量，底栏与顶部滚动边缘效果使用系统 SwiftUI API，让 iOS 27 SDK 管理 Liquid Glass 导航表现。当前版本专注于完整、可靠且流畅的本地学习规划闭环。
+Planora 1.5.0 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用系统侧栏与桌面面板，内容直接嵌入背景，导航与滚动边缘效果交给 SwiftUI 管理。当前版本专注于完整、可靠且流畅的本地学习规划闭环。
 
 ### English
 
-Planora 1.4.4 keeps the Apple-like sense of clarity: content sits naturally on the background, panels stay light, and system SwiftUI APIs manage the tab bar and top scroll-edge effects on iOS 27. This version focuses on a complete, reliable, and responsive local academic-planning workflow.
+Planora 1.5.0 keeps the Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a system sidebar and desktop sheets, with SwiftUI managing navigation and scroll-edge behavior. This version focuses on a complete, reliable, and responsive local academic-planning workflow.
 
 ## 后续计划 / Next Steps
 

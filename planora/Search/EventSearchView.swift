@@ -599,22 +599,40 @@ extension PlanoraTask {
     }
 }
 
-private struct SearchField {
+private nonisolated struct SearchField: Sendable {
     let value: String
     let weight: Int
 }
 
-private enum SearchRanker {
+private nonisolated struct IndexedSearchField: Sendable {
+    let normalizedValue: String
+    let tokens: [String]
+    let weight: Int
+
+    init?(_ field: SearchField) {
+        let normalizedValue = field.value.planoraNormalizedSearchString
+        guard !normalizedValue.isEmpty else { return nil }
+
+        self.normalizedValue = normalizedValue
+        tokens = normalizedValue.planoraSearchTokens
+        weight = field.weight
+    }
+}
+
+private nonisolated enum SearchRanker {
     static func score(query: String, fields: [SearchField]) -> Int? {
         let normalizedQuery = query.planoraNormalizedSearchString
         let queryTokens = normalizedQuery.planoraSearchTokens
 
         guard !normalizedQuery.isEmpty, !queryTokens.isEmpty else { return nil }
 
+        let indexedFields = fields.compactMap(IndexedSearchField.init)
+        guard !indexedFields.isEmpty else { return nil }
+
         var totalScore = 0
 
         for token in queryTokens {
-            let bestTokenScore = fields
+            let bestTokenScore = indexedFields
                 .compactMap { field in
                     score(token: token, normalizedQuery: normalizedQuery, in: field)
                 }
@@ -625,8 +643,8 @@ private enum SearchRanker {
         }
 
         if queryTokens.count > 1 {
-            let phraseBonus = fields
-                .filter { $0.value.planoraNormalizedSearchString.contains(normalizedQuery) }
+            let phraseBonus = indexedFields
+                .filter { $0.normalizedValue.contains(normalizedQuery) }
                 .map { $0.weight / 2 }
                 .max() ?? 0
             totalScore += phraseBonus
@@ -635,27 +653,22 @@ private enum SearchRanker {
         return totalScore
     }
 
-    private static func score(token queryToken: String, normalizedQuery: String, in field: SearchField) -> Int? {
-        let normalizedValue = field.value.planoraNormalizedSearchString
-        let valueTokens = normalizedValue.planoraSearchTokens
-
-        guard !normalizedValue.isEmpty else { return nil }
-
-        if normalizedValue == normalizedQuery {
+    private static func score(token queryToken: String, normalizedQuery: String, in field: IndexedSearchField) -> Int? {
+        if field.normalizedValue == normalizedQuery {
             return field.weight + 70
         }
 
-        if valueTokens.contains(queryToken) {
+        if field.tokens.contains(queryToken) {
             return field.weight + 48
         }
 
         // Two-letter academic abbreviations should match token starts only. Broader
         // substring matching starts at three characters to reduce noisy results.
-        if queryToken.count >= 2, valueTokens.contains(where: { $0.hasPrefix(queryToken) }) {
+        if queryToken.count >= 2, field.tokens.contains(where: { $0.hasPrefix(queryToken) }) {
             return field.weight + 26
         }
 
-        if queryToken.count >= 3, valueTokens.contains(where: { $0.contains(queryToken) }) {
+        if queryToken.count >= 3, field.tokens.contains(where: { $0.contains(queryToken) }) {
             return field.weight + 8
         }
 
@@ -667,7 +680,9 @@ private extension String {
     var planoraSearchDisplayName: String {
         PlanoraFormat.subjectDisplayName(self)
     }
+}
 
+private nonisolated extension String {
     var planoraNormalizedSearchString: String {
         let foldedString = folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
             .lowercased()

@@ -1,6 +1,6 @@
 # Changelog / 更新说明
 
-## Unreleased - 2026-08-26
+## 1.5.0 - 2026-08-26
 
 ### 中文
 
@@ -9,6 +9,9 @@
 - Mac 新建任务使用独立桌面面板，并支持 `⌘N` 新建与 `⌘F` 搜索。
 - 补齐 String Catalog 中遗漏的格式化条目和 Mac 导航文本。
 - 修复英文 ManageBac 任务数量显示内部本地化键名的问题，并补齐 Unit / Units 与 Competitions 的中日文翻译。
+- 今日与本周页面改为一次性任务快照，避免大量任务下反复扫描和排序。
+- 搜索预先建立标准化字段索引，减少多关键词搜索中的重复字符串处理。
+- 任务列表在显示全部任务时跳过无意义的过滤复制，减少大任务集下的内存开销。
 - iPhone 继续使用现有系统 TabView 与完整交互，不受桌面布局影响。
 
 ### English
@@ -18,6 +21,9 @@
 - Added a desktop task-creation sheet plus `⌘N` for New Task and `⌘F` for Search.
 - Completed previously missing formatted strings and Mac navigation entries in the String Catalog.
 - Fixed the English ManageBac task count showing an internal localization key and completed Japanese and Chinese translations for Unit / Units and Competitions.
+- Reworked Today and This Week around single-pass snapshots to avoid repeated scans and sorting with large task sets.
+- Added normalized search-field indexing to reduce repeated string processing for multi-token queries.
+- Avoided unnecessary task-list filtering when all tasks are visible, reducing memory work with large task sets.
 - Preserved the existing system TabView and full interaction model on iPhone.
 
 ## 1.4.4 - 2026-07-23
