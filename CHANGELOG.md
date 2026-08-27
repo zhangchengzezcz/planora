@@ -1,5 +1,23 @@
 # Changelog / 更新说明
 
+## 1.6.1 - 2026-08-27
+
+### 中文
+
+- 完成 Mac 侧栏的第二阶段：加入清晰的 Planora 标题和右侧搜索按钮；原生 Mac 搜索框按需展开，同时保持系统直边侧栏。
+- 新增置顶任务区域，最多展示 7 个未完成且未归档的置顶任务，点击后直接打开任务工作区并选中任务。
+- Mac 任务表格右键菜单和任务 Inspector 支持置顶与取消置顶；完成或归档后自动从侧栏隐藏。
+- 置顶任务使用受限 SwiftData 查询，不为侧栏重复载入全部任务。
+- 新增置顶查询测试，并补齐英文、简体中文与日文本地化。
+
+### English
+
+- Completed the second Mac sidebar pass with a clear Planora heading and trailing search button; the native Mac search field expands on demand while preserving the straight-edged system sidebar.
+- Added a Pinned Tasks section with up to seven active shortcuts that open and select tasks directly in the task workspace.
+- Added Pin and Unpin actions to the Mac task table context menu and task inspector; completed or archived tasks leave the sidebar automatically.
+- Used a constrained SwiftData query so the sidebar doesn't load the complete task collection again.
+- Added pinned-query coverage and completed English, Simplified Chinese, and Japanese localization.
+
 ## 1.6.0 - 2026-08-27
 
 ### 中文

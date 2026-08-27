@@ -2,9 +2,9 @@
 
 **中文** | **English**
 
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.0 版本在完整日常学习闭环的基础上，加入使用最新 SwiftUI 桌面结构构建的原生 macOS 工作区，并继续提供英文、简体中文和日文完整本地化。
+Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.1 版本在完整日常学习闭环的基础上，提供使用最新 SwiftUI 桌面结构构建的原生 macOS 工作区、置顶任务侧栏，并继续提供英文、简体中文和日文完整本地化。
 
-Planora is a study planning app for IB and IGCSE students. Version 1.6.0 adds a native macOS workspace built with the latest SwiftUI desktop structure while preserving the complete daily planning loop and full English, Simplified Chinese, and Japanese localization.
+Planora is a study planning app for IB and IGCSE students. Version 1.6.1 provides a native macOS workspace built with the latest SwiftUI desktop structure, pinned task shortcuts, the complete daily planning loop, and full English, Simplified Chinese, and Japanese localization.
 
 ## 交互式演示 / Interactive Demo
 
@@ -18,8 +18,8 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 
 ## 当前版本 / Current Version
 
-- Version: **1.6.0**
-- Build: **10**
+- Version: **1.6.1**
+- Build: **11**
 - Platform: **iOS and native macOS 27**
 - UI: SwiftUI, SwiftData, Observation, system navigation and platform-native surfaces
 - Status: Native desktop and mobile academic planning workflow
@@ -168,11 +168,11 @@ xcodebuild -project planora.xcodeproj \
 
 ### 中文
 
-Planora 1.6.0 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、工具栏、表格、检查器与设置场景。界面减少装饰性背景和自定义按钮，让信息层级、窗口行为与键盘操作交给系统组件管理。
+Planora 1.6.1 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、工具栏、表格、检查器与设置场景。界面减少装饰性背景和自定义按钮，让信息层级、窗口行为与键盘操作交给系统组件管理。
 
 ### English
 
-Planora 1.6.0 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, toolbar, table, inspector, and Settings scene. Decorative backgrounds and custom controls are reduced so hierarchy, window behavior, and keyboard interaction remain system-managed.
+Planora 1.6.1 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, toolbar, table, inspector, and Settings scene. Decorative backgrounds and custom controls are reduced so hierarchy, window behavior, and keyboard interaction remain system-managed.
 
 ## 后续计划 / Next Steps
 

@@ -117,6 +117,29 @@ final class TaskOperationTests: XCTestCase {
         XCTAssertEqual(try context.fetchCount(FetchDescriptor<PlanoraTask>()), 3)
     }
 
+    func testPinnedTaskQueryOnlyReturnsActivePinnedTasks() throws {
+        let container = try ModelContainer(
+            for: PlanoraTask.self, PlanoraCourse.self, PlanoraUnit.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let context = container.mainContext
+        let pinned = makeTask(title: "Pinned")
+        pinned.isPinned = true
+        let regular = makeTask(title: "Regular")
+        let completed = makeTask(title: "Completed")
+        completed.isPinned = true
+        completed.setCompleted(true)
+        [pinned, regular, completed].forEach(context.insert)
+        try context.save()
+
+        let descriptor = FetchDescriptor<PlanoraTask>(
+            predicate: #Predicate { task in
+                task.isPinned && !task.isCompleted && task.archivedDate == nil
+            }
+        )
+        XCTAssertEqual(try context.fetch(descriptor).map(\.title), ["Pinned"])
+    }
+
     private func makeTask(title: String, seriesID: UUID? = nil, sequence: Int = 0) -> PlanoraTask {
         let task = PlanoraTask(
             title: title,

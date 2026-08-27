@@ -20,6 +20,7 @@ final class PlanoraTask {
     var createdDate: Date
     var isCompleted: Bool
     var completedDate: Date?
+    var isPinned: Bool = false
     var importance: Int
     var timelineData: Data?
     var reminderData: Data?
@@ -71,6 +72,7 @@ final class PlanoraTask {
         self.createdDate = createdDate
         self.isCompleted = isCompleted
         self.completedDate = isCompleted ? completedDate : nil
+        self.isPinned = false
         self.importance = importance
         self.reminderData = nil
         self.recurrenceData = nil

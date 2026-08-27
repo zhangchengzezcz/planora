@@ -2,27 +2,34 @@ import SwiftData
 import SwiftUI
 
 #if os(macOS)
+import AppKit
+
 struct MacMainView: View {
     @Bindable var store: PlanoraStore
     @Environment(\.modelContext) private var modelContext
     @State private var selection: MacDestination? = .home
+    @State private var selectedTaskID: PlanoraTask.ID?
     @State private var isShowingCreateFlow = false
     @State private var searchText = ""
 
     var body: some View {
         NavigationSplitView {
-            MacSidebar(selection: $selection)
+            MacSidebar(
+                selection: $selection,
+                selectedTaskID: $selectedTaskID,
+                searchText: $searchText
+            )
                 .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
-                .navigationTitle("Planora")
         } detail: {
             destinationView
                 .navigationTitle((selection ?? .home).title)
         }
         .navigationSplitViewStyle(.balanced)
-        .searchable(text: $searchText, placement: .sidebar, prompt: String(localized: "Search Tasks"))
-        .onSubmit(of: .search) { selection = .tasks }
         .onChange(of: searchText) { _, value in
-            if !value.isEmpty { selection = .tasks }
+            if !value.isEmpty {
+                selectedTaskID = nil
+                selection = .tasks
+            }
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -74,7 +81,7 @@ struct MacMainView: View {
         case .week:
             MacPlanningView(store: store, mode: .week)
         case .tasks:
-            MacTaskWorkspaceView(store: store, searchText: searchText)
+            MacTaskWorkspaceView(store: store, searchText: searchText, selection: $selectedTaskID)
         case .courses:
             MacCoursesWorkspaceView(store: store)
         case .manageBac:
@@ -129,27 +136,169 @@ enum MacDestination: String, CaseIterable, Identifiable {
 
 private struct MacSidebar: View {
     @Binding var selection: MacDestination?
+    @Binding var selectedTaskID: PlanoraTask.ID?
+    @Binding var searchText: String
+    @Environment(\.modelContext) private var modelContext
+    @State private var isSearchPresented = false
+    @Query(
+        filter: #Predicate<PlanoraTask> { task in
+            task.isPinned && !task.isCompleted && task.archivedDate == nil
+        },
+        sort: \PlanoraTask.createdDate,
+        order: .reverse
+    ) private var pinnedTaskResults: [PlanoraTask]
+
+    private var pinnedTasks: [PlanoraTask] {
+        Array(pinnedTaskResults.prefix(7))
+    }
 
     var body: some View {
-        List(selection: $selection) {
-            Section {
-                link(.home)
-                link(.tasks)
-                link(.courses)
-                link(.manageBac)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 10) {
+                Text("Planora")
+                    .font(.title.weight(.bold))
+                    .accessibilityAddTraits(.isHeader)
+
+                Spacer(minLength: 8)
+
+                Button {
+                    withAnimation(.snappy) {
+                        isSearchPresented.toggle()
+                        if !isSearchPresented { searchText = "" }
+                    }
+                } label: {
+                    Image(systemName: isSearchPresented ? "xmark" : "magnifyingglass")
+                        .font(.system(size: 15, weight: .semibold))
+                        .frame(width: 32, height: 32)
+                        .background(.quaternary, in: Circle())
+                }
+                .buttonStyle(.plain)
+                .help(String(localized: "Search Tasks"))
+            }
+                .padding(.horizontal, 12)
+                .padding(.top, 10)
+                .padding(.bottom, 8)
+
+            if isSearchPresented {
+                MacSidebarSearchField(
+                    text: $searchText,
+                    prompt: String(localized: "Search Tasks"),
+                    requestsFocus: true
+                ) {
+                    selectedTaskID = nil
+                    selection = .tasks
+                }
+                .frame(height: 24)
+                .padding(.horizontal, 10)
+                .padding(.bottom, 8)
+                .transition(.move(edge: .top).combined(with: .opacity))
             }
 
-            Section(String(localized: "Planning")) {
-                link(.today)
-                link(.week)
+            List(selection: destinationSelection) {
+                Section {
+                    link(.home)
+                    link(.tasks)
+                    link(.courses)
+                    link(.manageBac)
+                }
+
+                Section(String(localized: "Planning")) {
+                    link(.today)
+                    link(.week)
+                }
+
+                if !pinnedTasks.isEmpty {
+                    Section(String(localized: "Pinned Tasks")) {
+                        ForEach(pinnedTasks) { task in
+                            Button {
+                                selectedTaskID = task.id
+                                selection = .tasks
+                            } label: {
+                                Label {
+                                    Text(task.title)
+                                        .lineLimit(1)
+                                } icon: {
+                                    Image(systemName: task.type.symbol)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.primary)
+                            .contextMenu {
+                                Button(String(localized: "Unpin Task"), systemImage: "pin.slash") {
+                                    task.isPinned = false
+                                    PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+                                }
+                            }
+                        }
+                    }
+                }
             }
+            .listStyle(.sidebar)
         }
-        .listStyle(.sidebar)
+    }
+
+    private var destinationSelection: Binding<MacDestination?> {
+        Binding(
+            get: { selection },
+            set: { destination in
+                selection = destination
+                if destination == .tasks { selectedTaskID = nil }
+            }
+        )
     }
 
     private func link(_ destination: MacDestination) -> some View {
         Label(destination.title, systemImage: destination.systemImage)
             .tag(destination)
+    }
+}
+
+private struct MacSidebarSearchField: NSViewRepresentable {
+    @Binding var text: String
+    let prompt: String
+    let requestsFocus: Bool
+    let onSubmit: () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    func makeNSView(context: Context) -> NSSearchField {
+        let field = NSSearchField()
+        field.placeholderString = prompt
+        field.delegate = context.coordinator
+        field.target = context.coordinator
+        field.action = #selector(Coordinator.submit)
+        field.sendsSearchStringImmediately = true
+        return field
+    }
+
+    func updateNSView(_ field: NSSearchField, context: Context) {
+        if field.stringValue != text { field.stringValue = text }
+        field.placeholderString = prompt
+        context.coordinator.parent = self
+        if requestsFocus, field.window?.firstResponder !== field.currentEditor() {
+            DispatchQueue.main.async {
+                field.window?.makeFirstResponder(field)
+            }
+        }
+    }
+
+    final class Coordinator: NSObject, NSSearchFieldDelegate {
+        var parent: MacSidebarSearchField
+
+        init(parent: MacSidebarSearchField) {
+            self.parent = parent
+        }
+
+        func controlTextDidChange(_ notification: Notification) {
+            guard let field = notification.object as? NSSearchField else { return }
+            parent.text = field.stringValue
+        }
+
+        @objc func submit() {
+            parent.onSubmit()
+        }
     }
 }
 

@@ -5,9 +5,9 @@ import SwiftUI
 struct MacTaskWorkspaceView: View {
     let store: PlanoraStore
     let searchText: String
+    @Binding var selection: PlanoraTask.ID?
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
-    @State private var selection: PlanoraTask.ID?
     @State private var source: MacTaskSource = .all
     @State private var status: MacTaskStatus = .active
     @State private var selectedSubject = ""
@@ -100,6 +100,14 @@ struct MacTaskWorkspaceView: View {
                 }
                 .contextMenu(forSelectionType: PlanoraTask.ID.self) { ids in
                     if let id = ids.first, let task = tasks.first(where: { $0.id == id }) {
+                        Button(
+                            task.isPinned ? String(localized: "Unpin Task") : String(localized: "Pin Task"),
+                            systemImage: task.isPinned ? "pin.slash" : "pin"
+                        ) {
+                            task.isPinned.toggle()
+                            PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+                        }
+                        Divider()
                         Button(task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete")) {
                             task.setCompleted(!task.isCompleted)
                             PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
@@ -244,6 +252,13 @@ private struct MacTaskInspector: View {
             }
 
             Section {
+                Button(
+                    task.isPinned ? String(localized: "Unpin Task") : String(localized: "Pin Task"),
+                    systemImage: task.isPinned ? "pin.slash" : "pin"
+                ) {
+                    task.isPinned.toggle()
+                    PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+                }
                 Button(task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete")) {
                     task.setCompleted(!task.isCompleted)
                     PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
