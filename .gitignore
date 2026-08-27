@@ -1,6 +1,7 @@
 .DS_Store
-DerivedData/
-build/
+**/.DS_Store
+**/DerivedData/
+**/build/
 *.xcuserstate
 *.xccheckout
 *.moved-aside
@@ -8,6 +9,10 @@ build/
 *.ipa
 *.dSYM.zip
 *.dSYM
-xcuserdata/
+**/xcuserdata/
+**/node_modules/
+**/.next/
+**/out/
+**/next-env.d.ts
+*.log
 /planora/Build planora_*.txt
-!planora.xcodeproj/xcuserdata/zhangchengze.xcuserdatad/xcschemes/xcschememanagement.plist
