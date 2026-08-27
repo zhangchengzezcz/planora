@@ -137,14 +137,11 @@ struct MacTaskWorkspaceView: View {
                 }
             }
             .frame(width: 180)
+            .buttonStyle(.glass)
 
-            Picker(String(localized: "Status"), selection: $status) {
-                ForEach(MacTaskStatus.allCases) { value in
-                    Text(value.title).tag(value)
-                }
-            }
-            .pickerStyle(.segmented)
-            .frame(maxWidth: 330)
+            Text(String(localized: "Status"))
+            MacLiquidGlassStatusPicker(selection: $status)
+                .frame(width: 330, height: 34)
 
             if source == .subject {
                 Picker(String(localized: "Subject"), selection: $selectedSubject) {
@@ -152,6 +149,7 @@ struct MacTaskWorkspaceView: View {
                     ForEach(subjects, id: \.self) { Text(PlanoraFormat.subjectDisplayName($0)).tag($0) }
                 }
                 .frame(width: 210)
+                .buttonStyle(.glass)
             }
 
             Spacer()
@@ -160,6 +158,55 @@ struct MacTaskWorkspaceView: View {
                 .monospacedDigit()
         }
         .padding(12)
+    }
+}
+
+private struct MacLiquidGlassStatusPicker: View {
+    @Binding var selection: MacTaskStatus
+
+    private let values = MacTaskStatus.allCases
+
+    var body: some View {
+        GeometryReader { geometry in
+            GlassEffectContainer(spacing: 6) {
+                HStack(spacing: 6) {
+                    ForEach(values) { value in
+                        if selection == value {
+                            statusButton(value)
+                                .buttonStyle(.glassProminent)
+                                .tint(.accentColor)
+                        } else {
+                            statusButton(value)
+                                .buttonStyle(.glass)
+                                .tint(.clear)
+                        }
+                    }
+                }
+            }
+            .highPriorityGesture(
+                DragGesture(minimumDistance: 4)
+                    .onChanged { gesture in
+                        let segment = geometry.size.width / CGFloat(values.count)
+                        let index = min(max(Int(gesture.location.x / segment), 0), values.count - 1)
+                        if selection != values[index] {
+                            withAnimation(.snappy) { selection = values[index] }
+                        }
+                    }
+            )
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private func statusButton(_ value: MacTaskStatus) -> some View {
+        Button {
+            withAnimation(.snappy) { selection = value }
+        } label: {
+            Text(value.title)
+                .lineLimit(1)
+                .foregroundStyle(selection == value ? Color.white : Color.primary)
+                .frame(maxWidth: .infinity, minHeight: 22)
+        }
+        .accessibilityAddTraits(selection == value ? .isSelected : [])
     }
 }
 

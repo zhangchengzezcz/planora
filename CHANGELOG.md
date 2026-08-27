@@ -1,5 +1,31 @@
 # Changelog / 更新说明
 
+## 1.6.2 - 2026-08-27
+
+### 中文
+
+- 将侧栏显示与新建任务融合为工具栏左侧的单一 Liquid Glass 胶囊，减少 Mac 上最常用操作之间的移动距离。
+- 侧栏搜索改为 Planora 标题下方常驻的原生搜索框，不再通过额外的搜索与关闭按钮切换。
+- 新增侧栏底部账户区、本地头像、个人资料入口、设置入口与帮助占位；用户名在日常界面中保持可见。
+- 新增原生 Mac 个人资料页，并扩充独立设置窗口，加入外观、任务显示、备份导入导出与 ManageBac 设置。
+- 首页内容在宽窗口中居中排布，减少右侧空旷感。
+- 任务状态筛选改用 macOS 27 系统 Liquid Glass 按钮，并支持点击或拖动切换；仅当前状态保留蓝色强调。
+- 将 App 与测试目录转换为 Xcode 文件系统同步组；新增源码会自动参与对应 target 构建，不再维护容易遗漏的显式 Sources 清单。
+- 保持一套共享模型、状态、存储与业务能力，同时用编译条件隔离 Mac 原生侧栏、表格、检查器和设置壳层，避免把 Mac 界面带入 iPhone 可执行文件。
+- 补齐英文、简体中文与日文本地化，并保持 iPhone 现有界面与功能不变。
+
+### English
+
+- Fused the sidebar and New Task controls into a single Liquid Glass capsule at the leading edge of the Mac toolbar, reducing travel between the most common actions.
+- Made the native sidebar search field persist below the Planora heading instead of using separate search and close controls.
+- Added a sidebar account footer with a local avatar, profile entry, Settings entry, and Help placeholder so the username remains visible during daily use.
+- Added a native Mac profile workspace and expanded the dedicated Settings window with appearance, task display, backup, and ManageBac controls.
+- Centered the Home content in wide detail windows to improve visual balance.
+- Replaced the task status segmented picker with macOS 27 system Liquid Glass buttons that support click and drag selection, with blue emphasis reserved for the active status.
+- Converted the app and test directories to Xcode file-system-synchronized groups, so new sources join their target automatically without a fragile explicit Sources list.
+- Kept one shared model, state, storage, and feature core while conditionally isolating the native Mac sidebar, table, inspector, and Settings shell from the iPhone executable.
+- Completed English, Simplified Chinese, and Japanese localization while preserving the existing iPhone interface and behavior.
+
 ## 1.6.1 - 2026-08-27
 
 ### 中文

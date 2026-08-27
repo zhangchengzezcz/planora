@@ -57,6 +57,7 @@ struct MacHomeView: View {
                 }
             }
             .frame(maxWidth: 940, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .center)
             .padding(28)
         }
         .background(Color(nsColor: .windowBackgroundColor))

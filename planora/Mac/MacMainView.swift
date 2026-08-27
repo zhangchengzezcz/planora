@@ -11,14 +11,17 @@ struct MacMainView: View {
     @State private var selectedTaskID: PlanoraTask.ID?
     @State private var isShowingCreateFlow = false
     @State private var searchText = ""
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             MacSidebar(
+                store: store,
                 selection: $selection,
                 selectedTaskID: $selectedTaskID,
                 searchText: $searchText
             )
+                .toolbar(removing: .sidebarToggle)
                 .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
         } detail: {
             destinationView
@@ -32,13 +35,29 @@ struct MacMainView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    isShowingCreateFlow = true
-                } label: {
-                    Label(String(localized: "New Task"), systemImage: "plus")
+            ToolbarItem(placement: .navigation) {
+                HStack(spacing: 0) {
+                    MacToolbarIconAction(
+                        systemImage: "sidebar.leading",
+                        help: String(localized: "Toggle Sidebar")
+                    ) {
+                        withAnimation(.snappy) {
+                            columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
+                        }
+                    }
+
+                    Divider()
+                        .frame(height: 18)
+
+                    MacToolbarIconAction(
+                        systemImage: "plus",
+                        help: String(localized: "New Task")
+                    ) {
+                        isShowingCreateFlow = true
+                    }
                 }
-                .help(String(localized: "New Task"))
+                .padding(.horizontal, 3)
+                .glassEffect(.regular.interactive(), in: Capsule())
             }
         }
         .sheet(isPresented: $isShowingCreateFlow) {
@@ -86,6 +105,8 @@ struct MacMainView: View {
             MacCoursesWorkspaceView(store: store)
         case .manageBac:
             ManageBacSettingsView(store: store)
+        case .profile:
+            MacProfileView(store: store)
         }
     }
 
@@ -108,6 +129,7 @@ enum MacDestination: String, CaseIterable, Identifiable {
     case tasks
     case courses
     case manageBac
+    case profile
 
     var id: String { rawValue }
 
@@ -119,6 +141,7 @@ enum MacDestination: String, CaseIterable, Identifiable {
         case .tasks: String(localized: "Tasks")
         case .courses: String(localized: "Courses")
         case .manageBac: String(localized: "ManageBac")
+        case .profile: String(localized: "Profile")
         }
     }
 
@@ -130,16 +153,20 @@ enum MacDestination: String, CaseIterable, Identifiable {
         case .tasks: "checklist"
         case .courses: "books.vertical"
         case .manageBac: "arrow.triangle.2.circlepath"
+        case .profile: "person.crop.circle"
         }
     }
 }
 
 private struct MacSidebar: View {
+    @Bindable var store: PlanoraStore
     @Binding var selection: MacDestination?
     @Binding var selectedTaskID: PlanoraTask.ID?
     @Binding var searchText: String
     @Environment(\.modelContext) private var modelContext
-    @State private var isSearchPresented = false
+    @Environment(\.openSettings) private var openSettings
+    @State private var isShowingAccountMenu = false
+    @State private var isShowingHelp = false
     @Query(
         filter: #Predicate<PlanoraTask> { task in
             task.isPinned && !task.isCompleted && task.archivedDate == nil
@@ -154,45 +181,23 @@ private struct MacSidebar: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 10) {
-                Text("Planora")
-                    .font(.title.weight(.bold))
-                    .accessibilityAddTraits(.isHeader)
-
-                Spacer(minLength: 8)
-
-                Button {
-                    withAnimation(.snappy) {
-                        isSearchPresented.toggle()
-                        if !isSearchPresented { searchText = "" }
-                    }
-                } label: {
-                    Image(systemName: isSearchPresented ? "xmark" : "magnifyingglass")
-                        .font(.system(size: 15, weight: .semibold))
-                        .frame(width: 32, height: 32)
-                        .background(.quaternary, in: Circle())
-                }
-                .buttonStyle(.plain)
-                .help(String(localized: "Search Tasks"))
-            }
+            Text("Planora")
+                .font(.title.weight(.bold))
+                .accessibilityAddTraits(.isHeader)
                 .padding(.horizontal, 12)
                 .padding(.top, 10)
                 .padding(.bottom, 8)
 
-            if isSearchPresented {
-                MacSidebarSearchField(
-                    text: $searchText,
-                    prompt: String(localized: "Search Tasks"),
-                    requestsFocus: true
-                ) {
-                    selectedTaskID = nil
-                    selection = .tasks
-                }
-                .frame(height: 24)
-                .padding(.horizontal, 10)
-                .padding(.bottom, 8)
-                .transition(.move(edge: .top).combined(with: .opacity))
+            MacSidebarSearchField(
+                text: $searchText,
+                prompt: String(localized: "Search Tasks")
+            ) {
+                selectedTaskID = nil
+                selection = .tasks
             }
+            .frame(height: 24)
+            .padding(.horizontal, 10)
+            .padding(.bottom, 8)
 
             List(selection: destinationSelection) {
                 Section {
@@ -234,7 +239,64 @@ private struct MacSidebar: View {
                 }
             }
             .listStyle(.sidebar)
+
+            Divider()
+
+            HStack(spacing: 8) {
+                Button {
+                    isShowingAccountMenu.toggle()
+                    isShowingHelp = false
+                } label: {
+                    HStack(spacing: 9) {
+                        MacUserAvatar(name: store.userName, size: 28)
+                        Text(store.userName.isEmpty ? String(localized: "Profile") : store.userName)
+                            .font(.headline)
+                            .lineLimit(1)
+                        Spacer(minLength: 4)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    isShowingHelp.toggle()
+                    isShowingAccountMenu = false
+                } label: {
+                    Image(systemName: "questionmark.circle")
+                        .font(.title3)
+                }
+                .buttonStyle(.plain)
+                .help(String(localized: "Help and Feedback"))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
         }
+        .overlay(alignment: .bottomLeading) {
+            Group {
+                if isShowingAccountMenu {
+                    MacAccountMenu(
+                        store: store,
+                        openProfile: {
+                            isShowingAccountMenu = false
+                            selectedTaskID = nil
+                            selection = .profile
+                        },
+                        openSettings: {
+                            isShowingAccountMenu = false
+                            openSettings()
+                        }
+                    )
+                } else if isShowingHelp {
+                    MacHelpMenu()
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 56)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .zIndex(10)
+        }
+        .animation(.snappy(duration: 0.2), value: isShowingAccountMenu)
+        .animation(.snappy(duration: 0.2), value: isShowingHelp)
     }
 
     private var destinationSelection: Binding<MacDestination?> {
@@ -256,7 +318,6 @@ private struct MacSidebar: View {
 private struct MacSidebarSearchField: NSViewRepresentable {
     @Binding var text: String
     let prompt: String
-    let requestsFocus: Bool
     let onSubmit: () -> Void
 
     func makeCoordinator() -> Coordinator {
@@ -277,11 +338,6 @@ private struct MacSidebarSearchField: NSViewRepresentable {
         if field.stringValue != text { field.stringValue = text }
         field.placeholderString = prompt
         context.coordinator.parent = self
-        if requestsFocus, field.window?.firstResponder !== field.currentEditor() {
-            DispatchQueue.main.async {
-                field.window?.makeFirstResponder(field)
-            }
-        }
     }
 
     final class Coordinator: NSObject, NSSearchFieldDelegate {
@@ -299,6 +355,228 @@ private struct MacSidebarSearchField: NSViewRepresentable {
         @objc func submit() {
             parent.onSubmit()
         }
+    }
+}
+
+private struct MacAccountMenu: View {
+    let store: PlanoraStore
+    let openProfile: () -> Void
+    let openSettings: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Button(action: openProfile) {
+                HStack(spacing: 10) {
+                    MacUserAvatar(name: store.userName, size: 34)
+                    Text(store.userName.isEmpty ? String(localized: "Profile") : store.userName)
+                        .font(.headline)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .macMenuHoverStyle()
+
+            Divider().padding(.horizontal, 8)
+
+            Button(action: openSettings) {
+                HStack {
+                    Label(String(localized: "Settings"), systemImage: "gearshape")
+                    Spacer()
+                    Text("⌘,")
+                        .foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut(",", modifiers: .command)
+            .macMenuHoverStyle()
+        }
+        .padding(8)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(nsColor: .windowBackgroundColor))
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(.separator.opacity(0.7), lineWidth: 0.5)
+        }
+        .shadow(color: .black.opacity(0.14), radius: 18, y: 8)
+    }
+}
+
+private struct MacHelpMenu: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(String(localized: "Help and Feedback"), systemImage: "questionmark.circle")
+                .font(.headline)
+            Divider()
+            Text(String(localized: "Planora help is coming soon."))
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color(nsColor: .windowBackgroundColor))
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(.separator.opacity(0.7), lineWidth: 0.5)
+        }
+        .shadow(color: .black.opacity(0.14), radius: 18, y: 8)
+    }
+}
+
+private struct MacToolbarIconAction: View {
+    let systemImage: String
+    let help: String
+    let action: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Image(systemName: systemImage)
+            .font(.body.weight(.medium))
+            .frame(width: 34, height: 28)
+            .background {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(isHovered ? Color.primary.opacity(0.08) : .clear)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture(perform: action)
+            .onHover { isHovered = $0 }
+            .help(help)
+            .accessibilityLabel(help)
+            .accessibilityAddTraits(.isButton)
+    }
+}
+
+private struct MacMenuHoverModifier: ViewModifier {
+    @State private var isHovered = false
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.horizontal, 10)
+            .padding(.vertical, 9)
+            .background {
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .fill(isHovered ? Color.primary.opacity(0.07) : .clear)
+                    .shadow(color: .black.opacity(isHovered ? 0.08 : 0), radius: 7, y: 2)
+            }
+            .onHover { isHovered = $0 }
+    }
+}
+
+private extension View {
+    func macMenuHoverStyle() -> some View {
+        modifier(MacMenuHoverModifier())
+    }
+}
+
+struct MacUserAvatar: View {
+    let name: String
+    let size: CGFloat
+
+    private var initials: String {
+        let components = name.split(whereSeparator: \.isWhitespace)
+        let characters = components.prefix(2).compactMap(\.first)
+        return characters.isEmpty ? "P" : String(characters).uppercased()
+    }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color.accentColor.gradient)
+            Text(initials)
+                .font(.system(size: size * 0.38, weight: .semibold, design: .rounded))
+                .foregroundStyle(.white)
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
+}
+
+private struct MacProfileView: View {
+    @Bindable var store: PlanoraStore
+    @Environment(\.openSettings) private var openSettings
+
+    private var subjects: [String] {
+        store.selectedSubjectTitles + store.selectedExtraLearningTitles
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 22) {
+                HStack(spacing: 18) {
+                    MacUserAvatar(name: store.userName, size: 72)
+
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(store.userName.isEmpty ? String(localized: "Profile") : store.userName)
+                            .font(.largeTitle.bold())
+                        Text(verbatim: "\(store.curriculum.badge) · \(String(localized: "Learning Space"))")
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    Button(String(localized: "Settings"), systemImage: "gearshape") {
+                        openSettings()
+                    }
+                    .buttonStyle(.glass)
+                }
+
+                GroupBox(String(localized: "Profile")) {
+                    Form {
+                        TextField(String(localized: "Name"), text: Binding(
+                            get: { store.userName },
+                            set: { store.updateUserName($0) }
+                        ))
+                        Picker(String(localized: "Curriculum"), selection: Binding(
+                            get: { store.curriculum },
+                            set: { store.selectCurriculum($0) }
+                        )) {
+                            ForEach(Curriculum.allCases) { curriculum in
+                                Text(curriculum.title).tag(curriculum)
+                            }
+                        }
+                    }
+                    .formStyle(.grouped)
+                }
+
+                GroupBox(String(localized: "Current Subjects")) {
+                    if subjects.isEmpty {
+                        ContentUnavailableView(
+                            String(localized: "No Subjects Yet"),
+                            systemImage: "books.vertical"
+                        )
+                        .frame(minHeight: 150)
+                    } else {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 10)], spacing: 10) {
+                            ForEach(subjects, id: \.self) { subject in
+                                Label(PlanoraFormat.subjectDisplayName(subject), systemImage: "book.closed")
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(12)
+                                    .background(.quaternary.opacity(0.55), in: RoundedRectangle(cornerRadius: 8))
+                            }
+                        }
+                        .padding(6)
+                    }
+                }
+
+                Text(String(localized: "Your profile stays on this device."))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: 760)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(28)
+        }
+        .background(Color(nsColor: .windowBackgroundColor))
     }
 }
 

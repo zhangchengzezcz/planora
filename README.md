@@ -2,9 +2,9 @@
 
 **中文** | **English**
 
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.1 版本在完整日常学习闭环的基础上，提供使用最新 SwiftUI 桌面结构构建的原生 macOS 工作区、置顶任务侧栏，并继续提供英文、简体中文和日文完整本地化。
+Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.2 版本在完整日常学习闭环的基础上，进一步完善原生 macOS 工作区、账户入口、系统设置与 Liquid Glass 任务筛选，并继续提供英文、简体中文和日文完整本地化。
 
-Planora is a study planning app for IB and IGCSE students. Version 1.6.1 provides a native macOS workspace built with the latest SwiftUI desktop structure, pinned task shortcuts, the complete daily planning loop, and full English, Simplified Chinese, and Japanese localization.
+Planora is a study planning app for IB and IGCSE students. Version 1.6.2 further refines the native macOS workspace with an account entry point, system Settings, Liquid Glass task filters, the complete daily planning loop, and full English, Simplified Chinese, and Japanese localization.
 
 ## 交互式演示 / Interactive Demo
 
@@ -18,8 +18,8 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 
 ## 当前版本 / Current Version
 
-- Version: **1.6.1**
-- Build: **11**
+- Version: **1.6.2**
+- Build: **12**
 - Platform: **iOS and native macOS 27**
 - UI: SwiftUI, SwiftData, Observation, system navigation and platform-native surfaces
 - Status: Native desktop and mobile academic planning workflow
@@ -55,6 +55,8 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - 原生 macOS 27 侧栏工作区，直接访问首页、今日、本周、任务和课程
 - Mac 使用系统工具栏搜索、系统任务表格、详情检查器与独立设置窗口
 - Mac 支持 `⌘N` 新建任务与 `⌘F` 搜索，隐藏工具栏后可通过系统命令重新显示
+- Xcode 文件系统同步目录自动管理源码归属，不再依赖手工维护的 Sources 文件列表
+- 共享模型、状态、存储与业务能力；iPhone 与 Mac 仅保留各自轻量、原生的界面壳层
 - ManageBac 课程工作区显示教师、Unit 与关联任务，并识别 PDP/PDP1/PDP2、GP/GPTPD 与 Global Perspectives
 - 本地 UserDefaults 保存学习空间与显示偏好，SwiftData 保存任务
 
@@ -87,6 +89,8 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - A native macOS 27 sidebar workspace with direct access to Home, Today, This Week, Tasks, and Courses
 - System toolbar search, a native task table, a task inspector, and a dedicated Settings window on Mac
 - Mac keyboard shortcuts for New Task (`⌘N`) and Search (`⌘F`), with the system command available to restore a hidden toolbar
+- Xcode file-system-synchronized folders manage source membership automatically instead of a manually maintained Sources list
+- Shared models, state, storage, and feature logic with lightweight platform-native presentation shells for iPhone and Mac
 - A ManageBac course workspace for teachers, units, and related tasks, including PDP/PDP1/PDP2, GP/GPTPD, and Global Perspectives recognition
 - Local UserDefaults persistence for profile and display preferences, plus SwiftData task storage
 
@@ -97,7 +101,7 @@ planora/
   Components/     Shared SwiftUI components and glass surfaces
   Create/         Task type selection and task creation form
   Dashboard/      Home dashboard and main app tab shell
-  Mac/            Native macOS sidebar, planning, task, course, and settings workspaces
+  Mac/            Conditionally compiled native macOS presentation shell
   ManageBac/      Read-only account connection, courses, units, and task import
   Models/         App phases, curriculum models, SwiftData task model, subject library
   Onboarding/     Welcome, feature intro, username, curriculum, and subject selection
@@ -168,11 +172,11 @@ xcodebuild -project planora.xcodeproj \
 
 ### 中文
 
-Planora 1.6.1 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、工具栏、表格、检查器与设置场景。界面减少装饰性背景和自定义按钮，让信息层级、窗口行为与键盘操作交给系统组件管理。
+Planora 1.6.2 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、融合式新建与侧栏工具栏胶囊、常驻搜索框、表格、检查器与独立设置场景。模型、状态、存储和业务逻辑保持共享，平台差异只留在轻量界面壳层。任务状态使用系统 Liquid Glass 控件，账户与帮助入口固定在侧栏底部，主要内容在宽窗口中保持居中和易读。
 
 ### English
 
-Planora 1.6.1 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, toolbar, table, inspector, and Settings scene. Decorative backgrounds and custom controls are reduced so hierarchy, window behavior, and keyboard interaction remain system-managed.
+Planora 1.6.2 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, a fused sidebar and New Task toolbar capsule, persistent search, tables, inspectors, and a dedicated Settings scene. Models, state, storage, and feature logic stay shared while platform differences remain in lightweight presentation shells. Task status uses system Liquid Glass controls, account and help stay anchored to the sidebar footer, and primary content remains centered in wide windows.
 
 ## 后续计划 / Next Steps
 
