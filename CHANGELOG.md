@@ -1,11 +1,11 @@
 # Changelog / 更新说明
 
-## 1.6.0 - 2026-08-26
+## 1.6.0 - 2026-08-27
 
 ### 中文
 
 - 将 Mac 版本从 Mac Catalyst 重构为原生 macOS 27 App，同时保持 iPhone 现有界面与功能不变。
-- 使用系统 `NavigationSplitView` 构建固定侧栏，包含首页、今日、本周、任务与课程五个清晰入口。
+- 使用系统 `NavigationSplitView` 构建直边侧栏；系统搜索固定在侧栏顶部，首页、任务、课程与 ManageBac 作为紧凑主入口，今日与本周归入规划分组。
 - 侧栏图标统一为简约的单色 SF Symbols，不修改应用图标。
 - 使用系统工具栏搜索、新建按钮、任务 `Table`、详情 Inspector、`Form` 和独立 Settings 场景，减少自定义装饰与桌面端复古感。
 - 加入系统 `ToolbarCommands`，隐藏工具栏后可以从“显示”菜单重新显示。
@@ -21,7 +21,7 @@
 ### English
 
 - Rebuilt the Mac app as a native macOS 27 application instead of Mac Catalyst while preserving the existing iPhone UI and behavior.
-- Added a system `NavigationSplitView` sidebar with clear Home, Today, This Week, Tasks, and Courses destinations.
+- Added a straight-edged system `NavigationSplitView` sidebar with sticky sidebar search, compact Home, Tasks, Courses, and ManageBac destinations, plus a Planning group for Today and This Week.
 - Standardized sidebar artwork on restrained monochrome SF Symbols without changing the app icon.
 - Adopted system toolbar search, New Task controls, a task `Table`, an Inspector, grouped forms, and a dedicated Settings scene.
 - Added `ToolbarCommands` so a hidden toolbar can always be restored from the View menu.

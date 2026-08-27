@@ -13,12 +13,13 @@ struct MacMainView: View {
         NavigationSplitView {
             MacSidebar(selection: $selection)
                 .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
+                .navigationTitle("Planora")
         } detail: {
             destinationView
                 .navigationTitle((selection ?? .home).title)
         }
         .navigationSplitViewStyle(.balanced)
-        .searchable(text: $searchText, placement: .toolbar, prompt: String(localized: "Search Tasks"))
+        .searchable(text: $searchText, placement: .sidebar, prompt: String(localized: "Search Tasks"))
         .onSubmit(of: .search) { selection = .tasks }
         .onChange(of: searchText) { _, value in
             if !value.isEmpty { selection = .tasks }
@@ -76,6 +77,8 @@ struct MacMainView: View {
             MacTaskWorkspaceView(store: store, searchText: searchText)
         case .courses:
             MacCoursesWorkspaceView(store: store)
+        case .manageBac:
+            ManageBacSettingsView(store: store)
         }
     }
 
@@ -97,6 +100,7 @@ enum MacDestination: String, CaseIterable, Identifiable {
     case week
     case tasks
     case courses
+    case manageBac
 
     var id: String { rawValue }
 
@@ -107,6 +111,7 @@ enum MacDestination: String, CaseIterable, Identifiable {
         case .week: String(localized: "This Week")
         case .tasks: String(localized: "Tasks")
         case .courses: String(localized: "Courses")
+        case .manageBac: String(localized: "ManageBac")
         }
     }
 
@@ -117,6 +122,7 @@ enum MacDestination: String, CaseIterable, Identifiable {
         case .week: "calendar"
         case .tasks: "checklist"
         case .courses: "books.vertical"
+        case .manageBac: "arrow.triangle.2.circlepath"
         }
     }
 }
@@ -126,14 +132,16 @@ private struct MacSidebar: View {
 
     var body: some View {
         List(selection: $selection) {
-            Section(String(localized: "Overview")) { link(.home) }
+            Section {
+                link(.home)
+                link(.tasks)
+                link(.courses)
+                link(.manageBac)
+            }
+
             Section(String(localized: "Planning")) {
                 link(.today)
                 link(.week)
-            }
-            Section(String(localized: "Workspace")) {
-                link(.tasks)
-                link(.courses)
             }
         }
         .listStyle(.sidebar)
