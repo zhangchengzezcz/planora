@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
@@ -16,6 +17,8 @@ struct ProfileView: View {
     @State private var isShowingBackupAlert = false
     @State private var pendingImportPreview: TaskImportPreview?
     @State private var isShowingImportOptions = false
+    @State private var isChoosingAvatar = false
+    @State private var avatarError: String?
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -49,6 +52,13 @@ struct ProfileView: View {
         ) { result in
             importBackup(from: result)
         }
+        .fileImporter(
+            isPresented: $isChoosingAvatar,
+            allowedContentTypes: [.image],
+            allowsMultipleSelection: false
+        ) { result in
+            updateAvatar(from: result)
+        }
         .confirmationDialog(
             String(localized: "Import Backup"),
             isPresented: $isShowingImportOptions,
@@ -76,6 +86,14 @@ struct ProfileView: View {
         } message: {
             Text(backupAlertMessage)
         }
+        .alert(String(localized: "Avatar Update Failed"), isPresented: Binding(
+            get: { avatarError != nil },
+            set: { if !$0 { avatarError = nil } }
+        )) {
+            Button(String(localized: "OK"), role: .cancel) { avatarError = nil }
+        } message: {
+            Text(avatarError ?? "")
+        }
     }
 
     // MARK: - Page Sections
@@ -93,7 +111,27 @@ struct ProfileView: View {
     private var profileHeader: some View {
         GlassPanel {
             HStack(spacing: 16) {
-                PlanoraLogoMark(size: 58)
+                Button {
+                    isChoosingAvatar = true
+                } label: {
+                    ProfileAvatarView(name: store.userName, size: 58)
+                        .overlay(alignment: .bottomTrailing) {
+                            Image(systemName: "pencil")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(Color.planoraInk)
+                                .frame(width: 21, height: 21)
+                                .background(.regularMaterial, in: Circle())
+                        }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Edit"))
+                .contextMenu {
+                    if ProfileAvatarStorage.hasCustomAvatar {
+                        Button(String(localized: "Use Initials"), systemImage: "person.crop.circle") {
+                            removeAvatar()
+                        }
+                    }
+                }
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(store.userName)
@@ -107,6 +145,23 @@ struct ProfileView: View {
 
                 Spacer()
             }
+        }
+    }
+
+    private func updateAvatar(from result: Result<[URL], Error>) {
+        do {
+            guard let url = try result.get().first else { return }
+            try ProfileAvatarStorage.save(from: url)
+        } catch {
+            avatarError = error.localizedDescription
+        }
+    }
+
+    private func removeAvatar() {
+        do {
+            try ProfileAvatarStorage.remove()
+        } catch {
+            avatarError = error.localizedDescription
         }
     }
 

@@ -246,7 +246,7 @@ private struct MacSidebar: View {
                     isShowingHelp = false
                 } label: {
                     HStack(spacing: 9) {
-                        MacUserAvatar(name: store.userName, size: 28)
+                        ProfileAvatarView(name: store.userName, size: 28)
                         Text(store.userName.isEmpty ? String(localized: "Profile") : store.userName)
                             .font(.headline)
                             .lineLimit(1)
@@ -365,7 +365,7 @@ private struct MacAccountMenu: View {
         VStack(spacing: 0) {
             Button(action: openProfile) {
                 HStack(spacing: 10) {
-                    MacUserAvatar(name: store.userName, size: 34)
+                    ProfileAvatarView(name: store.userName, size: 34)
                     Text(store.userName.isEmpty ? String(localized: "Profile") : store.userName)
                         .font(.headline)
                     Spacer()
@@ -453,38 +453,6 @@ private extension View {
     }
 }
 
-struct MacUserAvatar: View {
-    let name: String
-    let size: CGFloat
-    @AppStorage(ProfileAvatarStorage.revisionKey) private var avatarRevision = 0
-
-    private var initials: String {
-        let components = name.split(whereSeparator: \.isWhitespace)
-        let characters = components.prefix(2).compactMap(\.first)
-        return characters.isEmpty ? "P" : String(characters).uppercased()
-    }
-
-    var body: some View {
-        ZStack {
-            if let image = ProfileAvatarStorage.image() {
-                Image(nsImage: image)
-                    .resizable()
-                    .scaledToFill()
-            } else {
-                Circle()
-                    .fill(Color.accentColor.gradient)
-                Text(initials)
-                    .font(.system(size: size * 0.38, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
-            }
-        }
-        .frame(width: size, height: size)
-        .clipShape(Circle())
-        .id(avatarRevision)
-        .accessibilityHidden(true)
-    }
-}
-
 private struct MacProfileView: View {
     @Bindable var store: PlanoraStore
     @Environment(\.openSettings) private var openSettings
@@ -502,7 +470,7 @@ private struct MacProfileView: View {
                     Button {
                         isChoosingAvatar = true
                     } label: {
-                        MacUserAvatar(name: store.userName, size: 72)
+                        ProfileAvatarView(name: store.userName, size: 72)
                             .overlay(alignment: .bottomTrailing) {
                                 Image(systemName: "pencil")
                                     .font(.caption.weight(.semibold))

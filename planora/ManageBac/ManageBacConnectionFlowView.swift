@@ -90,14 +90,20 @@ struct ManageBacConnectionFlowView: View {
 
             Spacer()
 
-            Button(action: cancel) {
-                Image(systemName: "xmark")
-                    .font(.headline.weight(.bold))
-                    .frame(width: 38, height: 38)
+            if isCompleted {
+                Button(String(localized: "Done"), action: finish)
+                    .fontWeight(.semibold)
+                    .buttonStyle(.borderedProminent)
+            } else {
+                Button(action: cancel) {
+                    Image(systemName: "xmark")
+                        .font(.headline.weight(.bold))
+                        .frame(width: 38, height: 38)
+                }
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.circle)
+                .accessibilityLabel(String(localized: "Close"))
             }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.circle)
-            .accessibilityLabel(String(localized: "Close"))
         }
         .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
         .padding(.vertical, 10)

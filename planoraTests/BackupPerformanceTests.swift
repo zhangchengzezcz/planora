@@ -18,6 +18,7 @@ final class BackupPerformanceTests: XCTestCase {
         task.recurrenceRule = TaskRecurrenceRule(frequency: .weekly, weekdays: [2, 5], end: .afterCount(8))
         task.recurrenceSeriesID = UUID()
         task.recurrenceSequence = 3
+        task.isPinned = true
 
         let json = try TaskBackupCodec.json(for: [task])
         let restored = try XCTUnwrap(TaskBackupCodec.tasks(from: json).first)
@@ -32,6 +33,7 @@ final class BackupPerformanceTests: XCTestCase {
         XCTAssertEqual(restored.recurrenceRule, task.recurrenceRule)
         XCTAssertEqual(restored.recurrenceSeriesID, task.recurrenceSeriesID)
         XCTAssertEqual(restored.recurrenceSequence, 3)
+        XCTAssertTrue(restored.isPinned)
     }
 
     func testOlderBackupVersionsAreRejected() throws {

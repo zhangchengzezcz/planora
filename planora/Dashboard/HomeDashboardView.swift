@@ -657,7 +657,7 @@ private struct EmptyTasksCard: View {
     var body: some View {
         Button(action: action) {
             GlassPanel(interactive: true) {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(spacing: 12) {
                     Image(systemName: "plus.circle.fill")
                         .font(.title.weight(.bold))
                         .foregroundStyle(LinearGradient.planoraAccent)
@@ -669,12 +669,13 @@ private struct EmptyTasksCard: View {
                     Text(String(localized: "Start planning your learning journey."))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
 
                     Text(String(localized: "Tap here to create your first task."))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(Color.planoraDeepGreen)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, minHeight: 190, alignment: .center)
             }
         }
         .buttonStyle(.plain)

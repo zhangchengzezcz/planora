@@ -32,6 +32,14 @@ struct TaskListView: View {
                             TaskListRow(task: task)
                         }
                             .buttonStyle(.plain)
+                            .contextMenu {
+                                Button(
+                                    task.isPinned ? String(localized: "Unpin Task") : String(localized: "Pin Task"),
+                                    systemImage: task.isPinned ? "pin.slash" : "pin"
+                                ) {
+                                    togglePinned(task)
+                                }
+                            }
                             .accessibilityHint(String(localized: "Open task details"))
                             .listRowInsets(EdgeInsets(top: 7, leading: PlanoraTheme.pageHorizontalPadding, bottom: 7, trailing: PlanoraTheme.pageHorizontalPadding))
                             .listRowSeparator(.hidden)
@@ -122,6 +130,11 @@ struct TaskListView: View {
         )
         taskPendingDeletion = nil
     }
+
+    private func togglePinned(_ task: PlanoraTask) {
+        task.isPinned.toggle()
+        PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+    }
 }
 
 enum PlanoraTaskListProjection {
@@ -159,11 +172,20 @@ private struct TaskListRow: View {
                         .background(task.type.tint.opacity(0.12), in: RoundedRectangle(cornerRadius: isCompact ? 10 : 14, style: .continuous))
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(task.title)
-                            .font(.headline)
-                            .foregroundStyle(Color.planoraInk)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.78)
+                        HStack(spacing: 5) {
+                            Text(task.title)
+                                .font(.headline)
+                                .foregroundStyle(Color.planoraInk)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.78)
+
+                            if task.isPinned {
+                                Image(systemName: "pin.fill")
+                                    .font(.caption2.weight(.bold))
+                                    .foregroundStyle(task.type.tint)
+                                    .accessibilityLabel(String(localized: "Pinned Tasks"))
+                            }
+                        }
 
                         Text(task.subject.planoraTaskListSubjectName)
                             .font(.caption.weight(.semibold))
@@ -228,7 +250,7 @@ private struct TaskListMetric: View {
 private struct EmptyTaskListCard: View {
     var body: some View {
         GlassPanel {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(spacing: 12) {
                 Image(systemName: "checklist")
                     .font(.title.weight(.bold))
                     .foregroundStyle(LinearGradient.planoraAccent)
@@ -241,8 +263,9 @@ private struct EmptyTaskListCard: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.center)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 190, alignment: .center)
         }
     }
 }

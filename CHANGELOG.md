@@ -1,5 +1,27 @@
 # Changelog / 更新说明
 
+## 1.6.4 - 2026-08-27
+
+### 中文
+
+- 将本地个人头像迁移到共享组件，iPhone“我的”页面现在也可选择头像或恢复姓名缩写，头像仍仅保存在本机。
+- iPhone 任务列表与详情页新增置顶和取消置顶；置顶任务在列表、搜索、科目与首页排序中优先显示。
+- JSON v9 备份现在保留任务置顶状态，重复导入和现有备份行为保持不变。
+- 优化 iPhone ManageBac 连接卡片，明确并排显示“立即同步”和红色“断开连接”。
+- iPhone ManageBac 同步完成后在顶部直接显示“完成”，无需通过关闭操作退出。
+- 统一 iPhone 首页与任务页的无任务状态为居中布局。
+- iPhone 17 Pro 完整执行 66 项测试，macOS 27 Release 构建通过。
+
+### English
+
+- Moved the local profile avatar into a shared component so iPhone can choose an avatar or return to initials; the image remains device-only.
+- Added Pin and Unpin actions to the iPhone task list and detail view, with pinned tasks leading shared list, search, subject, and dashboard ordering.
+- JSON v9 backups now preserve task pin state without changing duplicate-import behavior.
+- Refined the iPhone ManageBac connection card with clearly visible Sync Now and destructive Disconnect actions side by side.
+- Added an immediate Done action to the iPhone ManageBac completion header.
+- Centered the empty states on iPhone Home and Tasks.
+- Passed all 66 iPhone 17 Pro tests and the macOS 27 Release build.
+
 ## 1.6.3 - 2026-08-27
 
 ### 中文

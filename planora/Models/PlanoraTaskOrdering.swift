@@ -2,6 +2,7 @@ import Foundation
 
 struct PlanoraTaskSortKey: Sendable {
     let isCompleted: Bool
+    let isPinned: Bool
     let importance: Int
     let hasDeadline: Bool
     let deadline: Date?
@@ -11,6 +12,7 @@ struct PlanoraTaskSortKey: Sendable {
 
     init(task: PlanoraTask) {
         isCompleted = task.isCompleted
+        isPinned = task.isPinned
         importance = task.importance
         hasDeadline = task.hasDeadline
         deadline = task.deadline
@@ -42,6 +44,9 @@ nonisolated enum PlanoraTaskOrdering {
     ) -> Bool {
         if lhs.isCompleted != rhs.isCompleted {
             return !lhs.isCompleted
+        }
+        if let result = comparePinned(lhs, rhs) {
+            return result
         }
 
         switch sortOrder {
@@ -75,6 +80,9 @@ nonisolated enum PlanoraTaskOrdering {
     }
 
     nonisolated static func areInDashboardOrder(_ lhs: PlanoraTaskSortKey, _ rhs: PlanoraTaskSortKey) -> Bool {
+        if let result = comparePinned(lhs, rhs) {
+            return result
+        }
         if let result = comparePriority(lhs, rhs) {
             return result
         }
@@ -87,6 +95,9 @@ nonisolated enum PlanoraTaskOrdering {
     nonisolated static func areInSearchOrder(_ lhs: PlanoraTaskSortKey, _ rhs: PlanoraTaskSortKey) -> Bool {
         if lhs.isCompleted != rhs.isCompleted {
             return !lhs.isCompleted
+        }
+        if let result = comparePinned(lhs, rhs) {
+            return result
         }
         if let result = comparePriority(lhs, rhs) {
             return result
@@ -107,6 +118,9 @@ nonisolated enum PlanoraTaskOrdering {
     nonisolated static func areInSubjectDetailOrder(_ lhs: PlanoraTaskSortKey, _ rhs: PlanoraTaskSortKey) -> Bool {
         if lhs.isCompleted != rhs.isCompleted {
             return !lhs.isCompleted
+        }
+        if let result = comparePinned(lhs, rhs) {
+            return result
         }
         if let result = comparePriority(lhs, rhs) {
             return result
@@ -129,6 +143,11 @@ nonisolated enum PlanoraTaskOrdering {
 
     private static func planningDate(for task: PlanoraTaskSortKey) -> Date {
         task.deadline ?? task.plannedDate ?? .distantFuture
+    }
+
+    private static func comparePinned(_ lhs: PlanoraTaskSortKey, _ rhs: PlanoraTaskSortKey) -> Bool? {
+        guard lhs.isPinned != rhs.isPinned else { return nil }
+        return lhs.isPinned
     }
 
     private static func comparePriority(_ lhs: PlanoraTaskSortKey, _ rhs: PlanoraTaskSortKey) -> Bool? {

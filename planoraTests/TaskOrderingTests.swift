@@ -30,6 +30,22 @@ final class TaskOrderingTests: XCTestCase {
         XCTAssertEqual(sorted.map(\.title), ["Older", "Newer"])
     }
 
+    func testPinnedTasksLeadSharedListAndDashboardOrdering() {
+        let urgent = makeTask(title: "Urgent", priority: .high, deadlineOffset: 0, createdOffset: 2)
+        let pinned = makeTask(title: "Pinned", priority: .low, deadlineOffset: 10, createdOffset: 1)
+        pinned.isPinned = true
+
+        let list = [urgent, pinned].planoraSorted {
+            PlanoraTaskOrdering.areInListOrder($0, $1, sortOrder: .smart)
+        }
+        let dashboard = [urgent, pinned].planoraSorted {
+            PlanoraTaskOrdering.areInDashboardOrder($0, $1)
+        }
+
+        XCTAssertEqual(list.map(\.title), ["Pinned", "Urgent"])
+        XCTAssertEqual(dashboard.map(\.title), ["Pinned", "Urgent"])
+    }
+
     func testSearchOrderKeepsNewestCreatedDateFallback() {
         let older = makeTask(title: "Older", priority: .medium, deadlineOffset: nil, createdOffset: 1)
         let newer = makeTask(title: "Newer", priority: .medium, deadlineOffset: nil, createdOffset: 2)

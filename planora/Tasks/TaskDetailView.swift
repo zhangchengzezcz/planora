@@ -39,6 +39,17 @@ struct TaskDetailView: View {
             PlanoraTaskPersistence.save(modelContext)
         }
         .toolbar {
+            ToolbarItem(placement: .secondaryAction) {
+                Button {
+                    task.isPinned.toggle()
+                    PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+                } label: {
+                    Label(
+                        task.isPinned ? String(localized: "Unpin Task") : String(localized: "Pin Task"),
+                        systemImage: task.isPinned ? "pin.slash" : "pin"
+                    )
+                }
+            }
             ToolbarItem(placement: .primaryAction) {
                 NavigationLink {
                     EditTaskView(store: store, task: task)

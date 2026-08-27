@@ -184,11 +184,12 @@ struct ManageBacSettingsView: View {
                         Button(role: .destructive) {
                             isShowingDisconnectConfirmation = true
                         } label: {
-                            Image(systemName: "link.badge.minus")
-                                .frame(width: 28, height: 20)
+                            Label(String(localized: "Disconnect"), systemImage: "link.badge.minus")
+                                .lineLimit(1)
+                                .fixedSize(horizontal: true, vertical: false)
                         }
                         .buttonStyle(.bordered)
-                        .accessibilityLabel(String(localized: "Disconnect"))
+                        .tint(.red)
                     }
                 } else {
                     Button {

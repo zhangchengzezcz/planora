@@ -501,6 +501,7 @@ private struct PlanoraTaskBackupItem: Codable {
     var createdDate: Date
     var isCompleted: Bool
     var completedDate: Date?
+    var isPinned: Bool?
     var importance: Int
     var timelineData: Data?
     var reminderData: Data?
@@ -536,6 +537,7 @@ private struct PlanoraTaskBackupItem: Codable {
         createdDate = task.createdDate
         isCompleted = task.isCompleted
         completedDate = task.completedDate
+        isPinned = task.isPinned
         importance = task.importance
         timelineData = task.timelineData
         reminderData = task.reminderData
@@ -595,6 +597,7 @@ private struct PlanoraTaskBackupItem: Codable {
         // Reminder configuration is restored, but import never schedules notifications.
         // This prevents repeated imports from creating duplicate pending requests.
         restoredTask.reminderData = reminderData
+        restoredTask.isPinned = isPinned ?? false
         restoredTask.recurrenceData = recurrenceData
         restoredTask.recurrenceSeriesID = recurrenceSeriesID
         restoredTask.recurrenceSequence = recurrenceSequence
