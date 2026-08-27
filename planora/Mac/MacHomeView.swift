@@ -25,7 +25,7 @@ struct MacHomeView: View {
                         Button(String(localized: "New Task"), action: createTask)
                             .buttonStyle(.borderedProminent)
                     }
-                    .frame(minHeight: 250)
+                    .frame(maxWidth: .infinity, minHeight: 320, alignment: .center)
                 }
 
                 Grid(horizontalSpacing: 14, verticalSpacing: 14) {

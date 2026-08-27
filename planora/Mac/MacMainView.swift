@@ -3,6 +3,7 @@ import SwiftUI
 
 #if os(macOS)
 import AppKit
+import UniformTypeIdentifiers
 
 struct MacMainView: View {
     @Bindable var store: PlanoraStore
@@ -36,29 +37,26 @@ struct MacMainView: View {
         }
         .toolbar {
             ToolbarItem(placement: .navigation) {
-                HStack(spacing: 0) {
-                    MacToolbarIconAction(
-                        systemImage: "sidebar.leading",
-                        help: String(localized: "Toggle Sidebar")
-                    ) {
+                ControlGroup {
+                    Button {
                         withAnimation(.snappy) {
                             columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
                         }
+                    } label: {
+                        Image(systemName: "sidebar.leading")
                     }
+                    .help(String(localized: "Toggle Sidebar"))
 
-                    Divider()
-                        .frame(height: 18)
-
-                    MacToolbarIconAction(
-                        systemImage: "plus",
-                        help: String(localized: "New Task")
-                    ) {
+                    Button {
                         isShowingCreateFlow = true
+                    } label: {
+                        Image(systemName: "plus")
                     }
+                    .help(String(localized: "New Task"))
                 }
-                .padding(.horizontal, 3)
-                .glassEffect(.regular.interactive(), in: Capsule())
+                .controlGroupStyle(.navigation)
             }
+            ToolbarSpacer(.fixed, placement: .navigation)
         }
         .sheet(isPresented: $isShowingCreateFlow) {
             NavigationStack {
@@ -433,29 +431,6 @@ private struct MacHelpMenu: View {
     }
 }
 
-private struct MacToolbarIconAction: View {
-    let systemImage: String
-    let help: String
-    let action: () -> Void
-    @State private var isHovered = false
-
-    var body: some View {
-        Image(systemName: systemImage)
-            .font(.body.weight(.medium))
-            .frame(width: 34, height: 28)
-            .background {
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(isHovered ? Color.primary.opacity(0.08) : .clear)
-            }
-            .contentShape(Rectangle())
-            .onTapGesture(perform: action)
-            .onHover { isHovered = $0 }
-            .help(help)
-            .accessibilityLabel(help)
-            .accessibilityAddTraits(.isButton)
-    }
-}
-
 private struct MacMenuHoverModifier: ViewModifier {
     @State private var isHovered = false
 
@@ -481,6 +456,7 @@ private extension View {
 struct MacUserAvatar: View {
     let name: String
     let size: CGFloat
+    @AppStorage(ProfileAvatarStorage.revisionKey) private var avatarRevision = 0
 
     private var initials: String {
         let components = name.split(whereSeparator: \.isWhitespace)
@@ -490,13 +466,21 @@ struct MacUserAvatar: View {
 
     var body: some View {
         ZStack {
-            Circle()
-                .fill(Color.accentColor.gradient)
-            Text(initials)
-                .font(.system(size: size * 0.38, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white)
+            if let image = ProfileAvatarStorage.image() {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                Circle()
+                    .fill(Color.accentColor.gradient)
+                Text(initials)
+                    .font(.system(size: size * 0.38, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.white)
+            }
         }
         .frame(width: size, height: size)
+        .clipShape(Circle())
+        .id(avatarRevision)
         .accessibilityHidden(true)
     }
 }
@@ -504,6 +488,8 @@ struct MacUserAvatar: View {
 private struct MacProfileView: View {
     @Bindable var store: PlanoraStore
     @Environment(\.openSettings) private var openSettings
+    @State private var isChoosingAvatar = false
+    @State private var avatarError: String?
 
     private var subjects: [String] {
         store.selectedSubjectTitles + store.selectedExtraLearningTitles
@@ -513,7 +499,26 @@ private struct MacProfileView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 HStack(spacing: 18) {
-                    MacUserAvatar(name: store.userName, size: 72)
+                    Button {
+                        isChoosingAvatar = true
+                    } label: {
+                        MacUserAvatar(name: store.userName, size: 72)
+                            .overlay(alignment: .bottomTrailing) {
+                                Image(systemName: "pencil")
+                                    .font(.caption.weight(.semibold))
+                                    .frame(width: 24, height: 24)
+                                    .background(.regularMaterial, in: Circle())
+                            }
+                    }
+                    .buttonStyle(.plain)
+                    .help(String(localized: "Edit"))
+                    .contextMenu {
+                        if ProfileAvatarStorage.hasCustomAvatar {
+                            Button(String(localized: "Use Initials"), systemImage: "person.crop.circle") {
+                                removeAvatar()
+                            }
+                        }
+                    }
 
                     VStack(alignment: .leading, spacing: 5) {
                         Text(store.userName.isEmpty ? String(localized: "Profile") : store.userName)
@@ -531,21 +536,40 @@ private struct MacProfileView: View {
                 }
 
                 GroupBox(String(localized: "Profile")) {
-                    Form {
-                        TextField(String(localized: "Name"), text: Binding(
-                            get: { store.userName },
-                            set: { store.updateUserName($0) }
-                        ))
-                        Picker(String(localized: "Curriculum"), selection: Binding(
-                            get: { store.curriculum },
-                            set: { store.selectCurriculum($0) }
-                        )) {
-                            ForEach(Curriculum.allCases) { curriculum in
-                                Text(curriculum.title).tag(curriculum)
-                            }
+                    VStack(spacing: 0) {
+                        HStack(spacing: 18) {
+                            Text(String(localized: "Name"))
+                            Spacer()
+                            TextField(String(localized: "Name"), text: Binding(
+                                get: { store.userName },
+                                set: { store.updateUserName($0) }
+                            ))
+                            .labelsHidden()
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 260)
                         }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 12)
+
+                        Divider()
+
+                        HStack(spacing: 18) {
+                            Text(String(localized: "Curriculum"))
+                            Spacer()
+                            Picker(String(localized: "Curriculum"), selection: Binding(
+                                get: { store.curriculum },
+                                set: { store.selectCurriculum($0) }
+                            )) {
+                                ForEach(Curriculum.allCases) { curriculum in
+                                    Text(curriculum.title).tag(curriculum)
+                                }
+                            }
+                            .labelsHidden()
+                            .frame(width: 300)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 12)
                     }
-                    .formStyle(.grouped)
                 }
 
                 GroupBox(String(localized: "Current Subjects")) {
@@ -577,6 +601,34 @@ private struct MacProfileView: View {
             .padding(28)
         }
         .background(Color(nsColor: .windowBackgroundColor))
+        .fileImporter(
+            isPresented: $isChoosingAvatar,
+            allowedContentTypes: [.image],
+            allowsMultipleSelection: false
+        ) { result in
+            do {
+                guard let url = try result.get().first else { return }
+                try ProfileAvatarStorage.save(from: url)
+            } catch {
+                avatarError = error.localizedDescription
+            }
+        }
+        .alert(String(localized: "Avatar Update Failed"), isPresented: Binding(
+            get: { avatarError != nil },
+            set: { if !$0 { avatarError = nil } }
+        )) {
+            Button(String(localized: "OK"), role: .cancel) { avatarError = nil }
+        } message: {
+            Text(avatarError ?? "")
+        }
+    }
+
+    private func removeAvatar() {
+        do {
+            try ProfileAvatarStorage.remove()
+        } catch {
+            avatarError = error.localizedDescription
+        }
     }
 }
 

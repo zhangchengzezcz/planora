@@ -42,6 +42,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored private var currentTaskViewIndex = 0
     @ObservationIgnored private var currentCourseIndex = 0
     @ObservationIgnored private var isHandlingPage = false
+    @ObservationIgnored private var needsAnotherPageCheck = false
+    @ObservationIgnored private var authenticationProbeTask: Task<Void, Never>?
 
     func startInteractiveConnection() {
         resetForScan(mode: .interactive)
@@ -65,11 +67,14 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     func cancel() {
+        authenticationProbeTask?.cancel()
         webView.stopLoading()
         phase = .failed(.cancelled)
     }
 
     func teardown() {
+        authenticationProbeTask?.cancel()
+        authenticationProbeTask = nil
         webView.stopLoading()
         webView.navigationDelegate = nil
         webView.uiDelegate = nil
@@ -92,12 +97,12 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        guard !isHandlingPage else { return }
-        isHandlingPage = true
-        Task {
-            defer { isHandlingPage = false }
-            await handleLoadedPage()
-        }
+        enqueuePageCheck()
+        scheduleAuthenticationProbesIfNeeded()
+    }
+
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        scheduleAuthenticationProbesIfNeeded()
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -175,6 +180,42 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         currentCourseIndex = 0
         completedStepCount = 0
         isHandlingPage = false
+        needsAnotherPageCheck = false
+        authenticationProbeTask?.cancel()
+        authenticationProbeTask = nil
+    }
+
+    private func enqueuePageCheck() {
+        needsAnotherPageCheck = true
+        guard !isHandlingPage else { return }
+        isHandlingPage = true
+        Task {
+            repeat {
+                needsAnotherPageCheck = false
+                await handleLoadedPage()
+            } while needsAnotherPageCheck
+            isHandlingPage = false
+        }
+    }
+
+    private func scheduleAuthenticationProbesIfNeeded() {
+        guard phase == .authenticating || phase == .verifying else { return }
+        authenticationProbeTask?.cancel()
+        authenticationProbeTask = Task { [weak self] in
+            for delay in [150, 350, 700, 1_200] {
+                do {
+                    try await Task.sleep(for: .milliseconds(delay))
+                } catch {
+                    return
+                }
+                guard let self, !Task.isCancelled,
+                      self.phase == .authenticating || self.phase == .verifying else { return }
+                if await self.isAuthenticatedStudentPage() {
+                    self.enqueuePageCheck()
+                    return
+                }
+            }
+        }
     }
 
     private func handleLoadedPage() async {
@@ -192,8 +233,11 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         case .authenticating, .verifying:
             guard await isAuthenticatedStudentPage() else {
                 phase = mode == .silent ? .needsLogin : .authenticating
+                scheduleAuthenticationProbesIfNeeded()
                 return
             }
+            authenticationProbeTask?.cancel()
+            authenticationProbeTask = nil
             schoolHost = host
             completedStepCount = 1
             phase = .loadingCourses
@@ -322,9 +366,15 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     private func isAuthenticatedStudentPage() async -> Bool {
-        guard webView.url?.path.hasPrefix("/student/") == true else { return false }
+        guard let url = webView.url,
+              let host = url.host?.lowercased(),
+              isManageBacHost(host),
+              url.path.hasPrefix("/student"),
+              !url.path.localizedCaseInsensitiveContains("login"),
+              !url.path.localizedCaseInsensitiveContains("sign_in") else { return false }
+
         let result = try? await webView.callAsyncJavaScript(
-            "return Boolean(location.pathname.startsWith('/student/') && (document.querySelector('a[href*=\"/student/tasks_and_deadlines\"]') || document.querySelector('a[href*=\"/student/classes\"]')));",
+            "return Boolean(document.readyState !== 'loading' && location.pathname.startsWith('/student') && !document.querySelector('input[type=\"password\"]') && (document.querySelector('main') || document.querySelector('a[href*=\"/student/tasks_and_deadlines\"]') || document.querySelector('a[href*=\"/student/classes\"]')));",
             arguments: [:],
             in: nil,
             contentWorld: .page

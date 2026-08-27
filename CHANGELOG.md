@@ -1,5 +1,31 @@
 # Changelog / 更新说明
 
+## 1.6.3 - 2026-08-27
+
+### 中文
+
+- 修复 ManageBac 同步完成页的操作位置：完成后右下角以“完成”替换“取消”，无需滚动即可退出。
+- 为课程页打开的 ManageBac 面板补充始终可见的关闭入口，并移除 Mac 表单外围多余的嵌套背景。
+- 优化 ManageBac 登录检测：页面提交与完成加载时都会进行短时重试，已登录学生页面可以更快进入只读同步。
+- 顶部侧栏与新建入口改用系统导航工具组，消除重复绘制的玻璃层，并避免与返回按钮冲突。
+- 任务状态改为单一原生分段控件，同时保留按住拖动切换 Active、Completed 与 Archived 的交互。
+- 清理 Mac 个人页的多层 GroupBox/Form 嵌套，并加入仅保存在本机的头像选择与恢复姓名缩写功能。
+- 居中首页无任务状态；Mac 内容区继续使用系统纯色背景，并移除无效的背景选择设置。
+- 提醒同步改用独立值快照，不再让异步通知任务持有可能被 SwiftData 销毁的模型对象。
+- 补齐 String Catalog 中全部有效条目的英文、简体中文与日文翻译。
+
+### English
+
+- Fixed the ManageBac completion action: Done now replaces Cancel at the bottom-right as soon as sync finishes, without requiring scrolling.
+- Added a persistent close action for the ManageBac panel opened from Courses and removed the redundant outer Mac form surface.
+- Improved ManageBac sign-in detection with short probes at navigation commit and completion so authenticated student pages enter read-only sync sooner.
+- Replaced the custom layered toolbar glass with a system navigation control group for Sidebar and New Task, avoiding back-button conflicts.
+- Replaced separate task-status buttons with one native segmented control while preserving press-and-drag switching across Active, Completed, and Archived.
+- Removed nested GroupBox/Form surfaces from the Mac profile and added a local-only avatar picker with a return-to-initials option.
+- Centered the empty Home state, retained the solid system content background, and removed the ineffective Mac background selector.
+- Moved reminder synchronization to independent value snapshots so asynchronous notification work no longer retains SwiftData models that may be invalidated.
+- Completed English, Simplified Chinese, and Japanese translations for every active String Catalog entry.
+
 ## 1.6.2 - 2026-08-27
 
 ### 中文

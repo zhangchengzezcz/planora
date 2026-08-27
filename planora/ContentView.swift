@@ -76,27 +76,15 @@ private struct PlanoraRootView: View {
     }
 
     private var effectiveAppearance: PlanoraAppearanceSettings {
-#if os(macOS)
-        .default
-#else
         store.appearanceSettings
-#endif
     }
 
     private var effectiveTint: Color {
-#if os(macOS)
-        .accentColor
-#else
         store.appearanceSettings.accent.color
-#endif
     }
 
     private var effectiveColorScheme: ColorScheme? {
-#if os(macOS)
-        nil
-#else
         store.appearanceSettings.displayMode.colorScheme
-#endif
     }
 
     private func importSharedBackup(from url: URL) {

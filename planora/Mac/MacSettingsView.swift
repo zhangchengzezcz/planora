@@ -54,14 +54,6 @@ struct MacSettingsView: View {
                         .pickerStyle(.segmented)
                     }
 
-                    Section(String(localized: "Background")) {
-                        Picker(String(localized: "Background"), selection: appearanceBinding(\.backgroundStyle)) {
-                            ForEach(PlanoraBackgroundStyle.allCases) { style in
-                                Text(style.title).tag(style)
-                            }
-                        }
-                    }
-
                     Section(String(localized: "Accent Color")) {
                         Picker(String(localized: "Accent Color"), selection: appearanceBinding(\.accent)) {
                             ForEach(PlanoraAccent.allCases) { accent in

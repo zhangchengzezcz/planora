@@ -6,6 +6,12 @@ struct ManageBacSettingsView: View {
     @State private var isShowingDisconnectConfirmation = false
 
     let store: PlanoraStore
+    var onClose: (() -> Void)?
+
+    init(store: PlanoraStore, onClose: (() -> Void)? = nil) {
+        self.store = store
+        self.onClose = onClose
+    }
 
     var body: some View {
 #if os(macOS)
@@ -39,8 +45,14 @@ struct ManageBacSettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .padding()
         .navigationTitle("ManageBac")
+        .toolbar {
+            if let onClose {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(String(localized: "Done"), action: onClose)
+                }
+            }
+        }
         .sheet(item: $flow) { flow in
             connectionFlow(flow)
                 .frame(minWidth: 700, idealWidth: 760, minHeight: 640, idealHeight: 700)

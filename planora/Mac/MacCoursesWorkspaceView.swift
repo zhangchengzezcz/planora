@@ -46,7 +46,9 @@ struct MacCoursesWorkspaceView: View {
         }
         .sheet(isPresented: $isShowingManageBac) {
             NavigationStack {
-                ManageBacSettingsView(store: store)
+                ManageBacSettingsView(store: store) {
+                    isShowingManageBac = false
+                }
             }
             .frame(minWidth: 680, idealWidth: 760, minHeight: 600, idealHeight: 720)
         }

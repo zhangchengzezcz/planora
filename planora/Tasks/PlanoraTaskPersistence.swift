@@ -8,7 +8,8 @@ enum PlanoraTaskPersistence {
 
     static func saveAndSynchronize(_ task: PlanoraTask, in modelContext: ModelContext) {
         save(modelContext)
-        Task { await TaskReminderScheduler.synchronize(task: task) }
+        let snapshot = TaskReminderTaskSnapshot(task: task)
+        Task { await TaskReminderScheduler.synchronize(snapshot: snapshot) }
     }
 
     static func saveAndReconcile(
@@ -28,6 +29,7 @@ enum PlanoraTaskPersistence {
     }
 
     static func reconcile(tasks: [PlanoraTask]) {
-        Task { await TaskReminderScheduler.reconcile(tasks: tasks) }
+        let snapshots = tasks.map(TaskReminderTaskSnapshot.init)
+        Task { await TaskReminderScheduler.reconcile(snapshots: snapshots) }
     }
 }

@@ -31,7 +31,14 @@ struct ManageBacConnectionFlowView: View {
                 .navigationTitle(navigationTitle)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button(String(localized: "Cancel"), action: cancel)
+                        if !isCompleted {
+                            Button(String(localized: "Cancel"), action: cancel)
+                        }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        if isCompleted {
+                            Button(String(localized: "Done"), action: finish)
+                        }
                     }
                 }
         }
@@ -104,7 +111,7 @@ struct ManageBacConnectionFlowView: View {
                 statusHeader
                 stepList
                 completionSummary
-                primaryAction
+                recoveryAction
             }
             .frame(maxWidth: 640, alignment: .leading)
             .padding(.horizontal, 30)
@@ -196,12 +203,8 @@ struct ManageBacConnectionFlowView: View {
     }
 
     @ViewBuilder
-    private var primaryAction: some View {
-        if case .completed = session.phase {
-            Button(String(localized: "Done"), action: finish)
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-        } else if case .needsLogin = session.phase {
+    private var recoveryAction: some View {
+        if case .needsLogin = session.phase {
             Button(String(localized: "Connect Again")) {
                 session.startInteractiveConnection()
             }
@@ -212,6 +215,11 @@ struct ManageBacConnectionFlowView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
         }
+    }
+
+    private var isCompleted: Bool {
+        if case .completed = session.phase { return true }
+        return false
     }
 
     private var syncSteps: [String] {

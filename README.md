@@ -2,9 +2,9 @@
 
 **中文** | **English**
 
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.2 版本在完整日常学习闭环的基础上，进一步完善原生 macOS 工作区、账户入口、系统设置与 Liquid Glass 任务筛选，并继续提供英文、简体中文和日文完整本地化。
+Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.3 版本进一步打磨原生 macOS 工作区，修复 ManageBac 同步完成与退出流程，统一系统工具栏和任务状态控件，并继续提供英文、简体中文和日文完整本地化。
 
-Planora is a study planning app for IB and IGCSE students. Version 1.6.2 further refines the native macOS workspace with an account entry point, system Settings, Liquid Glass task filters, the complete daily planning loop, and full English, Simplified Chinese, and Japanese localization.
+Planora is a study planning app for IB and IGCSE students. Version 1.6.3 further polishes the native macOS workspace, fixes the ManageBac completion and exit flow, standardizes system toolbar and task-status controls, and retains complete English, Simplified Chinese, and Japanese localization.
 
 ## 交互式演示 / Interactive Demo
 
@@ -18,8 +18,8 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 
 ## 当前版本 / Current Version
 
-- Version: **1.6.2**
-- Build: **12**
+- Version: **1.6.3**
+- Build: **13**
 - Platform: **iOS and native macOS 27**
 - UI: SwiftUI, SwiftData, Observation, system navigation and platform-native surfaces
 - Status: Native desktop and mobile academic planning workflow
@@ -44,7 +44,7 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - 每日、每周、双周、每月与自定义重复任务，并支持本次、本次及以后、整个系列
 - 快速新建、今日计划、本周计划与计划完成日期
 - 任务搜索、筛选、排序、科目 Dashboard 和应用内月历
-- JSON v8 备份、导入预览、重复识别、覆盖策略、事务回滚与自动本地备份
+- JSON v9 备份、导入预览、重复识别、覆盖策略、事务回滚与自动本地备份
 - 主页从 SwiftData 读取真实任务，空状态不再显示假任务
 - Learning Progress 只基于真实任务显示，空任务时不展示静态学习进度
 - 主页包括 Current Focus、Upcoming Tasks、Learning Progress 和 Calendar Preview
@@ -54,6 +54,7 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - 英文、简体中文与日文 String Catalog 完整本地化
 - 原生 macOS 27 侧栏工作区，直接访问首页、今日、本周、任务和课程
 - Mac 使用系统工具栏搜索、系统任务表格、详情检查器与独立设置窗口
+- Mac 个人页支持仅保存在本机的自定义头像，并可随时恢复为姓名缩写
 - Mac 支持 `⌘N` 新建任务与 `⌘F` 搜索，隐藏工具栏后可通过系统命令重新显示
 - Xcode 文件系统同步目录自动管理源码归属，不再依赖手工维护的 Sources 文件列表
 - 共享模型、状态、存储与业务能力；iPhone 与 Mac 仅保留各自轻量、原生的界面壳层
@@ -78,7 +79,7 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - Daily, weekly, biweekly, monthly, and custom recurring tasks with occurrence, future, and series scopes
 - Quick Create, Today planning, This Week planning, and planned completion dates
 - Task search, filters, sorting, subject dashboards, and an in-app monthly calendar
-- JSON v8 backup with import previews, duplicate detection, overwrite strategies, transactional rollback, and automatic local backups
+- JSON v9 backup with import previews, duplicate detection, overwrite strategies, transactional rollback, and automatic local backups
 - Dashboard reads real SwiftData tasks and shows an empty state instead of fake tasks
 - Learning Progress is shown only from real tasks, with no static progress when there are no tasks
 - Dashboard with Current Focus, Upcoming Tasks, Learning Progress, and Calendar Preview
@@ -88,6 +89,7 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - Complete String Catalog localization in English, Simplified Chinese, and Japanese
 - A native macOS 27 sidebar workspace with direct access to Home, Today, This Week, Tasks, and Courses
 - System toolbar search, a native task table, a task inspector, and a dedicated Settings window on Mac
+- A local-only custom profile avatar on Mac with an option to return to generated initials
 - Mac keyboard shortcuts for New Task (`⌘N`) and Search (`⌘F`), with the system command available to restore a hidden toolbar
 - Xcode file-system-synchronized folders manage source membership automatically instead of a manually maintained Sources list
 - Shared models, state, storage, and feature logic with lightweight platform-native presentation shells for iPhone and Mac
@@ -172,11 +174,11 @@ xcodebuild -project planora.xcodeproj \
 
 ### 中文
 
-Planora 1.6.2 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、融合式新建与侧栏工具栏胶囊、常驻搜索框、表格、检查器与独立设置场景。模型、状态、存储和业务逻辑保持共享，平台差异只留在轻量界面壳层。任务状态使用系统 Liquid Glass 控件，账户与帮助入口固定在侧栏底部，主要内容在宽窗口中保持居中和易读。
+Planora 1.6.3 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、系统导航工具组、常驻搜索框、表格、检查器与独立设置场景。Mac 内容区保持系统纯色背景，不提供额外背景装饰；模型、状态、存储和业务逻辑继续共享，平台差异只留在轻量界面壳层。
 
 ### English
 
-Planora 1.6.2 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, a fused sidebar and New Task toolbar capsule, persistent search, tables, inspectors, and a dedicated Settings scene. Models, state, storage, and feature logic stay shared while platform differences remain in lightweight presentation shells. Task status uses system Liquid Glass controls, account and help stay anchored to the sidebar footer, and primary content remains centered in wide windows.
+Planora 1.6.3 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, a system navigation control group, persistent search, tables, inspectors, and a dedicated Settings scene. Mac content uses the standard solid system background without additional decoration; models, state, storage, and feature logic remain shared while platform differences stay in lightweight presentation shells.
 
 ## 后续计划 / Next Steps
 

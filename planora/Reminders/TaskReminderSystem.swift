@@ -70,6 +70,32 @@ struct TaskReminderCandidate {
     let fireDate: Date
 }
 
+struct TaskReminderTaskSnapshot {
+    let id: UUID
+    let title: String
+    let subject: String
+    let deadline: Date?
+    let hasDeadline: Bool
+    let isCompleted: Bool
+    let reminders: [TaskReminder]
+
+    init(task: PlanoraTask) {
+        id = task.id
+        title = task.title
+        subject = task.subject
+        deadline = task.deadline
+        hasDeadline = task.hasDeadline
+        isCompleted = task.isCompleted
+        reminders = task.reminders
+    }
+}
+
+private struct TaskReminderSnapshotCandidate {
+    let task: TaskReminderTaskSnapshot
+    let reminder: TaskReminder
+    let fireDate: Date
+}
+
 enum TaskReminderTiming: Codable, Hashable {
     case daysBefore(Int)
     case atDeadline
@@ -131,23 +157,34 @@ enum TaskReminderScheduler {
     }
 
     static func synchronize(task: PlanoraTask) async {
-        await removeRequests(forTaskID: task.id)
-        guard !task.isCompleted else { return }
+        await synchronize(snapshot: TaskReminderTaskSnapshot(task: task))
+    }
+
+    static func synchronize(snapshot: TaskReminderTaskSnapshot) async {
+        await removeRequests(forTaskID: snapshot.id)
+        guard !snapshot.isCompleted else { return }
 
         let status = await authorizationStatus()
         guard notificationsAllowed(for: status) else { return }
 
-        for reminder in task.reminders {
-            guard let fireDate = reminder.fireDate(deadline: task.deadline), fireDate > Date() else { continue }
-            await schedule(reminder: reminder, for: task, fireDate: fireDate)
+        for reminder in snapshot.reminders {
+            guard let fireDate = reminder.fireDate(deadline: snapshot.deadline), fireDate > Date() else { continue }
+            await schedule(reminder: reminder, for: snapshot, fireDate: fireDate)
         }
     }
 
     static func reconcile(tasks: [PlanoraTask], requestLimit: Int = 48) async {
+        await reconcile(
+            snapshots: tasks.map(TaskReminderTaskSnapshot.init),
+            requestLimit: requestLimit
+        )
+    }
+
+    static func reconcile(snapshots: [TaskReminderTaskSnapshot], requestLimit: Int = 48) async {
         let center = UNUserNotificationCenter.current()
         let status = await authorizationStatus()
         let isAllowed = notificationsAllowed(for: status)
-        let activeTaskIDs = Set(tasks.filter { !$0.isCompleted }.map(\.id))
+        let activeTaskIDs = Set(snapshots.filter { !$0.isCompleted }.map(\.id))
         let taskRequestIDs = await center.pendingNotificationRequests()
             .map(\.identifier)
             .filter { identifier in
@@ -167,11 +204,34 @@ enum TaskReminderScheduler {
         // ordinary foreground refreshes.
         guard notificationsAllowed(for: status) else { return }
 
-        let candidates = candidates(tasks: tasks, limit: requestLimit)
+        let candidates = candidates(snapshots: snapshots, limit: requestLimit)
 
         for candidate in candidates {
             await schedule(reminder: candidate.reminder, for: candidate.task, fireDate: candidate.fireDate)
         }
+    }
+
+    private static func candidates(
+        snapshots: [TaskReminderTaskSnapshot],
+        now: Date = Date(),
+        limit: Int = 48
+    ) -> [TaskReminderSnapshotCandidate] {
+        var seenFireTimes: Set<String> = []
+        return snapshots
+            .filter { !$0.isCompleted }
+            .flatMap { task in
+                task.reminders.compactMap { reminder -> TaskReminderSnapshotCandidate? in
+                    guard let date = reminder.fireDate(deadline: task.deadline), date > now else { return nil }
+                    return TaskReminderSnapshotCandidate(task: task, reminder: reminder, fireDate: date)
+                }
+            }
+            .sorted { $0.fireDate < $1.fireDate }
+            .filter { candidate in
+                let key = "\(candidate.task.id.uuidString):\(Int(candidate.fireDate.timeIntervalSince1970 / 60))"
+                return seenFireTimes.insert(key).inserted
+            }
+            .prefix(max(limit, 0))
+            .map { $0 }
     }
 
     static func candidates(tasks: [PlanoraTask], now: Date = Date(), limit: Int = 48) -> [TaskReminderCandidate] {
@@ -264,7 +324,11 @@ enum TaskReminderScheduler {
         "\(taskIdentifierPrefix(taskID))\(reminderID.uuidString)"
     }
 
-    private static func schedule(reminder: TaskReminder, for task: PlanoraTask, fireDate: Date) async {
+    private static func schedule(
+        reminder: TaskReminder,
+        for task: TaskReminderTaskSnapshot,
+        fireDate: Date
+    ) async {
         let content = UNMutableNotificationContent()
         content.title = task.title
         content.body = notificationBody(for: task)
@@ -292,7 +356,7 @@ enum TaskReminderScheduler {
         "\(identifierPrefix)\(taskID.uuidString)."
     }
 
-    private static func notificationBody(for task: PlanoraTask) -> String {
+    private static func notificationBody(for task: TaskReminderTaskSnapshot) -> String {
         guard task.hasDeadline, let deadline = task.deadline else {
             return PlanoraLocalization.format(String(localized: "task_reminder_no_deadline_format"), PlanoraFormat.subjectDisplayName(task.subject))
         }

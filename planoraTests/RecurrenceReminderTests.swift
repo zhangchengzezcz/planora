@@ -1,3 +1,4 @@
+import SwiftData
 import XCTest
 import UserNotifications
 @testable import planora
@@ -153,6 +154,25 @@ final class RecurrenceReminderTests: XCTestCase {
         XCTAssertTrue(candidates.allSatisfy { $0.task.id == first.id })
         XCTAssertLessThan(candidates[0].fireDate, candidates[1].fireDate)
         XCTAssertEqual(Set(candidates.map { "\($0.task.id)-\($0.reminder.id)" }).count, 2)
+    }
+
+    func testReminderSnapshotSurvivesModelContextReset() throws {
+        let snapshot: TaskReminderTaskSnapshot = try {
+            let container = try ModelContainer(
+                for: PlanoraTask.self,
+                configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+            )
+            let task = makeTask(deadline: Date().addingTimeInterval(86_400))
+            task.reminders = [TaskReminder(timing: .atDeadline, hour: 9)]
+            container.mainContext.insert(task)
+            try container.mainContext.save()
+            return TaskReminderTaskSnapshot(task: task)
+        }()
+
+        XCTAssertEqual(snapshot.title, "Test")
+        XCTAssertEqual(snapshot.subject, "Physics HL")
+        XCTAssertEqual(snapshot.reminders.count, 1)
+        XCTAssertFalse(snapshot.isCompleted)
     }
 
     func testTaskSupportsDozensOfMilestonesWithoutLosingOrder() {
