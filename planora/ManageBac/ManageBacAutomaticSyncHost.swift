@@ -10,6 +10,7 @@ struct ManageBacAutomaticSyncHost: View {
     @State private var snapshot = ManageBacConnectionStorage.load()
     @State private var lastAttemptDate: Date?
     @State private var isSyncing = false
+    @State private var needsLaunchSync = true
 
     let store: PlanoraStore
 
@@ -53,9 +54,10 @@ struct ManageBacAutomaticSyncHost: View {
               let snapshot else { return }
 
         let referenceDate = max(snapshot.lastSyncDate, lastAttemptDate ?? .distantPast)
-        guard Date().timeIntervalSince(referenceDate) >= 15 * 60 else { return }
+        guard needsLaunchSync || Date().timeIntervalSince(referenceDate) >= 15 * 60 else { return }
 
         isSyncing = true
+        needsLaunchSync = false
         lastAttemptDate = Date()
         let newSession = ManageBacWebSession()
         newSession.onSnapshotReady = importSnapshot

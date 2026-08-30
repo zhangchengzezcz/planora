@@ -11535,6 +11535,62 @@
         }
       }
     },
+    "A timetable appears only when your school enables it in ManageBac." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "A timetable appears only when your school enables it in ManageBac." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "時間割は、学校が ManageBac で有効にしている場合に表示されます。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "仅当学校在 ManageBac 中启用课程表时，这里才会显示内容。" } }
+      }
+    },
+    "Messages" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Messages" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "メッセージ" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "消息" } }
+      }
+    },
+    "Messages visible to your student account will appear after a sync." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Messages visible to your student account will appear after a sync." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "生徒アカウントで閲覧できるメッセージは、同期後に表示されます。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "同步后，这里会显示学生账户可见的消息。" } }
+      }
+    },
+    "No Messages" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No Messages" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "メッセージはありません" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无消息" } }
+      }
+    },
+    "No Timetable" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No Timetable" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "時間割はありません" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无课程表" } }
+      }
+    },
+    "Read messages and timetable" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Read messages and timetable" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "メッセージと時間割を読み込む" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "读取消息与课程表" } }
+      }
+    },
+    "Reading Messages and Timetable" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Reading Messages and Timetable" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "メッセージと時間割を読み込み中" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "正在读取消息与课程表" } }
+      }
+    },
+    "Timetable" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Timetable" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "時間割" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "课程表" } }
+      }
+    },
     "Your name" : {
       "localizations" : {
         "en" : {

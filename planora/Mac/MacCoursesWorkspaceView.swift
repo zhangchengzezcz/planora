@@ -7,28 +7,47 @@ struct MacCoursesWorkspaceView: View {
     @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
     @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
+    @Query(sort: \PlanoraMessage.publishedDate, order: .reverse) private var messages: [PlanoraMessage]
+    @Query(sort: \PlanoraScheduleEvent.startDate) private var schedule: [PlanoraScheduleEvent]
     @State private var isShowingManageBac = false
+    @State private var section: CoursesWorkspaceSection = .courses
 
     private var activeCourses: [PlanoraCourse] {
         courses.filter { !$0.isArchived }
     }
 
     var body: some View {
-        NavigationStack {
-            List(activeCourses) { course in
-                NavigationLink {
-                    MacCourseDetail(course: course, units: units, tasks: tasks)
-                } label: {
-                    MacCourseRow(course: course)
-                }
+        VStack(spacing: 0) {
+            Picker(String(localized: "Courses"), selection: $section) {
+                ForEach(CoursesWorkspaceSection.allCases) { item in Text(item.title).tag(item) }
             }
-            .overlay {
-                if activeCourses.isEmpty {
-                    ContentUnavailableView(
-                        String(localized: "No Imported Courses"),
-                        systemImage: "book.closed",
-                        description: Text(String(localized: "Connect ManageBac and sync to read your student courses."))
-                    )
+            .pickerStyle(.segmented)
+            .frame(maxWidth: 430)
+            .padding(14)
+
+            NavigationStack {
+                switch section {
+                case .courses:
+                    List(activeCourses) { course in
+                        NavigationLink {
+                            MacCourseDetail(course: course, units: units, tasks: tasks)
+                        } label: {
+                            MacCourseRow(course: course)
+                        }
+                    }
+                    .overlay {
+                        if activeCourses.isEmpty {
+                            ContentUnavailableView(
+                                String(localized: "No Imported Courses"),
+                                systemImage: "book.closed",
+                                description: Text(String(localized: "Connect ManageBac and sync to read your student courses."))
+                            )
+                        }
+                    }
+                case .timetable:
+                    ScrollView { ManageBacTimetableList(events: schedule).padding(24) }
+                case .messages:
+                    ScrollView { ManageBacMessageList(messages: messages).padding(24) }
                 }
             }
         }

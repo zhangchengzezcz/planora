@@ -91,12 +91,12 @@ final class PlanoraCourse {
         lastSyncDate = source.lastSyncDate
     }
 
-    var teachers: [PlanoraTeacher] {
-        teacherNames.map(PlanoraTeacher.init(rawValue:))
+    var teachers: [ParsedTeacher] {
+        teacherNames.map(ParsedTeacher.init(rawValue:))
     }
 }
 
-nonisolated struct PlanoraTeacher: Hashable, Identifiable, Sendable {
+nonisolated struct ParsedTeacher: Hashable, Identifiable, Sendable {
     let name: String
     let email: String?
 

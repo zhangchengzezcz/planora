@@ -11,6 +11,7 @@ struct MainAppView: View {
     var body: some View {
 #if os(macOS)
         MacMainView(store: store)
+            .background { ManageBacAutomaticSyncHost(store: store) }
 #else
         TabView(selection: $store.selectedTab) {
             Tab(String(localized: "Home"), systemImage: "house.fill", value: MainTab.home) {

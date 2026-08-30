@@ -199,6 +199,10 @@ struct ManageBacConnectionFlowView: View {
                 LabeledContent(String(localized: "New Tasks"), value: "\(summary.importedCount)")
                 LabeledContent(String(localized: "Updated Tasks"), value: "\(summary.updatedCount)")
             }
+            GridRow {
+                LabeledContent(String(localized: "Messages"), value: "\(summary.messageCount)")
+                LabeledContent(String(localized: "Timetable"), value: "\(summary.scheduleCount)")
+            }
             if summary.reviewCount > 0 {
                 GridRow {
                     LabeledContent(String(localized: "Needs Review"), value: "\(summary.reviewCount)")
@@ -235,6 +239,7 @@ struct ManageBacConnectionFlowView: View {
             String(localized: "Identify curriculum"),
             String(localized: "Read teachers and units"),
             String(localized: "Read tasks and deadlines"),
+            String(localized: "Read messages and timetable"),
             String(localized: "Compare with Planora"),
             String(localized: "Apply safe updates"),
             String(localized: "Finish sync")
@@ -259,6 +264,7 @@ struct ManageBacConnectionFlowView: View {
         case .identifyingCurriculum: String(localized: "Identifying Curriculum")
         case .loadingUnits: String(localized: "Reading Teachers and Units")
         case .loadingTasks: String(localized: "Reading Tasks and Deadlines")
+        case .loadingWorkspace: String(localized: "Reading Messages and Timetable")
         case .comparing: String(localized: "Comparing Changes")
         case .importing: String(localized: "Updating Planora")
         case .completed: String(localized: "ManageBac Connected")

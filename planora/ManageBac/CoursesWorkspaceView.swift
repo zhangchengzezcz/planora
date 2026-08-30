@@ -6,7 +6,10 @@ struct CoursesWorkspaceView: View {
 
     @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
+    @Query(sort: \PlanoraMessage.publishedDate, order: .reverse) private var messages: [PlanoraMessage]
+    @Query(sort: \PlanoraScheduleEvent.startDate) private var schedule: [PlanoraScheduleEvent]
     @State private var connection = ManageBacConnectionStorage.load()
+    @State private var section: CoursesWorkspaceSection = .courses
 
     private var subjects: [String] {
         var seen = Set<String>()
@@ -22,14 +25,20 @@ struct CoursesWorkspaceView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
-                manageBacSection
-
-                if !subjects.isEmpty {
-                    subjectSection
+                Picker(String(localized: "Courses"), selection: $section) {
+                    ForEach(CoursesWorkspaceSection.allCases) { item in Text(item.title).tag(item) }
                 }
+                .pickerStyle(.segmented)
 
-                if !importedCourses.isEmpty {
-                    importedCourseSection
+                switch section {
+                case .courses:
+                    manageBacSection
+                    if !subjects.isEmpty { subjectSection }
+                    if !importedCourses.isEmpty { importedCourseSection }
+                case .timetable:
+                    ManageBacTimetableList(events: schedule)
+                case .messages:
+                    ManageBacMessageList(messages: messages)
                 }
             }
             .padding(.top, 10)

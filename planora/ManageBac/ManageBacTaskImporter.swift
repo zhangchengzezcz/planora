@@ -13,6 +13,9 @@ enum ManageBacTaskImporter {
         let curriculum = detection.curriculum ?? currentCurriculum
         let existingCourses = (try? modelContext.fetch(FetchDescriptor<PlanoraCourse>())) ?? []
         let existingUnits = (try? modelContext.fetch(FetchDescriptor<PlanoraUnit>())) ?? []
+        let existingTeachers = (try? modelContext.fetch(FetchDescriptor<PlanoraTeacher>())) ?? []
+        let existingMessages = (try? modelContext.fetch(FetchDescriptor<PlanoraMessage>())) ?? []
+        let existingSchedule = (try? modelContext.fetch(FetchDescriptor<PlanoraScheduleEvent>())) ?? []
         var coursesByRemoteID = Dictionary(uniqueKeysWithValues: existingCourses.compactMap { course -> (String, PlanoraCourse)? in
             guard course.externalSource == .manageBac, let identifier = course.externalIdentifier else { return nil }
             return (identifier, course)
@@ -22,6 +25,9 @@ enum ManageBacTaskImporter {
             return (identifier, unit)
         })
         var courseIDsByOriginalName: [String: UUID] = [:]
+        var teachersByIdentifier = Dictionary(uniqueKeysWithValues: existingTeachers.map { ($0.externalIdentifier ?? normalizedKey($0.name), $0) })
+        var messagesByIdentifier = Dictionary(uniqueKeysWithValues: existingMessages.map { ($0.externalIdentifier, $0) })
+        var scheduleByIdentifier = Dictionary(uniqueKeysWithValues: existingSchedule.map { ($0.externalIdentifier, $0) })
         var reviewCount = 0
 
         do {
@@ -79,10 +85,82 @@ enum ManageBacTaskImporter {
                 unit.lastSyncDate = Date()
             }
 
+            for record in deduplicatedCourses(snapshot.courses) {
+                guard let course = coursesByRemoteID[record.remoteIdentifier] else { continue }
+                for rawValue in normalizedTeacherNames(record.teacherNames) {
+                    let parsed = ParsedTeacher(rawValue: rawValue)
+                    let identifier = normalizedKey(parsed.id)
+                    let teacher = teachersByIdentifier[identifier] ?? PlanoraTeacher(
+                        externalIdentifier: identifier,
+                        name: parsed.name,
+                        email: parsed.email
+                    )
+                    if teachersByIdentifier[identifier] == nil {
+                        modelContext.insert(teacher)
+                        teachersByIdentifier[identifier] = teacher
+                    }
+                    teacher.name = parsed.name
+                    teacher.email = parsed.email
+                    teacher.courseIDs = teacher.courseIDs + [course.id]
+                    let matchingUnitIDs = snapshot.units
+                        .filter { $0.courseIdentifier == record.remoteIdentifier && $0.teacherNames.contains(rawValue) }
+                        .compactMap { unitsByRemoteID[$0.remoteIdentifier]?.id }
+                    teacher.unitIDs = teacher.unitIDs + matchingUnitIDs
+                    teacher.lastSyncDate = Date()
+                }
+            }
+
             var tasksByIdentifier: [String: PlanoraTask] = [:]
             for task in existingTasks where task.externalSource == .manageBac {
                 guard let identifier = task.externalIdentifier else { continue }
                 tasksByIdentifier[identifier] = task
+            }
+
+
+            for record in deduplicatedMessages(snapshot.messages) {
+                let message = messagesByIdentifier[record.remoteIdentifier] ?? PlanoraMessage(
+                    externalIdentifier: record.remoteIdentifier,
+                    title: record.title
+                )
+                if messagesByIdentifier[record.remoteIdentifier] == nil {
+                    modelContext.insert(message)
+                    messagesByIdentifier[record.remoteIdentifier] = message
+                }
+                message.title = record.title
+                message.bodyPreview = record.bodyPreview
+                message.senderName = record.senderName
+                message.publishedDate = record.publishedDateText.flatMap { ManageBacDateParser.date(from: $0) }
+                message.isUnread = record.isUnread
+                message.courseExternalIdentifier = record.courseIdentifier
+                message.externalURLString = record.detailURL
+                message.lastSyncDate = Date()
+            }
+
+            for record in deduplicatedSchedule(snapshot.schedule) {
+                guard let startDate = ManageBacDateParser.date(from: record.startDateText),
+                      let endDate = ManageBacDateParser.date(from: record.endDateText) else {
+                    reviewCount += 1
+                    continue
+                }
+                let event = scheduleByIdentifier[record.remoteIdentifier] ?? PlanoraScheduleEvent(
+                    externalIdentifier: record.remoteIdentifier,
+                    title: record.title,
+                    startDate: startDate,
+                    endDate: endDate
+                )
+                if scheduleByIdentifier[record.remoteIdentifier] == nil {
+                    modelContext.insert(event)
+                    scheduleByIdentifier[record.remoteIdentifier] = event
+                }
+                event.title = record.title
+                event.courseExternalIdentifier = record.courseIdentifier
+                event.startDate = startDate
+                event.endDate = max(endDate, startDate)
+                event.location = record.location
+                event.teacherNames = normalizedTeacherNames(record.teacherNames)
+                event.attendanceStatus = record.attendanceStatus
+                event.externalURLString = record.detailURL
+                event.lastSyncDate = Date()
             }
             var importedCount = 0
             var updatedCount = 0
@@ -144,7 +222,10 @@ enum ManageBacTaskImporter {
                 importedCount: importedCount,
                 updatedCount: updatedCount,
                 completedCount: completedCount,
-                reviewCount: reviewCount
+                reviewCount: reviewCount,
+                teacherCount: teachersByIdentifier.count,
+                messageCount: snapshot.messages.count,
+                scheduleCount: snapshot.schedule.count
             )
         } catch {
             modelContext.rollback()
@@ -254,6 +335,16 @@ enum ManageBacTaskImporter {
     }
 
     private static func deduplicatedUnits(_ records: [ManageBacUnitRecord]) -> [ManageBacUnitRecord] {
+        var seen = Set<String>()
+        return records.filter { seen.insert($0.remoteIdentifier).inserted }
+    }
+
+    private static func deduplicatedMessages(_ records: [ManageBacMessageRecord]) -> [ManageBacMessageRecord] {
+        var seen = Set<String>()
+        return records.filter { seen.insert($0.remoteIdentifier).inserted }
+    }
+
+    private static func deduplicatedSchedule(_ records: [ManageBacScheduleRecord]) -> [ManageBacScheduleRecord] {
         var seen = Set<String>()
         return records.filter { seen.insert($0.remoteIdentifier).inserted }
     }

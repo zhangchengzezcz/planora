@@ -130,6 +130,34 @@ struct ManageBacUnitRecord: Codable, Equatable, Sendable, Identifiable {
     var startDateText: String?
     var endDateText: String?
     var officialProgress: Double?
+    var teacherNames: [String] = []
+
+    var id: String { remoteIdentifier }
+}
+
+struct ManageBacMessageRecord: Codable, Equatable, Sendable, Identifiable {
+    var remoteIdentifier: String
+    var title: String
+    var bodyPreview: String
+    var senderName: String
+    var publishedDateText: String?
+    var isUnread: Bool
+    var courseIdentifier: String?
+    var detailURL: String?
+
+    var id: String { remoteIdentifier }
+}
+
+struct ManageBacScheduleRecord: Codable, Equatable, Sendable, Identifiable {
+    var remoteIdentifier: String
+    var title: String
+    var courseIdentifier: String?
+    var startDateText: String
+    var endDateText: String
+    var location: String?
+    var teacherNames: [String]
+    var attendanceStatus: String?
+    var detailURL: String?
 
     var id: String { remoteIdentifier }
 }
@@ -140,6 +168,8 @@ struct ManageBacSyncSnapshot: Codable, Equatable, Sendable {
     var courses: [ManageBacCourseRecord]
     var units: [ManageBacUnitRecord]
     var tasks: [ManageBacTaskRecord]
+    var messages: [ManageBacMessageRecord] = []
+    var schedule: [ManageBacScheduleRecord] = []
 }
 
 enum ManageBacDetectionConfidence: String, Codable, Sendable {
@@ -167,6 +197,9 @@ struct ManageBacImportSummary: Equatable, Sendable {
     var updatedCount: Int
     var completedCount: Int = 0
     var reviewCount: Int = 0
+    var teacherCount: Int = 0
+    var messageCount: Int = 0
+    var scheduleCount: Int = 0
 
     var totalTaskCount: Int { importedCount + updatedCount }
 }

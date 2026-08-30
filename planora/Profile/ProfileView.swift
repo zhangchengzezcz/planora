@@ -106,14 +106,16 @@ struct ProfileView: View {
     }
 
     private var profileHeader: some View {
-        GlassPanel {
+        let userName = store.userName
+
+        return GlassPanel {
             HStack(spacing: 16) {
                 PhotosPicker(
                     selection: $selectedAvatarItem,
                     matching: .images,
                     preferredItemEncoding: .automatic
                 ) {
-                    ProfileAvatarView(name: store.userName, size: 58)
+                    ProfileAvatarView(name: userName, size: 58)
                         .overlay(alignment: .bottomTrailing) {
                             Image(systemName: "pencil")
                                 .font(.caption2.weight(.bold))

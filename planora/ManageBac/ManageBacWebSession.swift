@@ -18,6 +18,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         case identifyingCurriculum
         case loadingUnits
         case loadingTasks
+        case loadingWorkspace
         case comparing
         case importing
         case completed(ManageBacImportSummary)
@@ -31,6 +32,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     var courses: [ManageBacCourseRecord] = []
     var units: [ManageBacUnitRecord] = []
     var records: [ManageBacTaskRecord] = []
+    var messages: [ManageBacMessageRecord] = []
+    var schedule: [ManageBacScheduleRecord] = []
     var programmeText: String?
     var completedStepCount = 0
 
@@ -174,6 +177,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         courses = []
         units = []
         records = []
+        messages = []
+        schedule = []
         programmeText = nil
         schoolHost = nil
         currentTaskViewIndex = 0
@@ -291,10 +296,26 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                     loadStudentPath("/student/tasks_and_deadlines?view=\(taskViews[currentTaskViewIndex])")
                 } else {
                     completedStepCount = 5
-                    finishImport()
+                    phase = .loadingWorkspace
+                    loadStudentPath("/student/home")
                 }
             } catch {
                 phase = .failed(.pageStructureChanged)
+            }
+        case .loadingWorkspace:
+            do {
+                let payload: WorkspaceScanPayload = try await decodeJavaScript(Self.workspaceScript)
+                messages = payload.messages
+                schedule = payload.schedule
+                completedStepCount = 6
+                finishImport()
+            } catch {
+                // Messages and timetables are optional school modules. A layout
+                // change here must not discard the core course/task snapshot.
+                messages = []
+                schedule = []
+                completedStepCount = 6
+                finishImport()
             }
         default:
             break
@@ -322,21 +343,23 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         }
         do {
             phase = .comparing
-            completedStepCount = 6
+            completedStepCount = 7
             phase = .importing
             let snapshot = ManageBacSyncSnapshot(
                 schoolHost: schoolHost,
                 programmeText: programmeText,
                 courses: courses,
                 units: units,
-                tasks: records
+                tasks: records,
+                messages: messages,
+                schedule: schedule
             )
             let summary = try onSnapshotReady(snapshot)
             let detection = ManageBacProgrammeDetector.detect(
                 programmeText: programmeText,
                 courses: courses
             )
-            completedStepCount = 8
+            completedStepCount = 9
             ManageBacConnectionStorage.save(
                 ManageBacConnectionSnapshot(
                     schoolHost: schoolHost,
@@ -421,6 +444,11 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         var programmeText: String?
         var teacherNames: [String]
         var units: [ManageBacUnitRecord]
+    }
+
+    private struct WorkspaceScanPayload: Codable {
+        var messages: [ManageBacMessageRecord]
+        var schedule: [ManageBacScheduleRecord]
     }
 
     private static let courseScript = #"""
@@ -524,5 +552,68 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     const emptyState = text.includes('no upcoming') || text.includes('no overdue') || text.includes('no completed') || text.includes('no tasks or deadlines');
     const pageRecognized = Boolean(main && (emptyState || candidates.length > 0 || location.pathname.includes('tasks_and_deadlines')));
     return JSON.stringify({ records: candidates, pageRecognized });
+    """#
+
+    private static let workspaceScript = #"""
+    const normalize = value => (value || '').replace(/\s+/g, ' ').trim();
+    const absolute = value => { try { return new URL(value, location.origin).href; } catch (_) { return ''; } };
+    const messages = [];
+    const messageIDs = new Set();
+    for (const link of document.querySelectorAll('a[href]')) {
+      const href = link.getAttribute('href') || '';
+      if (!/(messages|discussions|message_board|notifications)/i.test(href)) continue;
+      const container = link.closest('article,li,tr,.card,[class*=message],[class*=notification]') || link.parentElement;
+      const title = normalize(link.textContent || container?.querySelector('h1,h2,h3,h4,[class*=title]')?.textContent);
+      if (!title) continue;
+      const detailURL = absolute(href);
+      const remoteIdentifier = link.dataset.messageId || container?.dataset?.messageId || detailURL;
+      if (!remoteIdentifier || messageIDs.has(remoteIdentifier)) continue;
+      messageIDs.add(remoteIdentifier);
+      const time = container?.querySelector('time');
+      const sender = container?.querySelector('[class*=author],[class*=sender],[data-role=author]');
+      const classLink = container?.querySelector('a[href*="/student/classes/"]');
+      const classURL = classLink ? new URL(classLink.getAttribute('href'), location.origin) : null;
+      messages.push({
+        remoteIdentifier,
+        title,
+        bodyPreview: normalize(container?.querySelector('p,[class*=body],[class*=preview]')?.textContent),
+        senderName: normalize(sender?.textContent),
+        publishedDateText: time?.getAttribute('datetime') || normalize(time?.textContent) || null,
+        isUnread: Boolean(container?.matches('[class*=unread],[data-unread=true]') || container?.querySelector('[class*=unread],[data-unread=true]')),
+        courseIdentifier: classURL?.pathname.replace(/\/$/, '').split('/').pop() || null,
+        detailURL
+      });
+    }
+
+    const schedule = [];
+    const scheduleIDs = new Set();
+    const scheduleNodes = document.querySelectorAll('[data-start],[data-start-time],[class*=timetable] [class*=event],[class*=schedule] [class*=event],[class*=lesson]');
+    for (const node of scheduleNodes) {
+      const times = Array.from(node.querySelectorAll('time'));
+      const startDateText = node.dataset.start || node.dataset.startTime || times[0]?.getAttribute('datetime');
+      const endDateText = node.dataset.end || node.dataset.endTime || times[1]?.getAttribute('datetime') || startDateText;
+      const title = normalize(node.querySelector('h1,h2,h3,h4,[class*=title],[class*=subject]')?.textContent || node.textContent);
+      if (!title || !startDateText || !endDateText) continue;
+      const link = node.querySelector('a[href]');
+      const detailURL = absolute(link?.getAttribute('href') || '');
+      const remoteIdentifier = node.dataset.eventId || node.dataset.lessonId || [title,startDateText,endDateText].join('|');
+      if (scheduleIDs.has(remoteIdentifier)) continue;
+      scheduleIDs.add(remoteIdentifier);
+      const classLink = node.querySelector('a[href*="/student/classes/"]');
+      const classURL = classLink ? new URL(classLink.getAttribute('href'), location.origin) : null;
+      const teachers = Array.from(node.querySelectorAll('[class*=teacher],[data-role=teacher]')).map(item => normalize(item.textContent)).filter(Boolean);
+      schedule.push({
+        remoteIdentifier,
+        title,
+        courseIdentifier: classURL?.pathname.replace(/\/$/, '').split('/').pop() || null,
+        startDateText,
+        endDateText,
+        location: normalize(node.querySelector('[class*=location],[class*=room],[data-role=location]')?.textContent) || null,
+        teacherNames: [...new Set(teachers)],
+        attendanceStatus: normalize(node.querySelector('[class*=attendance],[data-attendance]')?.textContent) || null,
+        detailURL: detailURL || null
+      });
+    }
+    return JSON.stringify({ messages, schedule });
     """#
 }
