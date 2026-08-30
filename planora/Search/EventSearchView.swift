@@ -65,14 +65,19 @@ struct EventSearchView: View {
 
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(String(localized: "Search"))
-                        .font(.largeTitle.weight(.bold))
-                        .foregroundStyle(Color.planoraInk)
+                HStack(alignment: .top, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(String(localized: "Search"))
+                            .font(.largeTitle.weight(.bold))
+                            .foregroundStyle(Color.planoraInk)
 
-                    Text(String(localized: "Quickly find tasks, events, and important dates."))
-                        .font(.callout.weight(.medium))
-                        .foregroundStyle(.secondary)
+                        Text(String(localized: "Quickly find tasks, events, and important dates."))
+                            .font(.callout.weight(.medium))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer(minLength: 8)
+                    ProfileAvatarLink(store: store)
                 }
                 .padding(.top, 18)
 

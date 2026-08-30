@@ -33,6 +33,12 @@ struct MainAppView: View {
                 }
             }
 
+            Tab(String(localized: "Courses"), systemImage: "books.vertical.fill", value: MainTab.courses) {
+                NavigationStack {
+                    CoursesWorkspaceView(store: store)
+                }
+            }
+
             Tab(String(localized: "Search"), systemImage: "magnifyingglass", value: MainTab.search, role: .search) {
                 NavigationStack {
                     EventSearchView(
@@ -43,11 +49,6 @@ struct MainAppView: View {
                 }
             }
 
-            Tab(String(localized: "Me"), systemImage: "person.fill", value: MainTab.profile) {
-                NavigationStack {
-                    ProfileView(store: store)
-                }
-            }
         }
         .tint(Color.planoraDeepGreen)
         .background(PlanoraBackground())

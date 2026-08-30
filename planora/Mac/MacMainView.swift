@@ -3,6 +3,7 @@ import SwiftUI
 
 #if os(macOS)
 import AppKit
+import PhotosUI
 import UniformTypeIdentifiers
 
 struct MacMainView: View {
@@ -101,8 +102,6 @@ struct MacMainView: View {
             MacTaskWorkspaceView(store: store, searchText: searchText, selection: $selectedTaskID)
         case .courses:
             MacCoursesWorkspaceView(store: store)
-        case .manageBac:
-            ManageBacSettingsView(store: store)
         case .profile:
             MacProfileView(store: store)
         }
@@ -126,7 +125,6 @@ enum MacDestination: String, CaseIterable, Identifiable {
     case week
     case tasks
     case courses
-    case manageBac
     case profile
 
     var id: String { rawValue }
@@ -138,7 +136,6 @@ enum MacDestination: String, CaseIterable, Identifiable {
         case .week: String(localized: "This Week")
         case .tasks: String(localized: "Tasks")
         case .courses: String(localized: "Courses")
-        case .manageBac: String(localized: "ManageBac")
         case .profile: String(localized: "Profile")
         }
     }
@@ -150,7 +147,6 @@ enum MacDestination: String, CaseIterable, Identifiable {
         case .week: "calendar"
         case .tasks: "checklist"
         case .courses: "books.vertical"
-        case .manageBac: "arrow.triangle.2.circlepath"
         case .profile: "person.crop.circle"
         }
     }
@@ -202,7 +198,6 @@ private struct MacSidebar: View {
                     link(.home)
                     link(.tasks)
                     link(.courses)
-                    link(.manageBac)
                 }
 
                 Section(String(localized: "Planning")) {
@@ -456,19 +451,17 @@ private extension View {
 private struct MacProfileView: View {
     @Bindable var store: PlanoraStore
     @Environment(\.openSettings) private var openSettings
-    @State private var isChoosingAvatar = false
+    @State private var isChoosingAvatarSource = false
+    @State private var isChoosingAvatarFile = false
+    @State private var selectedAvatarItem: PhotosPickerItem?
     @State private var avatarError: String?
-
-    private var subjects: [String] {
-        store.selectedSubjectTitles + store.selectedExtraLearningTitles
-    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 HStack(spacing: 18) {
                     Button {
-                        isChoosingAvatar = true
+                        isChoosingAvatarSource = true
                     } label: {
                         ProfileAvatarView(name: store.userName, size: 72)
                             .overlay(alignment: .bottomTrailing) {
@@ -540,26 +533,6 @@ private struct MacProfileView: View {
                     }
                 }
 
-                GroupBox(String(localized: "Current Subjects")) {
-                    if subjects.isEmpty {
-                        ContentUnavailableView(
-                            String(localized: "No Subjects Yet"),
-                            systemImage: "books.vertical"
-                        )
-                        .frame(minHeight: 150)
-                    } else {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 10)], spacing: 10) {
-                            ForEach(subjects, id: \.self) { subject in
-                                Label(PlanoraFormat.subjectDisplayName(subject), systemImage: "book.closed")
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(12)
-                                    .background(.quaternary.opacity(0.55), in: RoundedRectangle(cornerRadius: 8))
-                            }
-                        }
-                        .padding(6)
-                    }
-                }
-
                 Text(String(localized: "Your profile stays on this device."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -569,8 +542,30 @@ private struct MacProfileView: View {
             .padding(28)
         }
         .background(Color(nsColor: .windowBackgroundColor))
+        .confirmationDialog(
+            String(localized: "Change Profile Photo"),
+            isPresented: $isChoosingAvatarSource,
+            titleVisibility: .visible
+        ) {
+            PhotosPicker(
+                selection: $selectedAvatarItem,
+                matching: .images,
+                preferredItemEncoding: .automatic
+            ) {
+                Label(String(localized: "Choose from Photos"), systemImage: "photo.on.rectangle")
+            }
+            Button(String(localized: "Choose Image File"), systemImage: "folder") {
+                isChoosingAvatarFile = true
+            }
+            if ProfileAvatarStorage.hasCustomAvatar {
+                Button(String(localized: "Use Initials"), systemImage: "person.crop.circle") {
+                    removeAvatar()
+                }
+            }
+            Button(String(localized: "Cancel"), role: .cancel) { }
+        }
         .fileImporter(
-            isPresented: $isChoosingAvatar,
+            isPresented: $isChoosingAvatarFile,
             allowedContentTypes: [.image],
             allowsMultipleSelection: false
         ) { result in
@@ -580,6 +575,10 @@ private struct MacProfileView: View {
             } catch {
                 avatarError = error.localizedDescription
             }
+        }
+        .onChange(of: selectedAvatarItem) { _, item in
+            guard let item else { return }
+            Task { await updateAvatar(from: item) }
         }
         .alert(String(localized: "Avatar Update Failed"), isPresented: Binding(
             get: { avatarError != nil },
@@ -597,6 +596,18 @@ private struct MacProfileView: View {
         } catch {
             avatarError = error.localizedDescription
         }
+    }
+
+    private func updateAvatar(from item: PhotosPickerItem) async {
+        do {
+            guard let data = try await item.loadTransferable(type: Data.self) else {
+                throw CocoaError(.fileReadCorruptFile)
+            }
+            try ProfileAvatarStorage.save(data: data)
+        } catch {
+            avatarError = error.localizedDescription
+        }
+        selectedAvatarItem = nil
     }
 }
 

@@ -47,17 +47,29 @@ enum ProfileAvatarStorage {
             if canAccess { sourceURL.stopAccessingSecurityScopedResource() }
         }
 
-        guard let source = CGImageSourceCreateWithURL(sourceURL as CFURL, nil),
-              let thumbnail = CGImageSourceCreateThumbnailAtIndex(
-                source,
-                0,
-                [
+        guard let source = CGImageSourceCreateWithURL(sourceURL as CFURL, nil) else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        try saveThumbnail(from: source)
+    }
+
+    static func save(data: Data) throws {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        try saveThumbnail(from: source)
+    }
+
+    private static func saveThumbnail(from source: CGImageSource) throws {
+        guard let thumbnail = CGImageSourceCreateThumbnailAtIndex(
+                  source,
+                  0,
+                  [
                     kCGImageSourceCreateThumbnailFromImageAlways: true,
                     kCGImageSourceCreateThumbnailWithTransform: true,
                     kCGImageSourceThumbnailMaxPixelSize: 512
                 ] as CFDictionary
-              ),
-              let fileURL else {
+              ), let fileURL else {
             throw CocoaError(.fileReadCorruptFile)
         }
 

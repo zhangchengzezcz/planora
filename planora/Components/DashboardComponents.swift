@@ -1,5 +1,22 @@
 import SwiftUI
 
+struct ProfileAvatarLink: View {
+    let store: PlanoraStore
+    var size: CGFloat = 38
+
+    var body: some View {
+        NavigationLink {
+            ProfileView(store: store)
+        } label: {
+            ProfileAvatarView(name: store.userName, size: size)
+                .overlay(Circle().stroke(Color.planoraGlassStroke, lineWidth: 1))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(String(localized: "Profile"))
+    }
+}
+
 struct DashboardSection<Content: View>: View {
     let title: String
     let trailing: String?

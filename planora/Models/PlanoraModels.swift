@@ -13,6 +13,7 @@ enum MainTab: Hashable {
     case home
     case tasks
     case create
+    case courses
     case search
     case profile
 }

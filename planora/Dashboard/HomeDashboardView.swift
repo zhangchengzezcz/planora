@@ -374,6 +374,8 @@ private struct HomeHeader: View {
                 .overlay(Capsule().stroke(Color.planoraGlassStroke, lineWidth: 1))
             }
             .buttonStyle(.plain)
+
+            ProfileAvatarLink(store: store)
         }
     }
 }

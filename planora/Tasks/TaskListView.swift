@@ -105,14 +105,19 @@ struct TaskListView: View {
     }
 
     private var taskListHeader: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(String(localized: "Tasks"))
-                .font(.largeTitle.weight(.bold))
-                .foregroundStyle(Color.planoraInk)
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(String(localized: "Tasks"))
+                    .font(.largeTitle.weight(.bold))
+                    .foregroundStyle(Color.planoraInk)
 
-            Text(String(localized: "Tasks are displayed and sorted using your settings."))
-                .font(.callout.weight(.medium))
-                .foregroundStyle(.secondary)
+                Text(String(localized: "Tasks are displayed and sorted using your settings."))
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 8)
+            ProfileAvatarLink(store: store)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)

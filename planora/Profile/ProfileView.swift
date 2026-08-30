@@ -1,4 +1,5 @@
 import Foundation
+import PhotosUI
 import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
@@ -17,7 +18,7 @@ struct ProfileView: View {
     @State private var isShowingBackupAlert = false
     @State private var pendingImportPreview: TaskImportPreview?
     @State private var isShowingImportOptions = false
-    @State private var isChoosingAvatar = false
+    @State private var selectedAvatarItem: PhotosPickerItem?
     @State private var avatarError: String?
 
     var body: some View {
@@ -26,7 +27,6 @@ struct ProfileView: View {
                 profileHeader
                 profileSettingsSection
                 taskStorageSection
-                currentSubjectsSection
             }
             .padding(.top, 2)
             .padding(.bottom, 32)
@@ -52,12 +52,9 @@ struct ProfileView: View {
         ) { result in
             importBackup(from: result)
         }
-        .fileImporter(
-            isPresented: $isChoosingAvatar,
-            allowedContentTypes: [.image],
-            allowsMultipleSelection: false
-        ) { result in
-            updateAvatar(from: result)
+        .onChange(of: selectedAvatarItem) { _, item in
+            guard let item else { return }
+            Task { await updateAvatar(from: item) }
         }
         .confirmationDialog(
             String(localized: "Import Backup"),
@@ -111,9 +108,11 @@ struct ProfileView: View {
     private var profileHeader: some View {
         GlassPanel {
             HStack(spacing: 16) {
-                Button {
-                    isChoosingAvatar = true
-                } label: {
+                PhotosPicker(
+                    selection: $selectedAvatarItem,
+                    matching: .images,
+                    preferredItemEncoding: .automatic
+                ) {
                     ProfileAvatarView(name: store.userName, size: 58)
                         .overlay(alignment: .bottomTrailing) {
                             Image(systemName: "pencil")
@@ -124,7 +123,7 @@ struct ProfileView: View {
                         }
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(String(localized: "Edit"))
+                .accessibilityLabel(String(localized: "Choose from Photos"))
                 .contextMenu {
                     if ProfileAvatarStorage.hasCustomAvatar {
                         Button(String(localized: "Use Initials"), systemImage: "person.crop.circle") {
@@ -148,13 +147,16 @@ struct ProfileView: View {
         }
     }
 
-    private func updateAvatar(from result: Result<[URL], Error>) {
+    private func updateAvatar(from item: PhotosPickerItem) async {
         do {
-            guard let url = try result.get().first else { return }
-            try ProfileAvatarStorage.save(from: url)
+            guard let data = try await item.loadTransferable(type: Data.self) else {
+                throw CocoaError(.fileReadCorruptFile)
+            }
+            try ProfileAvatarStorage.save(data: data)
         } catch {
             avatarError = error.localizedDescription
         }
+        selectedAvatarItem = nil
     }
 
     private func removeAvatar() {
@@ -207,33 +209,6 @@ struct ProfileView: View {
                 onRestoreAutomatic: restoreAutomaticBackup
             )
             .padding(18)
-        }
-    }
-
-    @ViewBuilder
-    private var currentSubjectsSection: some View {
-        let subjects = store.selectedSubjectTitles + store.selectedExtraLearningTitles
-
-        if !subjects.isEmpty {
-            DashboardSection(title: String(localized: "Current Subjects")) {
-                VStack(spacing: 0) {
-                    ForEach(Array(subjects.enumerated()), id: \.offset) { index, subject in
-                        NavigationLink {
-                            SubjectDetailView(store: store, subject: subject)
-                        } label: {
-                            SubjectProfileRow(
-                                subject: subject,
-                                taskCount: tasks.filter { $0.subject == subject }.count
-                            )
-                        }
-                        .buttonStyle(.plain)
-
-                        if index != subjects.indices.last {
-                            Divider().padding(.leading, 54)
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -343,42 +318,6 @@ struct ProfileView: View {
         backupAlertTitle = title
         backupAlertMessage = message
         isShowingBackupAlert = true
-    }
-}
-
-private struct SubjectProfileRow: View {
-    let subject: String
-    let taskCount: Int
-
-    var body: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "book.closed.fill")
-                .font(.headline)
-                .foregroundStyle(Color.planoraDeepGreen)
-                .frame(width: 38, height: 38)
-                .background(Color.planoraGreen.opacity(0.12), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(PlanoraFormat.subjectDisplayName(subject))
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.planoraInk)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.78)
-
-                Text(PlanoraLocalization.format(String(localized: "subject_task_count_format"), taskCount))
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.caption.weight(.bold))
-                .foregroundStyle(.secondary)
-        }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 13)
-        .contentShape(Rectangle())
     }
 }
 
@@ -499,21 +438,6 @@ private struct SettingsHomeView: View {
                         }
                         .buttonStyle(.plain)
 
-                        Divider().padding(.leading, 52)
-
-                        NavigationLink {
-                            ManageBacSettingsView(store: store)
-                        } label: {
-                            SettingsRow(
-                                icon: "building.columns.fill",
-                                title: "ManageBac",
-                                value: ManageBacConnectionStorage.load() == nil
-                                    ? String(localized: "Not Connected")
-                                    : String(localized: "Connected"),
-                                showsChevron: true
-                            )
-                        }
-                        .buttonStyle(.plain)
                     }
                 }
             }
