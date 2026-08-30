@@ -1187,29 +1187,6 @@
         }
       }
     },
-    "Choose a course to see its teachers, units, and tasks." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Choose a course to see its teachers, units, and tasks."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "コースを選択すると、教師、ユニット、タスクを確認できます。"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "选择课程以查看教师、单元和任务。"
-          }
-        }
-      }
-    },
     "Choose Curriculum" : {
       "localizations" : {
         "en" : {
@@ -2086,29 +2063,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "课程体系"
-          }
-        }
-      }
-    },
-    "curriculum_subjects_format" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ subjects"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ の科目"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 的可选科目"
           }
         }
       }
@@ -4827,29 +4781,6 @@
         }
       }
     },
-    "Learning" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Learning"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "学習"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "学习"
-          }
-        }
-      }
-    },
     "Learning Overview" : {
       "localizations" : {
         "en" : {
@@ -5621,7 +5552,6 @@
       }
     },
     "My Subjects" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6809,29 +6739,6 @@
         }
       }
     },
-    "Overview" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Overview"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "概要"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "概览"
-          }
-        }
-      }
-    },
     "Overwrite Matching Tasks" : {
       "localizations" : {
         "en" : {
@@ -7807,29 +7714,6 @@
         }
       }
     },
-    "Reading Learning Data" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reading Learning Data"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "学習データを読み取り中"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在读取学习数据"
-          }
-        }
-      }
-    },
     "Reading Tasks and Deadlines" : {
       "localizations" : {
         "en" : {
@@ -8713,29 +8597,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "查看接下来需要关注的内容。"
-          }
-        }
-      }
-    },
-    "Select a Course" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select a Course"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "コースを選択"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "选择课程"
           }
         }
       }
@@ -11354,29 +11215,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "执行今天的计划"
-          }
-        }
-      }
-    },
-    "Workspace" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Workspace"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ワークスペース"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "工作区"
           }
         }
       }
