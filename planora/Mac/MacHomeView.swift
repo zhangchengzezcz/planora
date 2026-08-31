@@ -40,7 +40,9 @@ struct MacHomeView: View {
                             title: String(localized: "This Week"),
                             symbol: "calendar",
                             value: "\(snapshot.weekCount)",
-                            detail: String(localized: "Tasks planned for the current week")
+                            detail: snapshot.weekEstimatedMinutes > 0
+                                ? "\(String(localized: "Tasks planned for the current week")) · \(PlanoraDurationFormatter.text(minutes: snapshot.weekEstimatedMinutes))"
+                                : String(localized: "Tasks planned for the current week")
                         )
                     }
                 }
@@ -83,10 +85,11 @@ private struct MacHomeSnapshot {
     let activeTasks: [PlanoraTask]
     let todayCount: Int
     let weekCount: Int
+    let weekEstimatedMinutes: Int
 
     init(tasks: [PlanoraTask], now: Date = Date(), calendar: Calendar = .current) {
         activeTasks = tasks
-            .filter { !$0.isCompleted && !$0.isArchived }
+            .filter { !$0.isCompleted && !$0.isArchived && !$0.isDeleted }
             .planoraSorted { PlanoraTaskOrdering.areInDashboardOrder($0, $1) }
         todayCount = activeTasks.reduce(into: 0) { count, task in
             if task.plannedDate.map(calendar.isDateInToday) == true ||
@@ -96,13 +99,17 @@ private struct MacHomeSnapshot {
         }
         guard let week = calendar.dateInterval(of: .weekOfYear, for: now) else {
             weekCount = 0
+            weekEstimatedMinutes = 0
             return
         }
-        weekCount = activeTasks.reduce(into: 0) { count, task in
+        let weekTasks = activeTasks.filter { task in
             if task.plannedDate.map(week.contains) == true || task.deadline.map(week.contains) == true {
-                count += 1
+                return true
             }
+            return false
         }
+        weekCount = weekTasks.count
+        weekEstimatedMinutes = weekTasks.reduce(0) { $0 + max($1.estimatedMinutes, 0) }
     }
 }
 

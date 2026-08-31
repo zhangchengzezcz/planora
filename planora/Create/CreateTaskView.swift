@@ -153,6 +153,7 @@ private struct CreateTaskFormView: View {
     @State private var percentageProgress: Double
     @State private var stageName: String
     @State private var priority: TaskPriority = .medium
+    @State private var estimatedMinutes = 0
     @State private var notes = ""
     @State private var reminders: [TaskReminder] = []
     @State private var recurrenceRule: TaskRecurrenceRule?
@@ -330,6 +331,13 @@ private struct CreateTaskFormView: View {
                         }
                         .pickerStyle(.segmented)
 
+                        Picker(String(localized: "Estimated Time"), selection: $estimatedMinutes) {
+                            ForEach(PlanoraDurationFormatter.options, id: \.self) { minutes in
+                                Text(PlanoraDurationFormatter.text(minutes: minutes)).tag(minutes)
+                            }
+                        }
+                        .pickerStyle(.menu)
+
                         Divider()
 
                         Toggle(String(localized: "Track Progress"), isOn: $tracksProgress)
@@ -416,6 +424,7 @@ private struct CreateTaskFormView: View {
         )
         task.courseID = selectedCourseID
         task.unitID = selectedUnitID
+        task.estimatedMinutes = estimatedMinutes
 
         modelContext.insert(task)
         task.replaceReminders(

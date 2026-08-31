@@ -105,7 +105,7 @@ struct ManageBacCourseDetailView: View {
     @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
 
     private var courseTasks: [PlanoraTask] {
-        tasks.filter { $0.courseID == course.id && !$0.isArchived }
+        tasks.filter { $0.courseID == course.id && !$0.isArchived && !$0.isDeleted }
     }
 
     private var courseUnits: [PlanoraUnit] {
@@ -239,7 +239,7 @@ private struct ManageBacCourseTasksView: View {
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
 
     private var filteredTasks: [PlanoraTask] {
-        tasks.filter { $0.courseID == course.id && !$0.isArchived }
+        tasks.filter { $0.courseID == course.id && !$0.isArchived && !$0.isDeleted }
     }
 
     var body: some View {
@@ -299,7 +299,7 @@ private struct ManageBacUnitsView: View {
 
     private func progress(for unit: PlanoraUnit) -> Double {
         if let official = unit.officialProgress { return official }
-        let related = tasks.filter { $0.unitID == unit.id && !$0.isArchived }
+        let related = tasks.filter { $0.unitID == unit.id && !$0.isArchived && !$0.isDeleted }
         guard !related.isEmpty else { return 0 }
         return Double(related.filter(\.isCompleted).count) / Double(related.count)
     }

@@ -167,7 +167,7 @@ final class ManageBacIntegrationTests: XCTestCase {
     }
 
     func testTeacherNameAndEmailArePresentedSeparately() {
-        let teacher = PlanoraTeacher(rawValue: "Rehman Naseer naseer@example.com")
+        let teacher = ParsedTeacher(rawValue: "Rehman Naseer naseer@example.com")
         XCTAssertEqual(teacher.name, "Rehman Naseer")
         XCTAssertEqual(teacher.email, "naseer@example.com")
     }

@@ -40,6 +40,14 @@ final class PlanoraTask {
     var remoteStatusRawValue: String?
     var needsRemoteReview: Bool = false
     var archivedDate: Date?
+    var deletedDate: Date?
+    var estimatedMinutes: Int = 0
+    var actualMinutes: Int = 0
+    var usesSubtasksForProgress: Bool = false
+    @Relationship(deleteRule: .cascade, inverse: \PlanoraSubtask.task)
+    var subtasks: [PlanoraSubtask] = []
+    @Relationship(deleteRule: .cascade, inverse: \PlanoraResourceLink.task)
+    var resourceLinks: [PlanoraResourceLink] = []
 
     init(
         id: UUID = UUID(),
@@ -90,6 +98,10 @@ final class PlanoraTask {
         self.remoteStatusRawValue = nil
         self.needsRemoteReview = false
         self.archivedDate = nil
+        self.deletedDate = nil
+        self.estimatedMinutes = 0
+        self.actualMinutes = 0
+        self.usesSubtasksForProgress = false
         if progressState.kind == .stage {
             self.timelineData = AcademicMilestone.encodedDefaults(
                 for: type,
@@ -142,6 +154,7 @@ final class PlanoraTask {
     }
 
     var isArchived: Bool { archivedDate != nil }
+    var isDeleted: Bool { deletedDate != nil }
 
     var timeline: [AcademicMilestone] {
         get {
@@ -259,6 +272,10 @@ final class PlanoraTask {
     var progressFraction: Double {
         if isCompleted { return 1 }
 
+        if usesSubtasksForProgress, !subtasks.isEmpty {
+            return Double(subtasks.filter(\.isCompleted).count) / Double(subtasks.count)
+        }
+
         if let percentage = progressState.percentageValue {
             return percentage
         }
@@ -309,6 +326,10 @@ final class PlanoraTask {
             completedDate = completed ? Date() : nil
         }
         isCompleted = completed
+
+        if completed {
+            subtasks.forEach { $0.isCompleted = true }
+        }
 
         guard tracksProgress, progressState.kind == .stage else { return }
         var milestones = timeline

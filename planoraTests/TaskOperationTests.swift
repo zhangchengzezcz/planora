@@ -53,6 +53,32 @@ final class TaskOperationTests: XCTestCase {
         XCTAssertEqual(visibleTasks.map(\.title), ["High", "Low"])
     }
 
+    func testRecentlyDeletedTasksAreIsolatedAndRestorable() throws {
+        let container = try ModelContainer(
+            for: PlanoraTask.self, PlanoraSubtask.self, PlanoraResourceLink.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let context = container.mainContext
+        let active = makeTask(title: "Active")
+        let deleted = makeTask(title: "Deleted")
+        deleted.deletedDate = Date()
+        [active, deleted].forEach(context.insert)
+        try context.save()
+
+        let settings = PlanoraTaskDisplaySettings()
+        XCTAssertEqual(
+            PlanoraTaskListProjection.tasks(from: [active, deleted], settings: settings, status: .active).map(\.title),
+            ["Active"]
+        )
+        XCTAssertEqual(
+            PlanoraTaskListProjection.tasks(from: [active, deleted], settings: settings, status: .deleted).map(\.title),
+            ["Deleted"]
+        )
+
+        PlanoraTaskOperations.restoreFromRecentlyDeleted([deleted], modelContext: context)
+        XCTAssertFalse(deleted.isDeleted)
+    }
+
     func testSearchRankingStillPrefersSubjectAndTypeMatches() {
         let physics = makeTask(title: "Generic worksheet", sequence: 0)
         physics.subject = "Physics HL"

@@ -105,17 +105,22 @@ struct MainAppView: View {
             store.clearDeletionUndo()
             return
         }
-        for task in restoredTasks { modelContext.insert(task) }
-        let currentTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? restoredTasks
-        for restoredTask in restoredTasks {
-            guard let seriesID = restoredTask.recurrenceSeriesID else { continue }
-            let series = currentTasks.filter { $0.recurrenceSeriesID == seriesID }
-            RecurringTaskEngine.restoreSeriesRule(from: restoredTask, in: series)
-            RecurringTaskEngine.includeOccurrence(restoredTask, in: series)
+        let existingTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? []
+        let existingByID = Dictionary(uniqueKeysWithValues: existingTasks.map { ($0.id, $0) })
+        var restoredModels: [PlanoraTask] = []
+        for decodedTask in restoredTasks {
+            if let existing = existingByID[decodedTask.id] {
+                existing.deletedDate = nil
+                restoredModels.append(existing)
+            } else {
+                decodedTask.deletedDate = nil
+                modelContext.insert(decodedTask)
+                restoredModels.append(decodedTask)
+            }
         }
         PlanoraTaskPersistence.save(modelContext)
         store.clearDeletionUndo()
-        PlanoraTaskPersistence.reconcile(fallbackTasks: currentTasks, in: modelContext)
+        PlanoraTaskPersistence.reconcile(fallbackTasks: existingTasks + restoredModels, in: modelContext)
     }
 }
 

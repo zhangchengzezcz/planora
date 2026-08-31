@@ -12,6 +12,7 @@ struct TaskDetailView: View {
     @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
     @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
     @State private var isShowingDeleteConfirmation = false
+    @State private var isShowingIncompleteSubtasksConfirmation = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -23,9 +24,16 @@ struct TaskDetailView: View {
                     progressPanel
                 }
 
+                TaskSubtasksPanel(task: task)
+                TaskResourcesPanel(task: task)
                 notesPanel
-                completionButton
-                deleteButton
+                if task.isDeleted {
+                    recentlyDeletedActions
+                } else {
+                    completionButton
+                    archiveButton
+                    deleteButton
+                }
             }
             .padding(.top, 12)
             .padding(.bottom, 32)
@@ -39,7 +47,8 @@ struct TaskDetailView: View {
             PlanoraTaskPersistence.save(modelContext)
         }
         .toolbar {
-            ToolbarItem(placement: .secondaryAction) {
+            if !task.isDeleted {
+                ToolbarItem(placement: .secondaryAction) {
                 Button {
                     task.isPinned.toggle()
                     PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
@@ -49,13 +58,14 @@ struct TaskDetailView: View {
                         systemImage: task.isPinned ? "pin.slash" : "pin"
                     )
                 }
-            }
-            ToolbarItem(placement: .primaryAction) {
+                }
+                ToolbarItem(placement: .primaryAction) {
                 NavigationLink {
                     EditTaskView(store: store, task: task)
                 } label: {
                     Text(String(localized: "Edit"))
                         .fontWeight(.semibold)
+                }
                 }
             }
         }
@@ -130,6 +140,13 @@ struct TaskDetailView: View {
                 DetailRow(icon: "repeat", title: String(localized: "Repeat"), value: task.recurrenceSummary, tint: .planoraBlue)
                 Divider().padding(.leading, 50)
                 DetailRow(icon: "flag.fill", title: String(localized: "Priority"), value: task.priority.title, tint: task.priority.tint)
+                Divider().padding(.leading, 50)
+                DetailRow(
+                    icon: "hourglass",
+                    title: String(localized: "Estimated Time"),
+                    value: PlanoraDurationFormatter.text(minutes: task.estimatedMinutes),
+                    tint: .planoraAmber
+                )
                 if task.isManageBacTask {
                     Divider().padding(.leading, 50)
                     manageBacSourceRow
@@ -149,6 +166,14 @@ struct TaskDetailView: View {
                 .buttonStyle(.plain)
                 Divider().padding(.leading, 50)
                 DetailRow(icon: "clock.fill", title: String(localized: "Created"), value: PlanoraFormat.monthDay(task.createdDate), tint: .planoraDeepGreen)
+                if let completedDate = task.completedDate {
+                    Divider().padding(.leading, 50)
+                    DetailRow(icon: "checkmark.circle.fill", title: String(localized: "Completed"), value: completedDate.formatted(date: .long, time: .shortened), tint: .planoraGreen)
+                }
+                if let deletedDate = task.deletedDate {
+                    Divider().padding(.leading, 50)
+                    DetailRow(icon: "trash.fill", title: String(localized: "Deleted"), value: deletedDate.formatted(date: .long, time: .shortened), tint: .red)
+                }
             }
         }
     }
@@ -267,8 +292,21 @@ struct TaskDetailView: View {
             title: task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"),
             systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark.circle.fill"
         ) {
-            task.setCompleted(!task.isCompleted)
-            PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+            if !task.isCompleted, task.subtasks.contains(where: { !$0.isCompleted }) {
+                isShowingIncompleteSubtasksConfirmation = true
+            } else {
+                toggleCompletion()
+            }
+        }
+        .confirmationDialog(
+            String(localized: "Some subtasks are not finished."),
+            isPresented: $isShowingIncompleteSubtasksConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "Complete Task and Subtasks")) { toggleCompletion() }
+            Button(String(localized: "Cancel"), role: .cancel) {}
+        } message: {
+            Text(String(localized: "Completing this task will also mark every subtask as complete."))
         }
     }
 
@@ -282,6 +320,39 @@ struct TaskDetailView: View {
         }
         .buttonStyle(.plain)
         .foregroundStyle(.red)
+    }
+
+    private var archiveButton: some View {
+        Button {
+            task.archivedDate = task.isArchived ? nil : Date()
+            PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+        } label: {
+            Label(
+                task.isArchived ? String(localized: "Restore from Archive") : String(localized: "Archive"),
+                systemImage: task.isArchived ? "tray.and.arrow.up" : "archivebox"
+            )
+            .font(.headline.weight(.semibold))
+            .frame(maxWidth: .infinity, minHeight: 50)
+        }
+        .buttonStyle(.bordered)
+    }
+
+    private var recentlyDeletedActions: some View {
+        VStack(spacing: 12) {
+            PlanoraPrimaryButton(title: String(localized: "Restore Task"), systemImage: "arrow.uturn.backward") {
+                PlanoraTaskOperations.restoreFromRecentlyDeleted([task], modelContext: modelContext)
+                dismiss()
+            }
+            Button(role: .destructive) {
+                PlanoraTaskOperations.permanentlyDelete([task], allTasks: allTasks, modelContext: modelContext)
+                dismiss()
+            } label: {
+                Label(String(localized: "Delete Permanently"), systemImage: "trash.fill")
+                    .font(.headline.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 50)
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     private var deadlineText: String {
@@ -306,6 +377,11 @@ struct TaskDetailView: View {
         )
         dismiss()
     }
+
+    private func toggleCompletion() {
+        task.setCompleted(!task.isCompleted)
+        PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+    }
 }
 
 struct TaskCompletionButton: View {
@@ -329,6 +405,7 @@ struct TaskCompletionButton: View {
             }
         }
         .buttonStyle(.plain)
+        .disabled(task.isDeleted)
         .accessibilityLabel(task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"))
     }
 
@@ -616,6 +693,7 @@ private struct EditTaskView: View {
     @State private var hasPlannedDate: Bool
     @State private var plannedDate: Date
     @State private var priority: TaskPriority
+    @State private var estimatedMinutes: Int
     @State private var tracksProgress: Bool
     @State private var progressKind: ProgressKind
     @State private var percentageProgress: Double
@@ -638,6 +716,7 @@ private struct EditTaskView: View {
         _hasPlannedDate = State(initialValue: task.plannedDate != nil)
         _plannedDate = State(initialValue: task.plannedDate ?? Date())
         _priority = State(initialValue: task.priority)
+        _estimatedMinutes = State(initialValue: task.estimatedMinutes)
         _tracksProgress = State(initialValue: task.tracksProgress)
         _progressKind = State(initialValue: task.progressState.kind)
         _percentageProgress = State(initialValue: task.progressState.percentageValue ?? 0)
@@ -734,6 +813,12 @@ private struct EditTaskView: View {
                 Picker(String(localized: "Priority"), selection: $priority) {
                     ForEach(TaskPriority.allCases) { priority in
                         Label(priority.title, systemImage: priority.symbol).tag(priority)
+                    }
+                }
+
+                Picker(String(localized: "Estimated Time"), selection: $estimatedMinutes) {
+                    ForEach(PlanoraDurationFormatter.options, id: \.self) { minutes in
+                        Text(PlanoraDurationFormatter.text(minutes: minutes)).tag(minutes)
                     }
                 }
 
@@ -934,6 +1019,7 @@ private struct EditTaskView: View {
             target.recurrenceOccurrenceDate = targetDeadline
         }
         target.priority = priority
+        target.estimatedMinutes = estimatedMinutes
         target.tracksProgress = tracksProgress
         if !preservesProgress {
             target.progressState = progressKind == .percentage

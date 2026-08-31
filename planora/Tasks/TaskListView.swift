@@ -9,11 +9,16 @@ struct TaskListView: View {
     @State private var taskPendingDeletion: PlanoraTask?
     @State private var isShowingDeleteConfirmation = false
     @State private var selectedTask: PlanoraTask?
+    @State private var isSelecting = false
+    @State private var selectedTaskIDs = Set<UUID>()
+    @State private var isShowingBulkActions = false
+    @State private var statusFilter = PlanoraTaskListStatus.active
 
     var body: some View {
         let visibleTasks = PlanoraTaskListProjection.tasks(
             from: tasks,
-            settings: displaySettings
+            settings: displaySettings,
+            status: statusFilter
         )
 
         Group {
@@ -26,43 +31,76 @@ struct TaskListView: View {
             } else {
                 List {
                     ForEach(visibleTasks, id: \.id) { task in
-                        Button {
-                            selectedTask = task
-                        } label: {
+                        HStack(spacing: 10) {
+                            if isSelecting {
+                                Image(systemName: selectedTaskIDs.contains(task.id) ? "checkmark.circle.fill" : "circle")
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundStyle(selectedTaskIDs.contains(task.id) ? Color.accentColor : Color.secondary)
+                                    .accessibilityHidden(true)
+                            }
+
                             TaskListRow(task: task)
                         }
-                            .buttonStyle(.plain)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                if isSelecting {
+                                    toggleSelection(task)
+                                } else {
+                                    selectedTask = task
+                                }
+                            }
                             .contextMenu {
+                                if task.isDeleted {
+                                    Button(String(localized: "Restore Task"), systemImage: "arrow.uturn.backward") {
+                                        PlanoraTaskOperations.restoreFromRecentlyDeleted([task], modelContext: modelContext)
+                                    }
+                                    Button(String(localized: "Delete Permanently"), systemImage: "trash", role: .destructive) {
+                                        PlanoraTaskOperations.permanentlyDelete([task], allTasks: tasks, modelContext: modelContext)
+                                    }
+                                } else {
                                 Button(
                                     task.isPinned ? String(localized: "Unpin Task") : String(localized: "Pin Task"),
                                     systemImage: task.isPinned ? "pin.slash" : "pin"
                                 ) {
                                     togglePinned(task)
                                 }
+                                }
                             }
-                            .accessibilityHint(String(localized: "Open task details"))
+                            .accessibilityHint(isSelecting ? String(localized: "Select or deselect this task") : String(localized: "Open task details"))
                             .listRowInsets(EdgeInsets(top: 7, leading: PlanoraTheme.pageHorizontalPadding, bottom: 7, trailing: PlanoraTheme.pageHorizontalPadding))
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) {
-                                    taskPendingDeletion = task
-                                    isShowingDeleteConfirmation = true
-                                } label: {
-                                    Label(String(localized: "Delete"), systemImage: "trash.fill")
+                                if !isSelecting {
+                                    Button(role: .destructive) {
+                                        if task.isDeleted {
+                                            PlanoraTaskOperations.permanentlyDelete([task], allTasks: tasks, modelContext: modelContext)
+                                        } else {
+                                            taskPendingDeletion = task
+                                            isShowingDeleteConfirmation = true
+                                        }
+                                    } label: {
+                                        Label(task.isDeleted ? String(localized: "Delete Permanently") : String(localized: "Delete"), systemImage: "trash.fill")
+                                    }
                                 }
                             }
                             .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                Button {
-                                    task.setCompleted(!task.isCompleted)
-                                    PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
-                                } label: {
-                                    Label(
-                                        task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"),
-                                        systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark"
-                                    )
+                                if !isSelecting {
+                                    Button {
+                                        if task.isDeleted {
+                                            PlanoraTaskOperations.restoreFromRecentlyDeleted([task], modelContext: modelContext)
+                                        } else {
+                                            task.setCompleted(!task.isCompleted)
+                                            PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+                                        }
+                                    } label: {
+                                        Label(
+                                            task.isDeleted ? String(localized: "Restore Task") : (task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete")),
+                                            systemImage: task.isDeleted ? "arrow.uturn.backward" : (task.isCompleted ? "arrow.uturn.backward" : "checkmark")
+                                        )
+                                    }
+                                    .tint(task.isDeleted || task.isCompleted ? .orange : .planoraGreen)
                                 }
-                                .tint(task.isCompleted ? .orange : .planoraGreen)
                             }
                     }
                 }
@@ -72,6 +110,25 @@ struct TaskListView: View {
         }
         .safeAreaBar(edge: .top, spacing: 0) {
             taskListHeader
+        }
+        .safeAreaBar(edge: .bottom, spacing: 0) {
+            if isSelecting {
+                HStack(spacing: 12) {
+                    Text(PlanoraLocalization.format(String(localized: "selected_tasks_format"), selectedTaskIDs.count))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    Spacer()
+
+                    Button(String(localized: "Actions"), systemImage: "ellipsis.circle") {
+                        isShowingBulkActions = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(selectedTaskIDs.isEmpty)
+                }
+                .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
+                .padding(.vertical, 10)
+            }
         }
         .scrollEdgeEffectStyle(.automatic, for: .top)
         .planoraHiddenNavigationBar()
@@ -102,22 +159,51 @@ struct TaskListView: View {
         } message: { task in
             Text(PlanoraLocalization.format(String(localized: "delete_task_confirmation_format"), task.title))
         }
+        .sheet(isPresented: $isShowingBulkActions) {
+            BulkTaskActionsView(
+                store: store,
+                selectedTasks: tasks.filter { selectedTaskIDs.contains($0.id) },
+                allTasks: tasks,
+                onFinish: finishSelection
+            )
+        }
     }
 
     private var taskListHeader: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(String(localized: "Tasks"))
-                    .font(.largeTitle.weight(.bold))
-                    .foregroundStyle(Color.planoraInk)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(String(localized: "Tasks"))
+                        .font(.largeTitle.weight(.bold))
+                        .foregroundStyle(Color.planoraInk)
 
-                Text(String(localized: "Tasks are displayed and sorted using your settings."))
-                    .font(.callout.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    Text(String(localized: "Tasks are displayed and sorted using your settings."))
+                        .font(.callout.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 8)
+                if statusFilter != .deleted {
+                    Button(isSelecting ? String(localized: "Done") : String(localized: "Select")) {
+                        if isSelecting {
+                            finishSelection()
+                        } else {
+                            isSelecting = true
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                }
+                ProfileAvatarLink(store: store)
             }
 
-            Spacer(minLength: 8)
-            ProfileAvatarLink(store: store)
+            Picker(String(localized: "Status"), selection: $statusFilter) {
+                ForEach(PlanoraTaskListStatus.allCases) { value in
+                    Text(value.title).tag(value)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .onChange(of: statusFilter) { _, _ in finishSelection() }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
@@ -140,18 +226,61 @@ struct TaskListView: View {
         task.isPinned.toggle()
         PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
     }
+
+    private func toggleSelection(_ task: PlanoraTask) {
+        if selectedTaskIDs.contains(task.id) {
+            selectedTaskIDs.remove(task.id)
+        } else {
+            selectedTaskIDs.insert(task.id)
+        }
+    }
+
+    private func finishSelection() {
+        selectedTaskIDs.removeAll()
+        isSelecting = false
+        isShowingBulkActions = false
+    }
+}
+
+enum PlanoraTaskListStatus: String, CaseIterable, Identifiable {
+    case active
+    case completed
+    case archived
+    case pinned
+    case deleted
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .active: String(localized: "Active")
+        case .completed: String(localized: "Completed")
+        case .archived: String(localized: "Archived")
+        case .pinned: String(localized: "Pinned")
+        case .deleted: String(localized: "Recently Deleted")
+        }
+    }
 }
 
 enum PlanoraTaskListProjection {
     static func tasks(
         from tasks: [PlanoraTask],
-        settings: PlanoraTaskDisplaySettings
+        settings: PlanoraTaskDisplaySettings,
+        status: PlanoraTaskListStatus = .active
     ) -> [PlanoraTask] {
-        let visibleTasks: [PlanoraTask]
-        if settings.showsCompletedTasks {
-            visibleTasks = tasks
-        } else {
-            visibleTasks = tasks.filter { !$0.isCompleted }
+        let visibleTasks = tasks.filter { task in
+            switch status {
+            case .active:
+                return !task.isCompleted && !task.isArchived && !task.isDeleted
+            case .completed:
+                return task.isCompleted && !task.isArchived && !task.isDeleted
+            case .archived:
+                return task.isArchived && !task.isDeleted
+            case .pinned:
+                return task.isPinned && !task.isArchived && !task.isDeleted && (settings.showsCompletedTasks || !task.isCompleted)
+            case .deleted:
+                return task.isDeleted
+            }
         }
 
         return visibleTasks.planoraSorted { lhs, rhs in

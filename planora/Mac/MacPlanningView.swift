@@ -9,7 +9,7 @@ struct MacPlanningView: View {
     let mode: MacPlanningMode
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
 
-    private var activeTasks: [PlanoraTask] { tasks.filter { !$0.isCompleted && !$0.isArchived } }
+    private var activeTasks: [PlanoraTask] { tasks.filter { !$0.isCompleted && !$0.isArchived && !$0.isDeleted } }
 
     var body: some View {
         List {

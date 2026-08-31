@@ -112,10 +112,22 @@ struct MacMainView: View {
             store.clearDeletionUndo()
             return
         }
-        for task in restoredTasks { modelContext.insert(task) }
+        let existingTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? []
+        let existingByID = Dictionary(uniqueKeysWithValues: existingTasks.map { ($0.id, $0) })
+        var restoredModels: [PlanoraTask] = []
+        for decodedTask in restoredTasks {
+            if let existing = existingByID[decodedTask.id] {
+                existing.deletedDate = nil
+                restoredModels.append(existing)
+            } else {
+                decodedTask.deletedDate = nil
+                modelContext.insert(decodedTask)
+                restoredModels.append(decodedTask)
+            }
+        }
         PlanoraTaskPersistence.save(modelContext)
         store.clearDeletionUndo()
-        PlanoraTaskPersistence.reconcile(fallbackTasks: restoredTasks, in: modelContext)
+        PlanoraTaskPersistence.reconcile(fallbackTasks: existingTasks + restoredModels, in: modelContext)
     }
 }
 
@@ -163,7 +175,7 @@ private struct MacSidebar: View {
     @State private var isShowingHelp = false
     @Query(
         filter: #Predicate<PlanoraTask> { task in
-            task.isPinned && !task.isCompleted && task.archivedDate == nil
+            task.isPinned && !task.isCompleted && !task.isArchived && !task.isDeleted
         },
         sort: \PlanoraTask.createdDate,
         order: .reverse

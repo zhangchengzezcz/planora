@@ -43,6 +43,17 @@ enum PlanoraTaskOperations {
         }
     }
 
+    static func targets(
+        for selectedTasks: [PlanoraTask],
+        scope: RecurrenceEditScope,
+        in allTasks: [PlanoraTask]
+    ) -> [PlanoraTask] {
+        var seen = Set<UUID>()
+        return selectedTasks
+            .flatMap { deletionTargets(for: $0, scope: scope, in: allTasks) }
+            .filter { seen.insert($0.id).inserted }
+    }
+
     static func delete(
         _ task: PlanoraTask,
         scope: RecurrenceEditScope,
@@ -53,29 +64,59 @@ enum PlanoraTaskOperations {
         let targets = deletionTargets(for: task, scope: scope, in: allTasks)
         let taskIDs = targets.map(\.id)
 
-        if scope == .occurrence,
-           let seriesID = task.recurrenceSeriesID {
-            RecurringTaskEngine.excludeOccurrence(
-                task,
-                from: allTasks.filter { $0.recurrenceSeriesID == seriesID }
-            )
-        }
-
         if let json = try? TaskBackupCodec.json(for: targets) {
             store.stageDeletedTasks(json: json, count: targets.count)
         }
         AutomaticTaskBackup.save(tasks: allTasks)
+        let deletedAt = Date()
+        targets.forEach { $0.deletedDate = deletedAt }
+        PlanoraTaskPersistence.save(modelContext)
+        Task { await TaskReminderScheduler.removeRequests(forTaskIDs: taskIDs) }
+    }
 
-        if scope == .future,
-           let seriesID = task.recurrenceSeriesID {
-            RecurringTaskEngine.truncateSeries(
-                before: task,
-                in: allTasks.filter { $0.recurrenceSeriesID == seriesID }
-            )
+    static func delete(
+        _ selectedTasks: [PlanoraTask],
+        scope: RecurrenceEditScope,
+        allTasks: [PlanoraTask],
+        modelContext: ModelContext,
+        store: PlanoraStore
+    ) {
+        let targets = targets(for: selectedTasks, scope: scope, in: allTasks)
+        guard !targets.isEmpty else { return }
+
+        AutomaticTaskBackup.save(tasks: allTasks)
+        if let json = try? TaskBackupCodec.json(for: targets) {
+            store.stageDeletedTasks(json: json, count: targets.count)
         }
 
-        for target in targets {
-            modelContext.delete(target)
+        let taskIDs = targets.map(\.id)
+        let deletedAt = Date()
+        targets.forEach { $0.deletedDate = deletedAt }
+        PlanoraTaskPersistence.save(modelContext)
+        Task { await TaskReminderScheduler.removeRequests(forTaskIDs: taskIDs) }
+    }
+
+    static func restoreFromRecentlyDeleted(
+        _ tasks: [PlanoraTask],
+        modelContext: ModelContext
+    ) {
+        tasks.forEach { $0.deletedDate = nil }
+        PlanoraTaskPersistence.save(modelContext)
+        PlanoraTaskPersistence.reconcile(fallbackTasks: tasks, in: modelContext)
+    }
+
+    static func permanentlyDelete(
+        _ tasks: [PlanoraTask],
+        allTasks: [PlanoraTask],
+        modelContext: ModelContext
+    ) {
+        let taskIDs = tasks.map(\.id)
+        for task in tasks {
+            if let seriesID = task.recurrenceSeriesID {
+                let series = allTasks.filter { $0.recurrenceSeriesID == seriesID }
+                RecurringTaskEngine.excludeOccurrence(task, from: series)
+            }
+            modelContext.delete(task)
         }
         PlanoraTaskPersistence.save(modelContext)
         Task { await TaskReminderScheduler.removeRequests(forTaskIDs: taskIDs) }

@@ -136,7 +136,7 @@ struct CoursesWorkspaceView: View {
 
                             Text(PlanoraLocalization.format(
                                 String(localized: "task_count_short_format"),
-                                tasks.filter { $0.subject == subject && !$0.isArchived }.count
+                                tasks.filter { $0.subject == subject && !$0.isArchived && !$0.isDeleted }.count
                             ))
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)

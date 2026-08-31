@@ -223,7 +223,12 @@ final class TaskOrderingTests: XCTestCase {
         includesAcademicProgress: Bool = false
     ) throws -> ModelContainer {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: PlanoraTask.self, configurations: configuration)
+        let container = try ModelContainer(
+            for: PlanoraTask.self,
+            PlanoraSubtask.self,
+            PlanoraResourceLink.self,
+            configurations: configuration
+        )
         for index in 0..<taskCount {
             let usesStageProgress = includesAcademicProgress && index.isMultiple(of: 5)
             container.mainContext.insert(

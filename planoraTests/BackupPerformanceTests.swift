@@ -36,6 +36,39 @@ final class BackupPerformanceTests: XCTestCase {
         XCTAssertTrue(restored.isPinned)
     }
 
+    func testV9RoundTripPreservesTaskDepthData() throws {
+        let task = makeTask(index: 12)
+        task.estimatedMinutes = 105
+        task.actualMinutes = 80
+        task.deletedDate = Date(timeIntervalSince1970: 1_800_200_000)
+        task.usesSubtasksForProgress = true
+        task.subtasks = [
+            PlanoraSubtask(
+                title: "Collect data",
+                isCompleted: true,
+                sortOrder: 0,
+                targetDate: Date(timeIntervalSince1970: 1_800_100_000),
+                estimatedMinutes: 45,
+                task: task
+            ),
+            PlanoraSubtask(title: "Review anomalies", sortOrder: 1, estimatedMinutes: 30, task: task)
+        ]
+        task.resourceLinks = [
+            PlanoraResourceLink(title: "IA guide", urlString: "https://example.com/ia-guide", task: task)
+        ]
+
+        let restored = try XCTUnwrap(TaskBackupCodec.tasks(from: TaskBackupCodec.json(for: [task])).first)
+
+        XCTAssertEqual(restored.estimatedMinutes, 105)
+        XCTAssertEqual(restored.actualMinutes, 80)
+        XCTAssertEqual(restored.deletedDate, task.deletedDate)
+        XCTAssertTrue(restored.usesSubtasksForProgress)
+        XCTAssertEqual(restored.subtasks.map(\.title), ["Collect data", "Review anomalies"])
+        XCTAssertEqual(restored.subtasks.first?.estimatedMinutes, 45)
+        XCTAssertEqual(restored.resourceLinks.first?.urlString, "https://example.com/ia-guide")
+        XCTAssertEqual(restored.progressFraction, 0.5, accuracy: 0.001)
+    }
+
     func testOlderBackupVersionsAreRejected() throws {
         let json = try TaskBackupCodec.json(for: [makeTask(index: 1)])
             .replacingOccurrences(of: "\"version\" : 9", with: "\"version\" : 8")
@@ -332,7 +365,12 @@ final class BackupPerformanceTests: XCTestCase {
 
     private func inMemoryContainer() throws -> ModelContainer {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-        return try ModelContainer(for: PlanoraTask.self, configurations: configuration)
+        return try ModelContainer(
+            for: PlanoraTask.self,
+            PlanoraSubtask.self,
+            PlanoraResourceLink.self,
+            configurations: configuration
+        )
     }
 
     private func makeTask(index: Int) -> PlanoraTask {

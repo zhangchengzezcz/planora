@@ -85,7 +85,7 @@ struct TaskReminderTaskSnapshot {
         subject = task.subject
         deadline = task.deadline
         hasDeadline = task.hasDeadline
-        isCompleted = task.isCompleted
+        isCompleted = task.isCompleted || task.isArchived || task.isDeleted
         reminders = task.reminders
     }
 }

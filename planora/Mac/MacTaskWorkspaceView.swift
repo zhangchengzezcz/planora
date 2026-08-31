@@ -11,6 +11,8 @@ struct MacTaskWorkspaceView: View {
     @State private var source: MacTaskSource = .all
     @State private var status: MacTaskStatus = .active
     @State private var selectedSubject = ""
+    @State private var tableSelection = Set<PlanoraTask.ID>()
+    @State private var isShowingBulkActions = false
 
     private var subjects: [String] {
         Array(Set(tasks.map(\.subject).filter { !$0.isEmpty })).sorted()
@@ -20,9 +22,10 @@ struct MacTaskWorkspaceView: View {
         tasks.filter { task in
             let statusMatch: Bool
             switch status {
-            case .active: statusMatch = !task.isCompleted && !task.isArchived
-            case .completed: statusMatch = task.isCompleted && !task.isArchived
-            case .archived: statusMatch = task.isArchived
+            case .active: statusMatch = !task.isCompleted && !task.isArchived && !task.isDeleted
+            case .completed: statusMatch = task.isCompleted && !task.isArchived && !task.isDeleted
+            case .archived: statusMatch = task.isArchived && !task.isDeleted
+            case .deleted: statusMatch = task.isDeleted
             }
 
             let sourceMatch: Bool
@@ -67,7 +70,7 @@ struct MacTaskWorkspaceView: View {
                     ContentUnavailableView.search(text: searchText)
                 }
             } else {
-                Table(visibleTasks, selection: $selection) {
+                Table(visibleTasks, selection: $tableSelection) {
                     TableColumn(String(localized: "Task")) { task in
                         HStack(spacing: 8) {
                             TaskCompletionButton(task: task)
@@ -100,6 +103,14 @@ struct MacTaskWorkspaceView: View {
                 }
                 .contextMenu(forSelectionType: PlanoraTask.ID.self) { ids in
                     if let id = ids.first, let task = tasks.first(where: { $0.id == id }) {
+                        if task.isDeleted {
+                            Button(String(localized: "Restore Task"), systemImage: "arrow.uturn.backward") {
+                                PlanoraTaskOperations.restoreFromRecentlyDeleted([task], modelContext: modelContext)
+                            }
+                            Button(String(localized: "Delete Permanently"), systemImage: "trash", role: .destructive) {
+                                PlanoraTaskOperations.permanentlyDelete([task], allTasks: tasks, modelContext: modelContext)
+                            }
+                        } else {
                         Button(
                             task.isPinned ? String(localized: "Unpin Task") : String(localized: "Pin Task"),
                             systemImage: task.isPinned ? "pin.slash" : "pin"
@@ -112,12 +123,33 @@ struct MacTaskWorkspaceView: View {
                             task.setCompleted(!task.isCompleted)
                             PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
                         }
+                        }
                     }
                 }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .windowBackgroundColor))
+        .onChange(of: tableSelection) { _, ids in
+            selection = ids.count == 1 ? ids.first : nil
+        }
+        .onChange(of: selection) { _, id in
+            guard let id else { return }
+            let desired = Set([id])
+            if tableSelection != desired { tableSelection = desired }
+        }
+        .sheet(isPresented: $isShowingBulkActions) {
+            BulkTaskActionsView(
+                store: store,
+                selectedTasks: tasks.filter { tableSelection.contains($0.id) },
+                allTasks: tasks,
+                onFinish: {
+                    tableSelection.removeAll()
+                    selection = nil
+                }
+            )
+            .frame(minWidth: 520, idealWidth: 600, minHeight: 500, idealHeight: 620)
+        }
         .inspector(isPresented: Binding(
             get: { selectedTask != nil },
             set: { if !$0 { selection = nil } }
@@ -153,6 +185,11 @@ struct MacTaskWorkspaceView: View {
             }
 
             Spacer()
+            if !tableSelection.isEmpty && status != .deleted {
+                Button(String(localized: "Actions"), systemImage: "ellipsis.circle") {
+                    isShowingBulkActions = true
+                }
+            }
             Text(PlanoraLocalization.format(String(localized: "task_count_format"), taskCount))
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
@@ -212,13 +249,14 @@ private enum MacTaskSource: String, CaseIterable, Identifiable {
 }
 
 private enum MacTaskStatus: String, CaseIterable, Identifiable {
-    case active, completed, archived
+    case active, completed, archived, deleted
     var id: String { rawValue }
     var title: String {
         switch self {
         case .active: String(localized: "Active")
         case .completed: String(localized: "Completed")
         case .archived: String(localized: "Archived")
+        case .deleted: String(localized: "Recently Deleted")
         }
     }
 }
@@ -227,6 +265,10 @@ private struct MacTaskInspector: View {
     let store: PlanoraStore
     @Bindable var task: PlanoraTask
     @Environment(\.modelContext) private var modelContext
+    @State private var newSubtaskTitle = ""
+    @State private var newLinkTitle = ""
+    @State private var newLinkURL = ""
+    @State private var isConfirmingIncompleteSubtasks = false
 
     var body: some View {
         Form {
@@ -272,13 +314,66 @@ private struct MacTaskInspector: View {
                         set: { task.setPlannedDate($0) }
                     ), displayedComponents: .date)
                 }
+                Picker(String(localized: "Estimated Time"), selection: $task.estimatedMinutes) {
+                    ForEach(PlanoraDurationFormatter.options, id: \.self) { minutes in
+                        Text(PlanoraDurationFormatter.text(minutes: minutes)).tag(minutes)
+                    }
+                }
+                if let completedDate = task.completedDate {
+                    LabeledContent(String(localized: "Completed"), value: completedDate.formatted(date: .abbreviated, time: .shortened))
+                }
             }
 
             Section(String(localized: "Notes")) {
                 TextEditor(text: $task.notes).frame(minHeight: 90)
             }
 
+            Section(String(localized: "Subtasks")) {
+                if !task.subtasks.isEmpty {
+                    Toggle(String(localized: "Calculate progress from subtasks"), isOn: $task.usesSubtasksForProgress)
+                }
+                ForEach(task.subtasks.sorted { $0.sortOrder < $1.sortOrder }) { subtask in
+                    MacSubtaskFormRow(task: task, subtask: subtask)
+                }
+                HStack {
+                    TextField(String(localized: "Subtask Title"), text: $newSubtaskTitle)
+                    Button(String(localized: "Add"), systemImage: "plus") { addSubtask() }
+                        .disabled(newSubtaskTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+
+            Section(String(localized: "Links and Resources")) {
+                ForEach(task.resourceLinks.sorted { $0.createdDate < $1.createdDate }) { resource in
+                    HStack {
+                        if let url = resource.url {
+                            Link(resource.title, destination: url)
+                        } else {
+                            Text(resource.title)
+                        }
+                        Spacer()
+                        Button(role: .destructive) {
+                            task.resourceLinks.removeAll { $0.id == resource.id }
+                            modelContext.delete(resource)
+                        } label: { Image(systemName: "trash") }
+                            .buttonStyle(.borderless)
+                    }
+                }
+                TextField(String(localized: "Link Title"), text: $newLinkTitle)
+                TextField(String(localized: "URL"), text: $newLinkURL)
+                Button(String(localized: "Add Link"), systemImage: "link.badge.plus") { addLink() }
+                    .disabled(validLinkURL == nil)
+            }
+
             Section {
+                if task.isDeleted {
+                    Button(String(localized: "Restore Task"), systemImage: "arrow.uturn.backward") {
+                        PlanoraTaskOperations.restoreFromRecentlyDeleted([task], modelContext: modelContext)
+                    }
+                    Button(String(localized: "Delete Permanently"), systemImage: "trash", role: .destructive) {
+                        let allTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? [task]
+                        PlanoraTaskOperations.permanentlyDelete([task], allTasks: allTasks, modelContext: modelContext)
+                    }
+                } else {
                 Button(
                     task.isPinned ? String(localized: "Unpin Task") : String(localized: "Pin Task"),
                     systemImage: task.isPinned ? "pin.slash" : "pin"
@@ -287,14 +382,115 @@ private struct MacTaskInspector: View {
                     PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
                 }
                 Button(task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete")) {
-                    task.setCompleted(!task.isCompleted)
+                    if !task.isCompleted && task.subtasks.contains(where: { !$0.isCompleted }) {
+                        isConfirmingIncompleteSubtasks = true
+                    } else {
+                        toggleCompletion()
+                    }
+                }
+                Button(task.isArchived ? String(localized: "Restore from Archive") : String(localized: "Archive")) {
+                    task.archivedDate = task.isArchived ? nil : Date()
                     PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+                }
                 }
             }
         }
         .formStyle(.grouped)
         .padding(.vertical, 8)
         .onDisappear { PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext) }
+        .confirmationDialog(
+            String(localized: "Some subtasks are not finished."),
+            isPresented: $isConfirmingIncompleteSubtasks
+        ) {
+            Button(String(localized: "Complete Task and Subtasks")) { toggleCompletion() }
+            Button(String(localized: "Cancel"), role: .cancel) {}
+        } message: {
+            Text(String(localized: "Completing this task will also mark every subtask as complete."))
+        }
+    }
+
+    private var validLinkURL: URL? {
+        guard let url = URL(string: newLinkURL.trimmingCharacters(in: .whitespacesAndNewlines)),
+              ["http", "https"].contains(url.scheme?.lowercased() ?? "") else { return nil }
+        return url
+    }
+
+    private func addSubtask() {
+        let title = newSubtaskTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else { return }
+        let subtask = PlanoraSubtask(title: title, sortOrder: task.subtasks.count, task: task)
+        task.subtasks.append(subtask)
+        modelContext.insert(subtask)
+        newSubtaskTitle = ""
+        PlanoraTaskPersistence.save(modelContext)
+    }
+
+    private func addLink() {
+        guard let url = validLinkURL else { return }
+        let title = newLinkTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resource = PlanoraResourceLink(
+            title: title.isEmpty ? (url.host ?? String(localized: "Resource")) : title,
+            urlString: url.absoluteString,
+            task: task
+        )
+        task.resourceLinks.append(resource)
+        modelContext.insert(resource)
+        newLinkTitle = ""
+        newLinkURL = ""
+        PlanoraTaskPersistence.save(modelContext)
+    }
+
+    private func toggleCompletion() {
+        task.setCompleted(!task.isCompleted)
+        PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+    }
+}
+
+private struct MacSubtaskFormRow: View {
+    @Bindable var task: PlanoraTask
+    @Bindable var subtask: PlanoraSubtask
+    @Environment(\.modelContext) private var modelContext
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Toggle("", isOn: $subtask.isCompleted).labelsHidden()
+                TextField(String(localized: "Subtask Title"), text: $subtask.title)
+                Button(role: .destructive) {
+                    task.subtasks.removeAll { $0.id == subtask.id }
+                    modelContext.delete(subtask)
+                    PlanoraTaskPersistence.save(modelContext)
+                } label: { Image(systemName: "trash") }
+                    .buttonStyle(.borderless)
+            }
+            HStack {
+                Toggle(String(localized: "Target Date"), isOn: Binding(
+                    get: { subtask.targetDate != nil },
+                    set: { subtask.targetDate = $0 ? (subtask.targetDate ?? Date()) : nil }
+                ))
+                if subtask.targetDate != nil {
+                    DatePicker("", selection: Binding(
+                        get: { subtask.targetDate ?? Date() },
+                        set: { subtask.targetDate = $0 }
+                    ), displayedComponents: .date)
+                    .labelsHidden()
+                }
+                Picker(String(localized: "Estimated Time"), selection: $subtask.estimatedMinutes) {
+                    ForEach(PlanoraDurationFormatter.options, id: \.self) { minutes in
+                        Text(PlanoraDurationFormatter.text(minutes: minutes)).tag(minutes)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 130)
+            }
+            .controlSize(.small)
+        }
+        .onChange(of: subtask.isCompleted) { _, _ in
+            if task.usesSubtasksForProgress, !task.subtasks.isEmpty {
+                task.percentageProgress = Double(task.subtasks.filter(\.isCompleted).count) / Double(task.subtasks.count)
+            }
+            PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+        }
     }
 }
 #endif

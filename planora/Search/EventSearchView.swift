@@ -566,7 +566,7 @@ enum PlanoraTaskSearchEngine {
         query: String,
         matching matchesFilters: (PlanoraTask) -> Bool = { _ in true }
     ) -> [PlanoraTask] {
-        let candidates = tasks.filter(matchesFilters)
+        let candidates = tasks.filter { !$0.isDeleted && matchesFilters($0) }
         guard !query.isEmpty else {
             return candidates.planoraSorted { lhs, rhs in
                 PlanoraTaskOrdering.areInSearchOrder(lhs, rhs)

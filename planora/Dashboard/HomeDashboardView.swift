@@ -139,7 +139,7 @@ struct HomeDashboardView: View {
                     LearningInsightsGrid(
                         completedThisWeek: snapshot.completedThisWeek,
                         mostActiveSubject: snapshot.mostActiveSubject,
-                        upcomingWorkload: "\(snapshot.workloadLevel.title) · \(PlanoraLocalization.format(String(localized: "task_count_short_format"), snapshot.upcomingSevenDayCount))",
+                        upcomingWorkload: snapshot.workloadSummary,
                         workloadTint: snapshot.workloadLevel.tint,
                         overdueCount: snapshot.overdueCount
                     )
@@ -194,12 +194,14 @@ private struct HomeDashboardSnapshot {
     let completedThisWeek: Int
     let mostActiveSubject: String
     let upcomingSevenDayCount: Int
+    let upcomingSevenDayEstimatedMinutes: Int
     let overdueCount: Int
     let workloadLevel: LearningWorkloadLevel
     let subjectProgress: [SubjectProgressSnapshot]
     let deadlineTasks: [PlanoraTask]
 
     init(tasks: [PlanoraTask], now: Date = Date(), calendar: Calendar = .current) {
+        let tasks = tasks.filter { !$0.isArchived && !$0.isDeleted }
         hasTasks = !tasks.isEmpty
 
         var incompleteTaskCandidates: [PlanoraTask] = []
@@ -244,6 +246,8 @@ private struct HomeDashboardSnapshot {
         var completedThisWeek = 0
         var subjectCounts: [String: Int] = [:]
         var upcomingSevenDayCount = 0
+        var upcomingSevenDayEstimatedMinutes = 0
+        var workloadScore = 0.0
         var overdueCount = 0
         var progressBySubject: [String: SubjectProgressAccumulator] = [:]
 
@@ -269,11 +273,23 @@ private struct HomeDashboardSnapshot {
                 subjectCounts[task.subject, default: 0] += 1
             }
 
-            if !task.isCompleted, task.hasDeadline, let deadline = task.deadline {
-                if deadline < today {
+            if !task.isCompleted, let schedulingDate = task.plannedDate ?? task.deadline {
+                if task.hasDeadline, let deadline = task.deadline, deadline < today {
                     overdueCount += 1
-                } else if deadline < sevenDayEnd {
+                }
+                if schedulingDate >= today, schedulingDate < sevenDayEnd {
                     upcomingSevenDayCount += 1
+                    upcomingSevenDayEstimatedMinutes += max(task.estimatedMinutes, 0)
+                    let baselineMinutes = Double(max(task.estimatedMinutes, 30))
+                    let priorityMultiplier: Double
+                    switch task.priority {
+                    case .low: priorityMultiplier = 0.8
+                    case .medium: priorityMultiplier = 1
+                    case .high: priorityMultiplier = 1.35
+                    }
+                    let daysRemaining = max(calendar.dateComponents([.day], from: today, to: schedulingDate).day ?? 0, 0)
+                    let urgencyMultiplier = 1 + Double(max(6 - daysRemaining, 0)) * 0.06
+                    workloadScore += baselineMinutes * priorityMultiplier * urgencyMultiplier
                 }
             }
 
@@ -298,6 +314,7 @@ private struct HomeDashboardSnapshot {
         )
         self.completedThisWeek = completedThisWeek
         self.upcomingSevenDayCount = upcomingSevenDayCount
+        self.upcomingSevenDayEstimatedMinutes = upcomingSevenDayEstimatedMinutes
         self.overdueCount = overdueCount
 
         mostActiveSubject = subjectCounts.max { lhs, rhs in
@@ -307,9 +324,9 @@ private struct HomeDashboardSnapshot {
         .map { PlanoraFormat.subjectDisplayName($0.key) }
         ?? String(localized: "None Yet")
 
-        switch upcomingSevenDayCount {
-        case 0...2: workloadLevel = .low
-        case 3...5: workloadLevel = .moderate
+        switch workloadScore {
+        case ..<180: workloadLevel = .low
+        case ..<480: workloadLevel = .moderate
         default: workloadLevel = .high
         }
 
@@ -321,6 +338,14 @@ private struct HomeDashboardSnapshot {
             )
         }
         .sorted { $0.title < $1.title }
+    }
+
+    var workloadSummary: String {
+        let count = PlanoraLocalization.format(String(localized: "task_count_short_format"), upcomingSevenDayCount)
+        guard upcomingSevenDayEstimatedMinutes > 0 else {
+            return "\(workloadLevel.title) · \(count)"
+        }
+        return "\(workloadLevel.title) · \(count) · \(PlanoraDurationFormatter.text(minutes: upcomingSevenDayEstimatedMinutes))"
     }
 }
 

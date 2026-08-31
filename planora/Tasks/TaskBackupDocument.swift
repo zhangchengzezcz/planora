@@ -521,6 +521,12 @@ private struct PlanoraTaskBackupItem: Codable {
     var remoteStatusRawValue: String?
     var needsRemoteReview: Bool
     var archivedDate: Date?
+    var deletedDate: Date?
+    var estimatedMinutes: Int?
+    var actualMinutes: Int?
+    var usesSubtasksForProgress: Bool?
+    var subtasks: [PlanoraSubtaskBackupItem]?
+    var resourceLinks: [PlanoraResourceLinkBackupItem]?
 
     init(task: PlanoraTask) {
         id = task.id
@@ -557,6 +563,12 @@ private struct PlanoraTaskBackupItem: Codable {
         remoteStatusRawValue = task.remoteStatusRawValue
         needsRemoteReview = task.needsRemoteReview
         archivedDate = task.archivedDate
+        deletedDate = task.deletedDate
+        estimatedMinutes = task.estimatedMinutes
+        actualMinutes = task.actualMinutes
+        usesSubtasksForProgress = task.usesSubtasksForProgress
+        subtasks = task.subtasks.sorted { $0.sortOrder < $1.sortOrder }.map(PlanoraSubtaskBackupItem.init)
+        resourceLinks = task.resourceLinks.sorted { $0.createdDate < $1.createdDate }.map(PlanoraResourceLinkBackupItem.init)
     }
 
     var task: PlanoraTask {
@@ -613,9 +625,66 @@ private struct PlanoraTaskBackupItem: Codable {
         restoredTask.remoteStatusRawValue = remoteStatusRawValue
         restoredTask.needsRemoteReview = needsRemoteReview
         restoredTask.archivedDate = archivedDate
+        restoredTask.deletedDate = deletedDate
+        restoredTask.estimatedMinutes = max(estimatedMinutes ?? 0, 0)
+        restoredTask.actualMinutes = max(actualMinutes ?? 0, 0)
+        restoredTask.usesSubtasksForProgress = usesSubtasksForProgress ?? false
+        restoredTask.subtasks = (subtasks ?? []).map { $0.model(task: restoredTask) }
+        restoredTask.resourceLinks = (resourceLinks ?? []).map { $0.model(task: restoredTask) }
         restoredTask.normalizeCalendarDates()
 
         return restoredTask
+    }
+}
+
+private struct PlanoraSubtaskBackupItem: Codable {
+    var id: UUID
+    var title: String
+    var isCompleted: Bool
+    var sortOrder: Int
+    var targetDate: Date?
+    var estimatedMinutes: Int
+    var createdDate: Date
+
+    init(_ subtask: PlanoraSubtask) {
+        id = subtask.id
+        title = subtask.title
+        isCompleted = subtask.isCompleted
+        sortOrder = subtask.sortOrder
+        targetDate = subtask.targetDate
+        estimatedMinutes = subtask.estimatedMinutes
+        createdDate = subtask.createdDate
+    }
+
+    func model(task: PlanoraTask) -> PlanoraSubtask {
+        PlanoraSubtask(
+            id: id,
+            title: title,
+            isCompleted: isCompleted,
+            sortOrder: sortOrder,
+            targetDate: targetDate,
+            estimatedMinutes: estimatedMinutes,
+            createdDate: createdDate,
+            task: task
+        )
+    }
+}
+
+private struct PlanoraResourceLinkBackupItem: Codable {
+    var id: UUID
+    var title: String
+    var urlString: String
+    var createdDate: Date
+
+    init(_ resource: PlanoraResourceLink) {
+        id = resource.id
+        title = resource.title
+        urlString = resource.urlString
+        createdDate = resource.createdDate
+    }
+
+    func model(task: PlanoraTask) -> PlanoraResourceLink {
+        PlanoraResourceLink(id: id, title: title, urlString: urlString, createdDate: createdDate, task: task)
     }
 }
 
@@ -796,6 +865,26 @@ private extension PlanoraTask {
         externalIdentifier = source.externalIdentifier
         externalURLString = source.externalURLString
         externalUpdatedAt = source.externalUpdatedAt
+        isPinned = source.isPinned
+        archivedDate = source.archivedDate
+        deletedDate = source.deletedDate
+        estimatedMinutes = source.estimatedMinutes
+        actualMinutes = source.actualMinutes
+        usesSubtasksForProgress = source.usesSubtasksForProgress
+        subtasks = source.subtasks.enumerated().map { index, item in
+            PlanoraSubtask(
+                title: item.title,
+                isCompleted: item.isCompleted,
+                sortOrder: index,
+                targetDate: item.targetDate,
+                estimatedMinutes: item.estimatedMinutes,
+                createdDate: item.createdDate,
+                task: self
+            )
+        }
+        resourceLinks = source.resourceLinks.map {
+            PlanoraResourceLink(title: $0.title, urlString: $0.urlString, createdDate: $0.createdDate, task: self)
+        }
         normalizeCalendarDates()
     }
 }

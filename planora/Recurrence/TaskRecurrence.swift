@@ -299,6 +299,7 @@ enum RecurringTaskEngine {
         for (_, entries) in series {
             let instances = entries.map(\.1)
             guard let latest = instances.max(by: { $0.recurrenceSequence < $1.recurrenceSequence }),
+                  !latest.isDeleted,
                   let latestDate = latest.deadline,
                   let rule = latest.recurrenceRule,
                   let seriesID = latest.recurrenceSeriesID,

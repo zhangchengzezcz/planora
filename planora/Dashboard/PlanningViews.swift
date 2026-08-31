@@ -155,7 +155,7 @@ private struct TodayPlanningSnapshot {
         var dueToday: [PlanoraTask] = []
         var plannedToday: [PlanoraTask] = []
 
-        for task in tasks where !task.isCompleted {
+        for task in tasks where !task.isCompleted && !task.isArchived && !task.isDeleted {
             if task.hasDeadline, let deadline = task.deadline, deadline < start {
                 overdue.append(task)
             }
@@ -188,7 +188,7 @@ private struct WeekPlanningSnapshot {
         var unscheduled: [PlanoraTask] = []
         var incompleteCount = 0
 
-        for task in tasks where !task.isCompleted {
+        for task in tasks where !task.isCompleted && !task.isArchived && !task.isDeleted {
             incompleteCount += 1
             if task.plannedDate == nil {
                 unscheduled.append(task)

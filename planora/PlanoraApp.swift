@@ -50,7 +50,9 @@ private enum PlanoraSchema {
         PlanoraUnit.self,
         PlanoraTeacher.self,
         PlanoraMessage.self,
-        PlanoraScheduleEvent.self
+        PlanoraScheduleEvent.self,
+        PlanoraSubtask.self,
+        PlanoraResourceLink.self
     ]
 }
 
