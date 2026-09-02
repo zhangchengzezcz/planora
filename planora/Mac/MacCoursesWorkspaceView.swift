@@ -186,6 +186,8 @@ private struct MacCourseDetail: View {
                     }
                 }
 
+                AcademicPlanningSection(subject: course.canonicalSubject, courseID: course.id)
+
                 GroupBox(String(localized: "Tasks")) {
                     if courseTasks.isEmpty {
                         Text(String(localized: "No tasks"))

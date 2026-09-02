@@ -17,6 +17,10 @@ private struct PlanoraRootView: View {
     @Environment(\.modelContext) private var modelContext
     let store: PlanoraStore
     @Query(sort: \PlanoraTask.createdDate) private var tasks: [PlanoraTask]
+    @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
+    @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
+    @Query(sort: \PlanoraTopic.title) private var topics: [PlanoraTopic]
+    @Query(sort: \PlanoraAssessment.date, order: .reverse) private var assessments: [PlanoraAssessment]
     @State private var importAlertTitle = ""
     @State private var importAlertMessage = ""
     @State private var isShowingImportAlert = false
@@ -89,11 +93,20 @@ private struct PlanoraRootView: View {
 
     private func importSharedBackup(from url: URL) {
         do {
-            let preview = try TaskBackupImporter.preview(from: url, existingTasks: tasks)
+            let preview = try TaskBackupImporter.preview(
+                from: url,
+                existingTasks: tasks,
+                existingCourses: courses,
+                existingUnits: units
+            )
             let result = try TaskBackupImporter.importTasks(
                 preview,
                 strategy: .skipDuplicates,
                 existingTasks: tasks,
+                existingCourses: courses,
+                existingUnits: units,
+                existingTopics: topics,
+                existingAssessments: assessments,
                 into: modelContext
             )
             PlanoraTaskPersistence.reconcile(fallbackTasks: tasks, in: modelContext)

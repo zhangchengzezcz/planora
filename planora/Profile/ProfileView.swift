@@ -10,6 +10,8 @@ struct ProfileView: View {
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
     @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
     @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
+    @Query(sort: \PlanoraTopic.title) private var topics: [PlanoraTopic]
+    @Query(sort: \PlanoraAssessment.date, order: .reverse) private var assessments: [PlanoraAssessment]
     @State private var backupDocument = TaskBackupDocument()
     @State private var isShowingBackupExporter = false
     @State private var isShowingBackupImporter = false
@@ -225,7 +227,13 @@ struct ProfileView: View {
     private func prepareBackupExport() {
         do {
             backupDocument = TaskBackupDocument(
-                text: try TaskBackupCodec.json(for: tasks, courses: courses, units: units)
+                text: try TaskBackupCodec.json(
+                    for: tasks,
+                    courses: courses,
+                    units: units,
+                    topics: topics,
+                    assessments: assessments
+                )
             )
             isShowingBackupExporter = true
         } catch {
@@ -278,6 +286,8 @@ struct ProfileView: View {
                 existingTasks: tasks,
                 existingCourses: courses,
                 existingUnits: units,
+                existingTopics: topics,
+                existingAssessments: assessments,
                 into: modelContext
             )
             PlanoraTaskPersistence.reconcile(fallbackTasks: tasks, in: modelContext)
@@ -305,6 +315,8 @@ struct ProfileView: View {
                 tasks: backupTasks,
                 courses: content.courses,
                 units: content.units,
+                topics: content.topics,
+                assessments: content.assessments,
                 duplicateCount: duplicateCount
             )
             isShowingImportOptions = true

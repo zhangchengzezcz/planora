@@ -140,6 +140,7 @@ private struct CreateTaskFormView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
     @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
+    @Query(sort: \PlanoraTopic.title) private var topics: [PlanoraTopic]
     @State private var title = ""
     @State private var selectedSubject = ""
     @State private var selectedCourseID: UUID?
@@ -154,6 +155,11 @@ private struct CreateTaskFormView: View {
     @State private var stageName: String
     @State private var priority: TaskPriority = .medium
     @State private var estimatedMinutes = 0
+    @State private var selectedTopicIDs: Set<UUID> = []
+    @State private var examScope = ""
+    @State private var targetScore: Double?
+    @State private var pastPaperTarget = 0
+    @State private var pastPapersCompleted = 0
     @State private var notes = ""
     @State private var reminders: [TaskReminder] = []
     @State private var recurrenceRule: TaskRecurrenceRule?
@@ -338,6 +344,18 @@ private struct CreateTaskFormView: View {
                         }
                         .pickerStyle(.menu)
 
+                        TaskAcademicPlanningEditor(
+                            taskType: taskType,
+                            subject: selectedSubject,
+                            courseID: selectedCourseID,
+                            topics: topics,
+                            selectedTopicIDs: $selectedTopicIDs,
+                            examScope: $examScope,
+                            targetScore: $targetScore,
+                            pastPaperTarget: $pastPaperTarget,
+                            pastPapersCompleted: $pastPapersCompleted
+                        )
+
                         Divider()
 
                         Toggle(String(localized: "Track Progress"), isOn: $tracksProgress)
@@ -425,6 +443,11 @@ private struct CreateTaskFormView: View {
         task.courseID = selectedCourseID
         task.unitID = selectedUnitID
         task.estimatedMinutes = estimatedMinutes
+        task.topicIDs = Array(selectedTopicIDs)
+        task.examScope = examScope.trimmingCharacters(in: .whitespacesAndNewlines)
+        task.targetScore = targetScore
+        task.pastPaperTarget = pastPaperTarget
+        task.pastPapersCompleted = min(pastPapersCompleted, pastPaperTarget)
 
         modelContext.insert(task)
         task.replaceReminders(

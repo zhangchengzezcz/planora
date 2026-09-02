@@ -90,13 +90,17 @@ enum TaskBackupCodec {
     static func json(
         for tasks: [PlanoraTask],
         courses: [PlanoraCourse] = [],
-        units: [PlanoraUnit] = []
+        units: [PlanoraUnit] = [],
+        topics: [PlanoraTopic] = [],
+        assessments: [PlanoraAssessment] = []
     ) throws -> String {
         let backup = PlanoraTaskBackup(
             exportedAt: Date(),
             tasks: tasks.map(PlanoraTaskBackupItem.init(task:)),
             courses: courses.map(PlanoraCourseBackupItem.init(course:)),
-            units: units.map(PlanoraUnitBackupItem.init(unit:))
+            units: units.map(PlanoraUnitBackupItem.init(unit:)),
+            topics: topics.map(PlanoraTopicBackupItem.init(topic:)),
+            assessments: assessments.map(PlanoraAssessmentBackupItem.init(assessment:))
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -159,10 +163,13 @@ enum TaskBackupCodec {
         let content = PlanoraBackupContent(
             tasks: backup.tasks.map(\.task),
             courses: backup.courses.map(\.course),
-            units: backup.units.map(\.unit)
+            units: backup.units.map(\.unit),
+            topics: backup.topics.map(\.topic),
+            assessments: backup.assessments.map(\.assessment)
         )
 
-        guard !content.tasks.isEmpty || !content.courses.isEmpty || !content.units.isEmpty else {
+        guard !content.tasks.isEmpty || !content.courses.isEmpty || !content.units.isEmpty ||
+                !content.topics.isEmpty || !content.assessments.isEmpty else {
             throw TaskBackupError.emptyBackup
         }
 
@@ -174,6 +181,8 @@ struct PlanoraBackupContent {
     var tasks: [PlanoraTask]
     var courses: [PlanoraCourse]
     var units: [PlanoraUnit]
+    var topics: [PlanoraTopic]
+    var assessments: [PlanoraAssessment]
 }
 
 // MARK: - Import
@@ -230,6 +239,8 @@ enum TaskBackupImporter {
             tasks: content.tasks,
             courses: content.courses,
             units: content.units,
+            topics: content.topics,
+            assessments: content.assessments,
             duplicateCount: taskPreview.duplicateCount
         )
     }
@@ -240,9 +251,17 @@ enum TaskBackupImporter {
         existingTasks: [PlanoraTask],
         existingCourses: [PlanoraCourse] = [],
         existingUnits: [PlanoraUnit] = [],
+        existingTopics: [PlanoraTopic] = [],
+        existingAssessments: [PlanoraAssessment] = [],
         into modelContext: ModelContext
     ) throws -> TaskImportResult {
-        AutomaticTaskBackup.save(tasks: existingTasks)
+        AutomaticTaskBackup.save(
+            tasks: existingTasks,
+            courses: existingCourses,
+            units: existingUnits,
+            topics: existingTopics,
+            assessments: existingAssessments
+        )
         var importIndex = TaskImportIndex(tasks: existingTasks)
         var importedCount = 0
         var skippedCount = 0
@@ -262,6 +281,20 @@ enum TaskBackupImporter {
                 existing: existingUnits,
                 into: modelContext
             )
+            let topicIDMap = importTopics(
+                preview.topics,
+                courseIDMap: courseIDMap,
+                strategy: strategy,
+                existing: existingTopics,
+                into: modelContext
+            )
+            importAssessments(
+                preview.assessments,
+                courseIDMap: courseIDMap,
+                strategy: strategy,
+                existing: existingAssessments,
+                into: modelContext
+            )
 
             for importedTask in preview.tasks {
                 if let courseID = importedTask.courseID {
@@ -270,6 +303,7 @@ enum TaskBackupImporter {
                 if let unitID = importedTask.unitID {
                     importedTask.unitID = unitIDMap[unitID] ?? unitID
                 }
+                importedTask.topicIDs = importedTask.topicIDs.compactMap { topicIDMap[$0] ?? $0 }
                 let duplicate = importIndex.duplicate(of: importedTask)
 
                 switch strategy {
@@ -376,6 +410,62 @@ enum TaskBackupImporter {
         }
         return result
     }
+
+    private static func importTopics(
+        _ imported: [PlanoraTopic],
+        courseIDMap: [UUID: UUID],
+        strategy: TaskImportStrategy,
+        existing: [PlanoraTopic],
+        into modelContext: ModelContext
+    ) -> [UUID: UUID] {
+        var result: [UUID: UUID] = [:]
+        var available = existing
+
+        for topic in imported {
+            let originalID = topic.id
+            topic.courseID = topic.courseID.flatMap { courseIDMap[$0] ?? $0 }
+            let duplicate = available.first {
+                $0.id == originalID || ($0.subject == topic.subject && $0.title.caseInsensitiveCompare(topic.title) == .orderedSame)
+            }
+            if let duplicate, strategy != .importAsNew {
+                result[originalID] = duplicate.id
+                if strategy == .overwriteDuplicates { duplicate.applyImportedValues(from: topic) }
+            } else {
+                if strategy == .importAsNew || duplicate != nil { topic.id = UUID() }
+                result[originalID] = topic.id
+                modelContext.insert(topic)
+                available.append(topic)
+            }
+        }
+        return result
+    }
+
+    private static func importAssessments(
+        _ imported: [PlanoraAssessment],
+        courseIDMap: [UUID: UUID],
+        strategy: TaskImportStrategy,
+        existing: [PlanoraAssessment],
+        into modelContext: ModelContext
+    ) {
+        var available = existing
+        for assessment in imported {
+            assessment.courseID = assessment.courseID.flatMap { courseIDMap[$0] ?? $0 }
+            let duplicate = available.first {
+                $0.id == assessment.id || (
+                    $0.subject == assessment.subject &&
+                    $0.title.caseInsensitiveCompare(assessment.title) == .orderedSame &&
+                    Calendar.current.isDate($0.date, inSameDayAs: assessment.date)
+                )
+            }
+            if let duplicate, strategy != .importAsNew {
+                if strategy == .overwriteDuplicates { duplicate.applyImportedValues(from: assessment) }
+            } else {
+                if strategy == .importAsNew || duplicate != nil { assessment.id = UUID() }
+                modelContext.insert(assessment)
+                available.append(assessment)
+            }
+        }
+    }
 }
 
 private struct TaskImportIndex {
@@ -408,17 +498,23 @@ struct TaskImportPreview: Identifiable {
     let tasks: [PlanoraTask]
     let courses: [PlanoraCourse]
     let units: [PlanoraUnit]
+    let topics: [PlanoraTopic]
+    let assessments: [PlanoraAssessment]
     let duplicateCount: Int
 
     init(
         tasks: [PlanoraTask],
         courses: [PlanoraCourse] = [],
         units: [PlanoraUnit] = [],
+        topics: [PlanoraTopic] = [],
+        assessments: [PlanoraAssessment] = [],
         duplicateCount: Int
     ) {
         self.tasks = tasks
         self.courses = courses
         self.units = units
+        self.topics = topics
+        self.assessments = assessments
         self.duplicateCount = duplicateCount
     }
 }
@@ -441,9 +537,17 @@ enum AutomaticTaskBackup {
     static func save(
         tasks: [PlanoraTask],
         courses: [PlanoraCourse] = [],
-        units: [PlanoraUnit] = []
+        units: [PlanoraUnit] = [],
+        topics: [PlanoraTopic] = [],
+        assessments: [PlanoraAssessment] = []
     ) {
-        guard let json = try? TaskBackupCodec.json(for: tasks, courses: courses, units: units) else { return }
+        guard let json = try? TaskBackupCodec.json(
+            for: tasks,
+            courses: courses,
+            units: units,
+            topics: topics,
+            assessments: assessments
+        ) else { return }
         UserDefaults.standard.set(json, forKey: key)
     }
 
@@ -471,17 +575,23 @@ private struct PlanoraTaskBackup: Codable {
     var tasks: [PlanoraTaskBackupItem]
     var courses: [PlanoraCourseBackupItem]
     var units: [PlanoraUnitBackupItem]
+    var topics: [PlanoraTopicBackupItem] = []
+    var assessments: [PlanoraAssessmentBackupItem] = []
 
     init(
         exportedAt: Date,
         tasks: [PlanoraTaskBackupItem],
         courses: [PlanoraCourseBackupItem],
-        units: [PlanoraUnitBackupItem]
+        units: [PlanoraUnitBackupItem],
+        topics: [PlanoraTopicBackupItem],
+        assessments: [PlanoraAssessmentBackupItem]
     ) {
         self.exportedAt = exportedAt
         self.tasks = tasks
         self.courses = courses
         self.units = units
+        self.topics = topics
+        self.assessments = assessments
     }
 
 }
@@ -527,6 +637,11 @@ private struct PlanoraTaskBackupItem: Codable {
     var usesSubtasksForProgress: Bool?
     var subtasks: [PlanoraSubtaskBackupItem]?
     var resourceLinks: [PlanoraResourceLinkBackupItem]?
+    var topicIDs: [UUID]?
+    var examScope: String?
+    var targetScore: Double?
+    var pastPaperTarget: Int?
+    var pastPapersCompleted: Int?
 
     init(task: PlanoraTask) {
         id = task.id
@@ -569,6 +684,11 @@ private struct PlanoraTaskBackupItem: Codable {
         usesSubtasksForProgress = task.usesSubtasksForProgress
         subtasks = task.subtasks.sorted { $0.sortOrder < $1.sortOrder }.map(PlanoraSubtaskBackupItem.init)
         resourceLinks = task.resourceLinks.sorted { $0.createdDate < $1.createdDate }.map(PlanoraResourceLinkBackupItem.init)
+        topicIDs = task.topicIDs
+        examScope = task.examScope
+        targetScore = task.targetScore
+        pastPaperTarget = task.pastPaperTarget
+        pastPapersCompleted = task.pastPapersCompleted
     }
 
     var task: PlanoraTask {
@@ -631,9 +751,79 @@ private struct PlanoraTaskBackupItem: Codable {
         restoredTask.usesSubtasksForProgress = usesSubtasksForProgress ?? false
         restoredTask.subtasks = (subtasks ?? []).map { $0.model(task: restoredTask) }
         restoredTask.resourceLinks = (resourceLinks ?? []).map { $0.model(task: restoredTask) }
+        restoredTask.topicIDs = topicIDs ?? []
+        restoredTask.examScope = examScope ?? ""
+        restoredTask.targetScore = targetScore
+        restoredTask.pastPaperTarget = max(pastPaperTarget ?? 0, 0)
+        restoredTask.pastPapersCompleted = min(max(pastPapersCompleted ?? 0, 0), restoredTask.pastPaperTarget)
         restoredTask.normalizeCalendarDates()
 
         return restoredTask
+    }
+}
+
+private struct PlanoraTopicBackupItem: Codable {
+    var id: UUID
+    var subject: String
+    var title: String
+    var mastery: Double
+    var notes: String
+    var courseID: UUID?
+    var createdDate: Date
+
+    init(topic: PlanoraTopic) {
+        id = topic.id
+        subject = topic.subject
+        title = topic.title
+        mastery = topic.mastery
+        notes = topic.notes
+        courseID = topic.courseID
+        createdDate = topic.createdDate
+    }
+
+    var topic: PlanoraTopic {
+        PlanoraTopic(id: id, subject: subject, title: title, mastery: mastery, notes: notes, courseID: courseID, createdDate: createdDate)
+    }
+}
+
+private struct PlanoraAssessmentBackupItem: Codable {
+    var id: UUID
+    var title: String
+    var subject: String
+    var earnedScore: Double
+    var maximumScore: Double
+    var date: Date
+    var typeRawValue: String
+    var notes: String
+    var courseID: UUID?
+    var createdDate: Date
+
+    init(assessment: PlanoraAssessment) {
+        id = assessment.id
+        title = assessment.title
+        subject = assessment.subject
+        earnedScore = assessment.earnedScore
+        maximumScore = assessment.maximumScore
+        date = assessment.date
+        typeRawValue = assessment.typeRawValue
+        notes = assessment.notes
+        courseID = assessment.courseID
+        createdDate = assessment.createdDate
+    }
+
+    var assessment: PlanoraAssessment {
+        PlanoraAssessment(
+            id: id,
+            title: title,
+            subject: subject,
+            earnedScore: earnedScore,
+            maximumScore: maximumScore,
+            date: date,
+            type: AssessmentType(rawValue: typeRawValue) ?? .other,
+            notes: notes,
+            courseID: courseID,
+            createdDate: createdDate
+        )
     }
 }
 
@@ -871,6 +1061,11 @@ private extension PlanoraTask {
         estimatedMinutes = source.estimatedMinutes
         actualMinutes = source.actualMinutes
         usesSubtasksForProgress = source.usesSubtasksForProgress
+        topicIDs = source.topicIDs
+        examScope = source.examScope
+        targetScore = source.targetScore
+        pastPaperTarget = source.pastPaperTarget
+        pastPapersCompleted = source.pastPapersCompleted
         subtasks = source.subtasks.enumerated().map { index, item in
             PlanoraSubtask(
                 title: item.title,
@@ -886,5 +1081,30 @@ private extension PlanoraTask {
             PlanoraResourceLink(title: $0.title, urlString: $0.urlString, createdDate: $0.createdDate, task: self)
         }
         normalizeCalendarDates()
+    }
+}
+
+private extension PlanoraTopic {
+    func applyImportedValues(from source: PlanoraTopic) {
+        subject = source.subject
+        title = source.title
+        mastery = min(max(source.mastery, 0), 1)
+        notes = source.notes
+        courseID = source.courseID
+        createdDate = source.createdDate
+    }
+}
+
+private extension PlanoraAssessment {
+    func applyImportedValues(from source: PlanoraAssessment) {
+        title = source.title
+        subject = source.subject
+        earnedScore = max(source.earnedScore, 0)
+        maximumScore = max(source.maximumScore, 0.01)
+        date = source.date
+        typeRawValue = source.typeRawValue
+        notes = source.notes
+        courseID = source.courseID
+        createdDate = source.createdDate
     }
 }

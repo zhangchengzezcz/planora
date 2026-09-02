@@ -49,6 +49,7 @@ struct SubjectDetailView: View {
             VStack(alignment: .leading, spacing: 18) {
                 header
                 overviewSection
+                AcademicPlanningSection(subject: subject)
 
                 if !upcomingTasks.isEmpty {
                     taskSection(title: String(localized: "Upcoming"), tasks: upcomingTasks)

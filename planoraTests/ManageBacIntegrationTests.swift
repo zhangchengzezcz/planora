@@ -302,9 +302,45 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(restoredTask.unitID, restoredUnit.id)
     }
 
+    func testV9BackupPreservesAcademicPlanning() throws {
+        let topic = PlanoraTopic(subject: "Physics HL", title: "Mechanics", mastery: 0.75)
+        let assessment = PlanoraAssessment(
+            title: "Mock 1",
+            subject: "Physics HL",
+            earnedScore: 84,
+            maximumScore: 100,
+            date: Date(timeIntervalSince1970: 1_788_000_000),
+            type: .mock
+        )
+        let task = PlanoraTask(
+            title: "Physics Mock",
+            subject: "Physics HL",
+            type: .exam,
+            deadline: Date(timeIntervalSince1970: 1_800_000_000),
+            hasDeadline: true,
+            progressState: .percentage(0.25),
+            notes: ""
+        )
+        task.topicIDs = [topic.id]
+        task.examScope = "Mechanics and waves"
+        task.targetScore = 90
+        task.pastPaperTarget = 6
+        task.pastPapersCompleted = 2
+
+        let json = try TaskBackupCodec.json(for: [task], topics: [topic], assessments: [assessment])
+        let content = try TaskBackupCodec.content(from: json)
+
+        XCTAssertEqual(content.tasks.first?.topicIDs, [topic.id])
+        XCTAssertEqual(content.tasks.first?.examScope, "Mechanics and waves")
+        XCTAssertEqual(content.tasks.first?.targetScore, 90)
+        XCTAssertEqual(content.tasks.first?.pastPapersCompleted, 2)
+        XCTAssertEqual(content.topics.first?.title, "Mechanics")
+        XCTAssertEqual(try XCTUnwrap(content.assessments.first).percentage, 0.84, accuracy: 0.001)
+    }
+
     private func makeContainer() throws -> ModelContainer {
         try ModelContainer(
-            for: PlanoraTask.self, PlanoraCourse.self, PlanoraUnit.self,
+            for: PlanoraTask.self, PlanoraCourse.self, PlanoraUnit.self, PlanoraTopic.self, PlanoraAssessment.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
     }

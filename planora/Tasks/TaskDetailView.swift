@@ -11,6 +11,7 @@ struct TaskDetailView: View {
     @Query(sort: \PlanoraTask.createdDate) private var allTasks: [PlanoraTask]
     @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
     @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
+    @Query(sort: \PlanoraTopic.title) private var topics: [PlanoraTopic]
     @State private var isShowingDeleteConfirmation = false
     @State private var isShowingIncompleteSubtasksConfirmation = false
 
@@ -25,6 +26,7 @@ struct TaskDetailView: View {
                 }
 
                 TaskSubtasksPanel(task: task)
+                TaskAcademicPlanningPanel(task: task, topics: topics)
                 TaskResourcesPanel(task: task)
                 notesPanel
                 if task.isDeleted {
@@ -683,6 +685,7 @@ private struct EditTaskView: View {
     @Query(sort: \PlanoraTask.createdDate) private var allTasks: [PlanoraTask]
     @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
     @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
+    @Query(sort: \PlanoraTopic.title) private var topics: [PlanoraTopic]
     @State private var title: String
     @State private var selectedSubject: String
     @State private var selectedCourseID: UUID?
@@ -694,6 +697,11 @@ private struct EditTaskView: View {
     @State private var plannedDate: Date
     @State private var priority: TaskPriority
     @State private var estimatedMinutes: Int
+    @State private var selectedTopicIDs: Set<UUID>
+    @State private var examScope: String
+    @State private var targetScore: Double?
+    @State private var pastPaperTarget: Int
+    @State private var pastPapersCompleted: Int
     @State private var tracksProgress: Bool
     @State private var progressKind: ProgressKind
     @State private var percentageProgress: Double
@@ -717,6 +725,11 @@ private struct EditTaskView: View {
         _plannedDate = State(initialValue: task.plannedDate ?? Date())
         _priority = State(initialValue: task.priority)
         _estimatedMinutes = State(initialValue: task.estimatedMinutes)
+        _selectedTopicIDs = State(initialValue: Set(task.topicIDs))
+        _examScope = State(initialValue: task.examScope)
+        _targetScore = State(initialValue: task.targetScore)
+        _pastPaperTarget = State(initialValue: task.pastPaperTarget)
+        _pastPapersCompleted = State(initialValue: task.pastPapersCompleted)
         _tracksProgress = State(initialValue: task.tracksProgress)
         _progressKind = State(initialValue: task.progressState.kind)
         _percentageProgress = State(initialValue: task.progressState.percentageValue ?? 0)
@@ -887,6 +900,20 @@ private struct EditTaskView: View {
                 }
             }
 
+            Section(String(localized: "Academic Planning")) {
+                TaskAcademicPlanningEditor(
+                    taskType: selectedType,
+                    subject: selectedSubject,
+                    courseID: selectedCourseID,
+                    topics: topics,
+                    selectedTopicIDs: $selectedTopicIDs,
+                    examScope: $examScope,
+                    targetScore: $targetScore,
+                    pastPaperTarget: $pastPaperTarget,
+                    pastPapersCompleted: $pastPapersCompleted
+                )
+            }
+
             Section(String(localized: "Notes")) {
                 TextField(String(localized: "Notes"), text: $notes, axis: .vertical)
                     .lineLimit(3...7)
@@ -1020,6 +1047,11 @@ private struct EditTaskView: View {
         }
         target.priority = priority
         target.estimatedMinutes = estimatedMinutes
+        target.topicIDs = Array(selectedTopicIDs)
+        target.examScope = examScope.trimmingCharacters(in: .whitespacesAndNewlines)
+        target.targetScore = targetScore
+        target.pastPaperTarget = pastPaperTarget
+        target.pastPapersCompleted = min(pastPapersCompleted, pastPaperTarget)
         target.tracksProgress = tracksProgress
         if !preservesProgress {
             target.progressState = progressKind == .percentage

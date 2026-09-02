@@ -2,9 +2,9 @@
 
 **中文** | **English**
 
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.4 版本将置顶任务、本地头像与 ManageBac 完成交互扩展到 iPhone，并让 Mac 与 iPhone 继续共享排序、备份和学习数据逻辑。
+Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.5 版本加入课程 Topic、成绩记录与考试复习规划，并让 iPhone、Mac 与本地 Android 工程共享 JSON v9 学术数据结构。
 
-Planora is a study planning app for IB and IGCSE students. Version 1.6.4 brings pinned tasks, local avatars, and the refined ManageBac completion flow to iPhone while keeping sorting, backup, and learning data logic shared across Mac and iPhone.
+Planora is a study planning app for IB and IGCSE students. Version 1.6.5 adds syllabus topics, assessment tracking, and exam planning while keeping the JSON v9 academic data structure aligned across iPhone, Mac, and the local Android project.
 
 ## 交互式演示 / Interactive Demo
 
@@ -18,8 +18,8 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 
 ## 当前版本 / Current Version
 
-- Version: **1.6.4**
-- Build: **14**
+- Version: **1.6.5**
+- Build: **15**
 - Platform: **iOS and native macOS 27**
 - UI: SwiftUI, SwiftData, Observation, system navigation and platform-native surfaces
 - Status: Native desktop and mobile academic planning workflow
@@ -61,6 +61,9 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - Xcode 文件系统同步目录自动管理源码归属，不再依赖手工维护的 Sources 文件列表
 - 共享模型、状态、存储与业务能力；iPhone 与 Mac 仅保留各自轻量、原生的界面壳层
 - ManageBac 课程工作区显示教师、Unit 与关联任务，并识别 PDP/PDP1/PDP2、GP/GPTPD 与 Global Perspectives
+- 科目与 ManageBac 课程工作区支持 Topic 掌握度、成绩记录和趋势平均值
+- Exam 与 Revision 任务支持关联 Topic、考试范围、目标成绩及 Past Paper 目标与完成量
+- JSON v9 备份完整保留 Topic、Assessment 与考试复习规划，并支持安全去重、覆盖和新副本导入
 - 本地 UserDefaults 保存学习空间与显示偏好，SwiftData 保存任务
 
 ### English
@@ -97,6 +100,9 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - Xcode file-system-synchronized folders manage source membership automatically instead of a manually maintained Sources list
 - Shared models, state, storage, and feature logic with lightweight platform-native presentation shells for iPhone and Mac
 - A ManageBac course workspace for teachers, units, and related tasks, including PDP/PDP1/PDP2, GP/GPTPD, and Global Perspectives recognition
+- Topic mastery, assessment results, and current averages in subject and ManageBac course workspaces
+- Topic links, exam scope, target score, and Past Paper goals for Exam and Revision tasks
+- JSON v9 backup support for topics, assessments, and exam planning with safe skip, overwrite, and import-as-new strategies
 - Local UserDefaults persistence for profile and display preferences, plus SwiftData task storage
 
 ## 项目结构 / Project Structure
@@ -177,18 +183,17 @@ xcodebuild -project planora.xcodeproj \
 
 ### 中文
 
-Planora 1.6.4 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、系统导航工具组、常驻搜索框、表格、检查器与独立设置场景。头像、任务置顶、排序、备份与 ManageBac 完成逻辑位于共享层，平台差异只留在轻量界面壳层。
+Planora 1.6.5 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、系统导航工具组、常驻搜索框、表格、检查器与独立设置场景。Topic、Assessment、考试规划、头像、任务排序、备份与 ManageBac 逻辑位于共享层，平台差异只留在轻量界面壳层。
 
 ### English
 
-Planora 1.6.4 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, a system navigation control group, persistent search, tables, inspectors, and a dedicated Settings scene. Avatars, task pinning, ordering, backup, and ManageBac completion logic now live in the shared layer while platform differences stay in lightweight presentation shells.
+Planora 1.6.5 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, a system navigation control group, persistent search, tables, inspectors, and a dedicated Settings scene. Topics, assessments, exam planning, avatars, ordering, backup, and ManageBac logic live in the shared layer while platform differences stay in lightweight presentation shells.
 
 ## 后续计划 / Next Steps
 
-- 子任务与预计用时 / Subtasks and estimated duration
-- 归档、历史与批量操作 / Archive, history, and bulk operations
-- 任务资料链接 / Task resource links
-- 考试复习计划、Topic 与成绩记录 / Exam planning, topics, and assessment tracking
+- 小组件与快捷指令 / Widgets and App Intents
+- 无障碍与多窗口体验完善 / Accessibility and multi-window refinement
+- 可选的本地学习计时与实际用时分析 / Optional local study timing and actual-duration analysis
 
 ## License
 

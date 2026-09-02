@@ -44,6 +44,11 @@ final class PlanoraTask {
     var estimatedMinutes: Int = 0
     var actualMinutes: Int = 0
     var usesSubtasksForProgress: Bool = false
+    var topicIDsData: Data?
+    var examScope: String = ""
+    var targetScore: Double?
+    var pastPaperTarget: Int = 0
+    var pastPapersCompleted: Int = 0
     @Relationship(deleteRule: .cascade, inverse: \PlanoraSubtask.task)
     var subtasks: [PlanoraSubtask] = []
     @Relationship(deleteRule: .cascade, inverse: \PlanoraResourceLink.task)
@@ -102,6 +107,11 @@ final class PlanoraTask {
         self.estimatedMinutes = 0
         self.actualMinutes = 0
         self.usesSubtasksForProgress = false
+        self.topicIDsData = nil
+        self.examScope = ""
+        self.targetScore = nil
+        self.pastPaperTarget = 0
+        self.pastPapersCompleted = 0
         if progressState.kind == .stage {
             self.timelineData = AcademicMilestone.encodedDefaults(
                 for: type,
@@ -209,6 +219,21 @@ final class PlanoraTask {
 
     var isRecurring: Bool {
         recurrenceSeriesID != nil && recurrenceRule != nil
+    }
+
+    var topicIDs: [UUID] {
+        get {
+            guard let topicIDsData else { return [] }
+            return (try? JSONDecoder().decode([UUID].self, from: topicIDsData)) ?? []
+        }
+        set {
+            let unique = Array(Set(newValue))
+            topicIDsData = unique.isEmpty ? nil : try? JSONEncoder().encode(unique)
+        }
+    }
+
+    var isExamPlanningTask: Bool {
+        type == .exam || type == .revision
     }
 
     func setDeadline(_ date: Date?, enabled: Bool, calendar: Calendar = .current) {

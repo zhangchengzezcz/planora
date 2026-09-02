@@ -1,5 +1,27 @@
 # Changelog / 更新说明
 
+## 1.6.5 - 2026-09-01
+
+### 中文
+
+- 新增课程 Topic 模型与掌握度管理，可在科目及 ManageBac 课程工作区新增、编辑、删除并查看进度。
+- 新增 Assessment 成绩记录，支持测验、作业、实验报告、Mock 与 Exam 类型，并显示当前平均成绩。
+- Exam 与 Revision 任务新增 Topic 关联、考试范围、目标成绩和 Past Paper 目标/完成量。
+- 扩展 JSON v9 备份与导入：完整保留 Topic、Assessment 和考试规划字段，导入新副本时会正确重映射关联 ID。
+- 自动备份与导入回滚现在同时保护课程、Unit、Topic、Assessment 和任务，避免失败后留下半成品数据。
+- Apple 端完成英文、简体中文与日文 String Catalog 校验；Android 本地工程同步完成 Room 5 迁移与中英文本地化。
+- 通过 iPhone 17 Pro、macOS 及 Android 的编译、单元测试、Lint 和 APK 构建验证。
+
+### English
+
+- Added syllabus topics and mastery tracking across subject and ManageBac course workspaces, including create, edit, and delete workflows.
+- Added assessment tracking for quizzes, assignments, lab reports, mocks, and exams with current-average feedback.
+- Added topic links, exam scope, target scores, and Past Paper goals/completion to Exam and Revision tasks.
+- Extended JSON v9 backup and import to preserve topics, assessments, and exam-planning fields, with relationship remapping for import-as-new.
+- Automatic backups and transactional rollback now protect courses, units, topics, assessments, and tasks together.
+- Validated the Apple String Catalog in English, Simplified Chinese, and Japanese; aligned the local Android project with Room schema 5 and Chinese/English resources.
+- Passed iPhone 17 Pro, macOS, and Android compilation, unit-test, lint, and APK build checks.
+
 ## 1.6.4 - 2026-08-27
 
 ### 中文
