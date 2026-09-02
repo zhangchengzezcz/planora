@@ -2,9 +2,9 @@
 
 **中文** | **English**
 
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.5 版本加入课程 Topic、成绩记录与考试复习规划，并让 iPhone、Mac 与本地 Android 工程共享 JSON v9 学术数据结构。
+Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.6 版本修复 Mac SwiftData 持久化查询与 Xcode 27 并发隔离问题，并保留 1.6.5 的课程 Topic、成绩记录、考试复习规划与 JSON v9 学术数据结构。
 
-Planora is a study planning app for IB and IGCSE students. Version 1.6.5 adds syllabus topics, assessment tracking, and exam planning while keeping the JSON v9 academic data structure aligned across iPhone, Mac, and the local Android project.
+Planora is a study planning app for IB and IGCSE students. Version 1.6.6 fixes Mac SwiftData persistence queries and Xcode 27 actor-isolation diagnostics while retaining the syllabus topics, assessment tracking, exam planning, and JSON v9 academic data introduced in 1.6.5.
 
 ## 交互式演示 / Interactive Demo
 
@@ -18,8 +18,8 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 
 ## 当前版本 / Current Version
 
-- Version: **1.6.5**
-- Build: **15**
+- Version: **1.6.6**
+- Build: **16**
 - Platform: **iOS and native macOS 27**
 - UI: SwiftUI, SwiftData, Observation, system navigation and platform-native surfaces
 - Status: Native desktop and mobile academic planning workflow
@@ -183,11 +183,11 @@ xcodebuild -project planora.xcodeproj \
 
 ### 中文
 
-Planora 1.6.5 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、系统导航工具组、常驻搜索框、表格、检查器与独立设置场景。Topic、Assessment、考试规划、头像、任务排序、备份与 ManageBac 逻辑位于共享层，平台差异只留在轻量界面壳层。
+Planora 1.6.6 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、系统导航工具组、常驻搜索框、表格、检查器与独立设置场景。Topic、Assessment、考试规划、头像、任务排序、备份与 ManageBac 逻辑位于共享层，平台差异只留在轻量界面壳层。
 
 ### English
 
-Planora 1.6.5 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, a system navigation control group, persistent search, tables, inspectors, and a dedicated Settings scene. Topics, assessments, exam planning, avatars, ordering, backup, and ManageBac logic live in the shared layer while platform differences stay in lightweight presentation shells.
+Planora 1.6.6 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, a system navigation control group, persistent search, tables, inspectors, and a dedicated Settings scene. Topics, assessments, exam planning, avatars, ordering, backup, and ManageBac logic live in the shared layer while platform differences stay in lightweight presentation shells.
 
 ## 后续计划 / Next Steps
 

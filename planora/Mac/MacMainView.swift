@@ -175,7 +175,7 @@ private struct MacSidebar: View {
     @State private var isShowingHelp = false
     @Query(
         filter: #Predicate<PlanoraTask> { task in
-            task.isPinned && !task.isCompleted && !task.isArchived && !task.isDeleted
+            task.isPinned && !task.isCompleted && task.archivedDate == nil && task.deletedDate == nil
         },
         sort: \PlanoraTask.createdDate,
         order: .reverse

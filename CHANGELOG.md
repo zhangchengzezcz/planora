@@ -1,5 +1,21 @@
 # Changelog / 更新说明
 
+## 1.6.6 - 2026-09-02
+
+### 中文
+
+- 修复 Mac 侧栏置顶任务查询引用 SwiftData 计算属性导致的启动崩溃，查询现在只使用持久化字段，并兼容现有本地数据库。
+- 修复 Xcode 27 对任务备份快照的主线程隔离诊断，子任务与资料链接继续完整写入 JSON v9。
+- 清理 String Catalog 中 4 个失效条目，不再显示“源代码中找不到引用”警告，同时保留全部有效的英文、简体中文与日文翻译。
+- 新增置顶任务持久化查询回归覆盖，并使用现有磁盘数据库完成 Mac 启动验证。
+
+### English
+
+- Fixed a Mac launch crash caused by querying computed SwiftData archive/deletion properties; the pinned-task query now uses persisted fields and remains compatible with the existing local store.
+- Fixed Xcode 27 main-actor diagnostics in task backup snapshots while preserving subtasks and resource links in JSON v9.
+- Removed four stale String Catalog entries so Xcode no longer reports missing source references, while retaining every active English, Simplified Chinese, and Japanese translation.
+- Expanded the pinned-task persistence regression test and verified Mac launch against the existing on-disk store.
+
 ## 1.6.5 - 2026-09-01
 
 ### 中文

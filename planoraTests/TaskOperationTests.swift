@@ -155,12 +155,18 @@ final class TaskOperationTests: XCTestCase {
         let completed = makeTask(title: "Completed")
         completed.isPinned = true
         completed.setCompleted(true)
-        [pinned, regular, completed].forEach(context.insert)
+        let archived = makeTask(title: "Archived")
+        archived.isPinned = true
+        archived.archivedDate = Date()
+        let deleted = makeTask(title: "Deleted")
+        deleted.isPinned = true
+        deleted.deletedDate = Date()
+        [pinned, regular, completed, archived, deleted].forEach(context.insert)
         try context.save()
 
         let descriptor = FetchDescriptor<PlanoraTask>(
             predicate: #Predicate { task in
-                task.isPinned && !task.isCompleted && task.archivedDate == nil
+                task.isPinned && !task.isCompleted && task.archivedDate == nil && task.deletedDate == nil
             }
         )
         XCTAssertEqual(try context.fetch(descriptor).map(\.title), ["Pinned"])

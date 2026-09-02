@@ -643,6 +643,7 @@ private struct PlanoraTaskBackupItem: Codable {
     var pastPaperTarget: Int?
     var pastPapersCompleted: Int?
 
+    @MainActor
     init(task: PlanoraTask) {
         id = task.id
         title = task.title

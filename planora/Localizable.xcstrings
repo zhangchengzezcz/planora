@@ -1,622 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Academic Planning" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Academic Planning"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "学習計画"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "学术规划"
-          }
-        }
-      }
-    },
-    "Add %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add %1$@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@を追加"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "添加%1$@"
-          }
-        }
-      }
-    },
-    "Add Assessment" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Assessment"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "評価を追加"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "添加成绩"
-          }
-        }
-      }
-    },
-    "Add Topic" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Topic"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "トピックを追加"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "添加主题"
-          }
-        }
-      }
-    },
-    "Assessment Name" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Assessment Name"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "評価名"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "测评名称"
-          }
-        }
-      }
-    },
-    "Assessment Type" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Assessment Type"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "評価タイプ"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "测评类型"
-          }
-        }
-      }
-    },
-    "Assessments" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Assessments"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "成績記録"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "成绩记录"
-          }
-        }
-      }
-    },
-    "Current average: %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current average: %1$@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "現在の平均：%1$@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "当前平均：%1$@"
-          }
-        }
-      }
-    },
-    "Earned Score" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Earned Score"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "獲得点"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "获得分数"
-          }
-        }
-      }
-    },
-    "Edit Assessment" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit Assessment"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "評価を編集"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "编辑成绩"
-          }
-        }
-      }
-    },
-    "Edit Topic" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Edit Topic"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "トピックを編集"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "编辑主题"
-          }
-        }
-      }
-    },
-    "Exam Planning" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exam Planning"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "試験計画"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "考试规划"
-          }
-        }
-      }
-    },
-    "Exam Scope" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exam Scope"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "試験範囲"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "考试范围"
-          }
-        }
-      }
-    },
-    "Lab Report" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lab Report"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "実験レポート"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "实验报告"
-          }
-        }
-      }
-    },
-    "Mastery" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mastery"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "習熟度"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "掌握程度"
-          }
-        }
-      }
-    },
-    "Maximum Score" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Maximum Score"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "満点"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "满分"
-          }
-        }
-      }
-    },
-    "Mock Exam" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mock Exam"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "模擬試験"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "模拟考试"
-          }
-        }
-      }
-    },
-    "No assessments yet" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No assessments yet"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "成績記録はまだありません"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暂无成绩记录"
-          }
-        }
-      }
-    },
-    "No topics yet" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No topics yet"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "トピックはまだありません"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "暂无课程主题"
-          }
-        }
-      }
-    },
-    "Past Paper Goal: %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Past Paper Goal: %lld"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "過去問目標：%lld"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "模拟卷目标：%lld"
-          }
-        }
-      }
-    },
-    "Past Papers: %lld / %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Past Papers: %1$lld / %2$lld"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "過去問：%1$lld / %2$lld"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "模拟卷：%1$lld / %2$lld"
-          }
-        }
-      }
-    },
-    "Quiz" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quiz"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "小テスト"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "测验"
-          }
-        }
-      }
-    },
-    "Record results and follow the trend over time." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Record results and follow the trend over time."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "成績を記録し、推移を確認します。"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "记录成绩并查看变化趋势。"
-          }
-        }
-      }
-    },
-    "Score" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Score"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "スコア"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "分数"
-          }
-        }
-      }
-    },
-    "Target Score" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Target Score"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "目標スコア"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "目标成绩"
-          }
-        }
-      }
-    },
-    "Topic Name" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Topic Name"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "トピック名"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "主题名称"
-          }
-        }
-      }
-    },
-    "Topics" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Topics"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "トピック"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "课程主题"
-          }
-        }
-      }
-    },
-    "Track syllabus mastery without predicting a final grade." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Track syllabus mastery without predicting a final grade."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "最終成績を予測せず、シラバスの習熟度を記録します。"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "记录课程大纲掌握程度，不预测最终成绩。"
-          }
-        }
-      }
-    },
     "%@ · %@" : {
       "comment" : "The button that triggers the action of switching to a different curriculum. The first argument is the string “Switch Curriculum”. The second argument is the badge text that describes the curriculum.",
       "isCommentAutoGenerated" : true,
@@ -821,6 +205,28 @@
         }
       }
     },
+    "Academic Planning" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Academic Planning"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "学習計画"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "学术规划"
+          }
+        }
+      }
+    },
     "Accent Color" : {
       "localizations" : {
         "en" : {
@@ -931,6 +337,50 @@
         }
       }
     },
+    "Add %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add %1$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@を追加"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加%1$@"
+          }
+        }
+      }
+    },
+    "Add Assessment" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Assessment"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "評価を追加"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加成绩"
+          }
+        }
+      }
+    },
     "Add Custom Reminder" : {
       "localizations" : {
         "en" : {
@@ -1015,6 +465,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "添加子任务"
+          }
+        }
+      }
+    },
+    "Add Topic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Topic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トピックを追加"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加主题"
           }
         }
       }
@@ -1521,6 +993,72 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "归档任务仍会保留在任务历史中。"
+          }
+        }
+      }
+    },
+    "Assessment Name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assessment Name"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "評価名"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测评名称"
+          }
+        }
+      }
+    },
+    "Assessment Type" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assessment Type"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "評価タイプ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测评类型"
+          }
+        }
+      }
+    },
+    "Assessments" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assessments"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "成績記録"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "成绩记录"
           }
         }
       }
@@ -2999,6 +2537,28 @@
         }
       }
     },
+    "Current average: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current average: %1$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在の平均：%1$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前平均：%1$@"
+          }
+        }
+      }
+    },
     "Current Focus" : {
       "localizations" : {
         "en" : {
@@ -3027,29 +2587,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Current Subject"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "現在の科目"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "当前科目"
-          }
-        }
-      }
-    },
-    "Current Subjects" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current Subjects"
           }
         },
         "ja" : {
@@ -3946,29 +3483,6 @@
         }
       }
     },
-    "Deleted tasks can be restored from the undo banner." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deleted tasks can be restored from the undo banner."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "削除したタスクは取り消しバナーから復元できます。"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "删除后可通过撤销提示恢复任务。"
-          }
-        }
-      }
-    },
     "Deleted tasks remain in Recently Deleted until permanently removed." : {
       "localizations" : {
         "en" : {
@@ -4255,6 +3769,28 @@
         }
       }
     },
+    "Earned Score" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earned Score"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "獲得点"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "获得分数"
+          }
+        }
+      }
+    },
     "Edit" : {
       "localizations" : {
         "en" : {
@@ -4273,6 +3809,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "编辑"
+          }
+        }
+      }
+    },
+    "Edit Assessment" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Assessment"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "評価を編集"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑成绩"
           }
         }
       }
@@ -4361,6 +3919,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "编辑时间线"
+          }
+        }
+      }
+    },
+    "Edit Topic" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Topic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トピックを編集"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑主题"
           }
         }
       }
@@ -4889,6 +4469,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "考试"
+          }
+        }
+      }
+    },
+    "Exam Planning" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exam Planning"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試験計画"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "考试规划"
+          }
+        }
+      }
+    },
+    "Exam Scope" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exam Scope"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試験範囲"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "考试范围"
           }
         }
       }
@@ -6016,6 +5640,28 @@
         }
       }
     },
+    "Lab Report" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lab Report"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "実験レポート"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实验报告"
+          }
+        }
+      }
+    },
     "Language Study" : {
       "localizations" : {
         "en" : {
@@ -6566,6 +6212,28 @@
         }
       }
     },
+    "Mastery" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mastery"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "習熟度"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "掌握程度"
+          }
+        }
+      }
+    },
     "Math Mock Exam" : {
       "localizations" : {
         "en" : {
@@ -6606,6 +6274,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Math 复习"
+          }
+        }
+      }
+    },
+    "Maximum Score" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximum Score"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "満点"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "满分"
           }
         }
       }
@@ -6848,6 +6538,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld 分钟"
+          }
+        }
+      }
+    },
+    "Mock Exam" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mock Exam"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模擬試験"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模拟考试"
           }
         }
       }
@@ -7204,6 +6916,28 @@
         }
       }
     },
+    "No assessments yet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No assessments yet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "成績記録はまだありません"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无成绩记录"
+          }
+        }
+      }
+    },
     "No deadline" : {
       "localizations" : {
         "en" : {
@@ -7402,29 +7136,6 @@
         }
       }
     },
-    "No Subjects Yet" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Subjects Yet"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "科目がまだありません"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尚未选择科目"
-          }
-        }
-      }
-    },
     "No target date" : {
       "localizations" : {
         "en" : {
@@ -7553,6 +7264,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "暂无课程表"
+          }
+        }
+      }
+    },
+    "No topics yet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No topics yet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トピックはまだありません"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无课程主题"
           }
         }
       }
@@ -8261,6 +7994,28 @@
         }
       }
     },
+    "Past Paper Goal: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past Paper Goal: %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "過去問目標：%lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模拟卷目标：%lld"
+          }
+        }
+      }
+    },
     "Past Papers" : {
       "localizations" : {
         "en" : {
@@ -8279,6 +8034,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "历年真题"
+          }
+        }
+      }
+    },
+    "Past Papers: %lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Past Papers: %1$lld / %2$lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "過去問：%1$lld / %2$lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模拟卷：%1$lld / %2$lld"
           }
         }
       }
@@ -9119,6 +8896,28 @@
         }
       }
     },
+    "Quiz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiz"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "小テスト"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测验"
+          }
+        }
+      }
+    },
     "Read Chapter 5" : {
       "localizations" : {
         "en" : {
@@ -9401,6 +9200,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "仅记录"
+          }
+        }
+      }
+    },
+    "Record results and follow the trend over time." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record results and follow the trend over time."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "成績を記録し、推移を確認します。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录成绩并查看变化趋势。"
           }
         }
       }
@@ -10197,6 +10018,28 @@
         }
       }
     },
+    "Score" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Score"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スコア"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分数"
+          }
+        }
+      }
+    },
     "Search" : {
       "localizations" : {
         "en" : {
@@ -10945,29 +10788,6 @@
         }
       }
     },
-    "subject_task_count_format" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d tasks"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d 件のタスク"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d 项任务"
-          }
-        }
-      }
-    },
     "Subjects" : {
       "localizations" : {
         "en" : {
@@ -11404,6 +11224,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目标日期"
+          }
+        }
+      }
+    },
+    "Target Score" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Target Score"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目標スコア"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目标成绩"
           }
         }
       }
@@ -12486,6 +12328,50 @@
         }
       }
     },
+    "Topic Name" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Topic Name"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トピック名"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主题名称"
+          }
+        }
+      }
+    },
+    "Topics" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Topics"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トピック"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "课程主题"
+          }
+        }
+      }
+    },
     "Track Progress" : {
       "localizations" : {
         "en" : {
@@ -12504,6 +12390,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "跟踪进度"
+          }
+        }
+      }
+    },
+    "Track syllabus mastery without predicting a final grade." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Track syllabus mastery without predicting a final grade."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最終成績を予測せず、シラバスの習熟度を記録します。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录课程大纲掌握程度，不预测最终成绩。"
           }
         }
       }
