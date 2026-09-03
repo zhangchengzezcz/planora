@@ -2,9 +2,9 @@
 
 **中文** | **English**
 
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.6 版本修复 Mac SwiftData 持久化查询与 Xcode 27 并发隔离问题，并保留 1.6.5 的课程 Topic、成绩记录、考试复习规划与 JSON v9 学术数据结构。
+Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。当前 1.6.7 版本适配 ManageBac 2026 年新版 Unit Grid，并通过并发只读读取、单课程超时与导航看门狗避免同步卡在教师和 Unit 步骤。
 
-Planora is a study planning app for IB and IGCSE students. Version 1.6.6 fixes Mac SwiftData persistence queries and Xcode 27 actor-isolation diagnostics while retaining the syllabus topics, assessment tracking, exam planning, and JSON v9 academic data introduced in 1.6.5.
+Planora is a study planning app for IB and IGCSE students. Version 1.6.7 supports ManageBac's redesigned Unit Grid and prevents teacher/unit synchronization from stalling through concurrent read-only requests, per-course timeouts, and a navigation watchdog.
 
 ## 交互式演示 / Interactive Demo
 
@@ -18,8 +18,8 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 
 ## 当前版本 / Current Version
 
-- Version: **1.6.6**
-- Build: **16**
+- Version: **1.6.7**
+- Build: **17**
 - Platform: **iOS and native macOS 27**
 - UI: SwiftUI, SwiftData, Observation, system navigation and platform-native surfaces
 - Status: Native desktop and mobile academic planning workflow

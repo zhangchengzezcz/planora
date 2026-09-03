@@ -1,5 +1,23 @@
 # Changelog / 更新说明
 
+## 1.6.7 - 2026-09-03
+
+### 中文
+
+- 适配 ManageBac 2026 年 8 月更新后的 Unit Grid 与独立任务/Unit 页面，新增 `unit-planners`、`unit-plans` 和 `tasks-and-units` 等新版路径识别。
+- 将逐门课程的 WebView 页面跳转改为同源只读并发读取，教师与 Unit 元数据不再阻塞任务和截止日期同步。
+- 每门课程读取加入独立的 8 秒超时与失败隔离；单门课程结构变化时继续同步其他课程，不再长期卡在“读取教师与 Unit”。
+- 页面导航加入 20 秒看门狗，任务列表或首页加载异常时会安全跳过可选数据或明确失败，不再无限等待。
+- 新增新版 Unit Grid 的离线 WebKit 回归测试，并通过全部 70 项 iPhone 测试以及 macOS Debug、macOS Release 与 iOS Release 构建。
+
+### English
+
+- Adapted ManageBac import to the August 2026 Unit Grid and separated task/unit pages, including the new `unit-planners`, `unit-plans`, and `tasks-and-units` route patterns.
+- Replaced serial WebView course navigation with concurrent same-origin, read-only requests so optional teacher and unit metadata can no longer block task and deadline synchronization.
+- Added an independent eight-second timeout and failure isolation per course; a changed course page now lets the remaining courses continue instead of stalling at Read Teachers and Units.
+- Added a 20-second navigation watchdog so task-list or workspace loading failures safely advance, skip optional data, or report an error instead of waiting forever.
+- Added an offline WebKit regression test for the redesigned Unit Grid and passed all 70 iPhone tests plus macOS Debug, macOS Release, and iOS Release builds.
+
 ## 1.6.6 - 2026-09-02
 
 ### 中文

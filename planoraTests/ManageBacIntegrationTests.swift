@@ -1,9 +1,72 @@
 import SwiftData
+import WebKit
 import XCTest
 @testable import planora
 
 @MainActor
 final class ManageBacIntegrationTests: XCTestCase {
+    func testRedesignedUnitGridIsReadWithoutCoursePageNavigation() async throws {
+        let detailHTML = #"""
+        <!doctype html>
+        <html><body>
+          <main>
+            <div data-testid="programme-name">PDP2</div>
+            <a href="/student/classes/physics/units">Units</a>
+            <span data-testid="teacher-name">Ms Chen</span>
+            <article data-testid="unit-grid-item" data-unit-id="mechanics">
+              <a href="/student/classes/physics/unit-planners/mechanics">
+                <h3 data-testid="unit-title">Mechanics</h3>
+              </a>
+              <span data-testid="progress">60%</span>
+            </article>
+          </main>
+        </body></html>
+        """#
+        let webView = WKWebView(frame: .zero)
+        webView.loadHTMLString(
+            "<!doctype html><html><body></body></html>",
+            baseURL: URL(string: "https://school.managebac.cn/student/classes/all")
+        )
+        for _ in 0..<50 {
+            guard webView.isLoading else { break }
+            try await Task.sleep(for: .milliseconds(20))
+        }
+
+        let emptyResult = try await webView.callAsyncJavaScript(
+            ManageBacWebSession.courseDetailsScript,
+            arguments: ["courseRequests": []],
+            in: nil,
+            contentWorld: .page
+        )
+        XCTAssertEqual(emptyResult as? String, "[]")
+
+        let result = try await webView.callAsyncJavaScript(
+            ManageBacWebSession.courseDetailsScript,
+            arguments: [
+                "courseRequests": [[
+                    "courseIdentifier": "physics",
+                    "detailURL": "https://school.managebac.cn/student/classes/physics"
+                ]],
+                "courseHTMLFixtures": [[
+                    "courseIdentifier": "physics",
+                    "html": detailHTML
+                ]]
+            ],
+            in: nil,
+            contentWorld: .page
+        )
+        let json = try XCTUnwrap(result as? String)
+        let payloads = try JSONDecoder().decode([CourseDetailFixturePayload].self, from: Data(json.utf8))
+        let payload = try XCTUnwrap(payloads.first)
+
+        XCTAssertEqual(payload.courseIdentifier, "physics")
+        XCTAssertEqual(payload.programmeText, "PDP2")
+        XCTAssertEqual(payload.teacherNames, ["Ms Chen"])
+        XCTAssertEqual(payload.units.map(\.remoteIdentifier), ["mechanics"])
+        XCTAssertEqual(payload.units.first?.title, "Mechanics")
+        XCTAssertEqual(try XCTUnwrap(payload.units.first?.officialProgress), 0.6, accuracy: 0.001)
+    }
+
     func testDateParserSupportsISOAndManageBacDisplayDates() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
@@ -355,4 +418,11 @@ final class ManageBacIntegrationTests: XCTestCase {
             sourceView: "upcoming"
         )
     }
+}
+
+private struct CourseDetailFixturePayload: Decodable {
+    var courseIdentifier: String
+    var programmeText: String?
+    var teacherNames: [String]
+    var units: [ManageBacUnitRecord]
 }
