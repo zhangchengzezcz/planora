@@ -90,10 +90,11 @@ struct ManageBacTaskRecord: Codable, Equatable, Sendable {
 
     var inferredType: TaskType {
         let normalized = title.lowercased()
-        if normalized.contains("extended essay") || normalized.contains(" ee ") { return .ee }
-        if normalized.contains("theory of knowledge") || normalized.contains("tok") { return .tok }
-        if normalized.contains("cas") { return .cas }
-        if normalized.contains("internal assessment") || normalized.contains(" ia ") { return .ia }
+        let words = Set(normalized.split { !$0.isLetter && !$0.isNumber }.map(String.init))
+        if normalized.contains("extended essay") || words.contains("ee") { return .ee }
+        if normalized.contains("theory of knowledge") || words.contains("tok") { return .tok }
+        if words.contains("cas") { return .cas }
+        if normalized.contains("internal assessment") || words.contains("ia") { return .ia }
         if normalized.contains("exam") || normalized.contains("test") || normalized.contains("mock") { return .exam }
         if normalized.contains("revision") || normalized.contains("review") { return .revision }
         if normalized.contains("lab") || normalized.contains("practical") { return .practical }

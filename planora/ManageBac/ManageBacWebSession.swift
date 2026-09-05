@@ -490,15 +490,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         case .loadingWorkspace:
             advancePastWorkspacePage()
         case .loadingTasks:
-            currentTaskViewIndex += 1
-            if currentTaskViewIndex < taskViews.count {
-                loadStudentPath("/student/tasks_and_deadlines?view=\(taskViews[currentTaskViewIndex])")
-            } else {
-                completedStepCount = 5
-                phase = .loadingWorkspace
-                currentWorkspacePathIndex = 0
-                loadStudentPath(workspacePaths[0])
-            }
+            // A missing task page is not an empty page. Keep the existing store intact.
+            phase = .failed(.invalidResponse)
         default:
             phase = .failed(.invalidResponse)
         }
@@ -781,6 +774,10 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     const normalize = value => (value || '').replace(/\s+/g, ' ').trim();
     const absolute = value => { try { return new URL(value, location.origin).href; } catch (_) { return ''; } };
     const currentSourceView = String(sourceView || '').toLowerCase();
+    const main = document.querySelector('main, #main-content');
+    if (!main || document.querySelector('input[type="password"]')) {
+      return JSON.stringify({ records: [], pageRecognized: false });
+    }
     const taskPath = /\/student\/classes\/([^/?#]+)\/core_tasks\/([^/?#]+)/i;
     const candidates = [];
     const seen = new Set();
@@ -804,16 +801,17 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         || container?.querySelector('[data-date]')?.getAttribute('data-date');
       if (explicit) return explicit;
       const text = normalize(container?.textContent);
-      const match = text.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+(\d{1,2}:\d{2})\s*(AM|PM)\b/i);
+      const match = text.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),?\s+(?:(\d{4})\s+)?(\d{1,2}:\d{2})\s*(AM|PM)\b/i);
       if (!match) return null;
       const currentYear = new Date().getFullYear();
-      const parsed = new Date(`${match[1]} ${match[0].match(/\d{1,2}/)?.[0]}, ${currentYear} ${match[2]} ${match[3]}`);
+      const parsed = new Date(`${match[1]} ${match[2]}, ${match[3] || currentYear} ${match[4]} ${match[5]}`);
       return Number.isNaN(parsed.valueOf()) ? match[0] : parsed.toISOString();
     };
 
-    for (const link of document.querySelectorAll('a[href]')) {
+    for (const link of main.querySelectorAll('a[href]')) {
       const href = link.getAttribute('href') || '';
       const detailURL = absolute(href);
+      if (!detailURL || new URL(detailURL).origin !== location.origin || link.closest('nav,aside,header')) continue;
       const match = (() => { try { return new URL(detailURL).pathname.match(taskPath); } catch (_) { return null; } })();
       if (!match) continue;
       const title = normalize(link.textContent);
@@ -829,6 +827,12 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
       });
       const unitLink = container?.querySelector('a[href*="/units/"]');
       const unitMatch = (() => { try { return new URL(unitLink?.getAttribute('href'), location.origin).pathname.match(/\/units\/([^/?#]+)/); } catch (_) { return null; } })();
+      // Only an exact, standalone result label is evidence of binary completion.
+      // A title/description containing "complete", a score or Submitted is not.
+      const binaryComplete = Array.from(container?.querySelectorAll('span,div,p,strong') || []).some(node =>
+        !node.children.length && !node.closest('a,button,h1,h2,h3,h4,h5,h6') &&
+        /^(complete|completed)$/i.test(normalize(node.textContent))
+      );
       candidates.push({
         remoteIdentifier,
         title,
@@ -838,13 +842,12 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         sourceView: currentSourceView,
         courseIdentifier,
         unitIdentifier: unitMatch?.[1] || null,
-        remoteStatus: ['upcoming','past','overdue','completed'].includes(currentSourceView) ? currentSourceView : 'unknown'
+        remoteStatus: binaryComplete ? 'completed' : (['upcoming','past','overdue'].includes(currentSourceView) ? currentSourceView : 'unknown')
       });
     }
-    const main = document.querySelector('main') || document.body;
     const text = normalize(main?.innerText).toLowerCase();
     const emptyState = /no\s+(upcoming|past|overdue|tasks?)/.test(text);
-    const pageRecognized = Boolean(main && (emptyState || candidates.length > 0 || location.pathname.includes('/student/tasks_and_deadlines')));
+    const pageRecognized = emptyState || candidates.length > 0;
     return JSON.stringify({ records: candidates, pageRecognized });
     """#
 

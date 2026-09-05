@@ -194,6 +194,7 @@ enum ManageBacTaskImporter {
                 }
 
                 applyRemoteValues(record, to: task)
+                if task.needsRemoteReview { reviewCount += 1 }
                 if let courseIdentifier = record.courseIdentifier, let course = coursesByRemoteID[courseIdentifier] {
                     task.courseID = course.id
                     task.subject = course.displayName
@@ -317,16 +318,36 @@ enum ManageBacTaskImporter {
         task.title = record.title
         if !record.subject.isEmpty { task.subject = record.subject }
         task.type = record.inferredType
-        task.setDeadline(record.deadline, enabled: record.deadline != nil)
+        // Missing/unreadable remote text is not proof that a teacher removed a deadline.
+        if let deadline = record.deadline {
+            task.setDeadline(deadline, enabled: true)
+        }
         task.externalURLString = record.detailURL
         task.externalUpdatedAt = Date()
         task.remoteStatusRawValue = record.remoteStatus.rawValue
-        task.needsRemoteReview = false
+        task.needsRemoteReview = record.deadline == nil
     }
 
     private static func deduplicatedTasks(_ records: [ManageBacTaskRecord]) -> [ManageBacTaskRecord] {
-        var seen = Set<String>()
-        return records.filter { seen.insert($0.stableIdentifier).inserted }
+        var result: [ManageBacTaskRecord] = []
+        var indices: [String: Int] = [:]
+        for record in records {
+            if let index = indices[record.stableIdentifier] {
+                if record.remoteStatus == .completed {
+                    result[index].remoteStatus = .completed
+                }
+                if result[index].deadline == nil, record.deadline != nil {
+                    result[index].deadlineText = record.deadlineText
+                }
+                if result[index].unitIdentifier == nil {
+                    result[index].unitIdentifier = record.unitIdentifier
+                }
+            } else {
+                indices[record.stableIdentifier] = result.count
+                result.append(record)
+            }
+        }
+        return result
     }
 
     private static func deduplicatedCourses(_ records: [ManageBacCourseRecord]) -> [ManageBacCourseRecord] {

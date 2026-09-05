@@ -191,6 +191,54 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertNotNil(payload.records[0].deadline)
     }
 
+    func testTaskAssessmentIsSeparateFromDatesSubmissionAndPoints() async throws {
+        let cards = ["<span>Complete</span>", "<span>Not Assessed Yet</span>",
+                     "<span>7</span><span>3 / 3 pts</span>", "<span>Submitted</span>",
+                     "<span>Incomplete</span>"]
+        let html = "<main>" + cards.enumerated().map { index, status in
+            """
+            <article class="task-card">
+              <a href="/student/classes/1/core_tasks/\(index)">Complete this assignment</a>
+              <span>Sep 4, 2025 9:05 AM</span>
+              <a href="/student/classes/1">Chemistry</a>\(status)
+            </article>
+            """
+        }.joined() + "</main>"
+        let webView = try await loadedWebView(html: html, url: "https://school.managebac.cn/student/tasks_and_deadlines?view=past")
+        let result = try await webView.callAsyncJavaScript(ManageBacWebSession.taskScript, arguments: ["sourceView": "past"], in: nil, contentWorld: .page)
+        let json = try XCTUnwrap(result as? String)
+        let payload = try JSONDecoder().decode(ManageBacScanPayload.self, from: Data(json.utf8))
+        XCTAssertEqual(payload.records.map(\.remoteStatus), [.completed, .past, .past, .past, .past])
+        XCTAssertEqual(Calendar.current.component(.year, from: try XCTUnwrap(payload.records.first?.deadline)), 2025)
+    }
+
+    func testBlankTaskPageIsNotSuccessfulEmptyImport() async throws {
+        let webView = try await loadedWebView(html: "<main><h1>Tasks &amp; Deadlines</h1></main>", url: "https://school.managebac.cn/student/tasks_and_deadlines")
+        let result = try await webView.callAsyncJavaScript(ManageBacWebSession.taskScript, arguments: ["sourceView": "upcoming"], in: nil, contentWorld: .page)
+        let json = try XCTUnwrap(result as? String)
+        let payload = try JSONDecoder().decode(ManageBacScanPayload.self, from: Data(json.utf8))
+        XCTAssertFalse(payload.pageRecognized)
+    }
+
+    func testMissingDeadlinePreservesExistingAndDuplicateRetainsCompletion() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let initial = record(title: "Homework", deadline: "2026-09-10", identifier: "safe-task")
+        _ = try ManageBacTaskImporter.importRecords([initial], courses: [], existingTasks: [], into: context)
+        let task = try XCTUnwrap(try context.fetch(FetchDescriptor<PlanoraTask>()).first)
+        let deadline = task.deadline
+        var missing = initial
+        missing.deadlineText = "unreadable"
+        var completed = missing
+        completed.remoteStatus = .completed
+        let summary = try ManageBacTaskImporter.importRecords([missing, completed], courses: [], existingTasks: [task], into: context)
+        XCTAssertEqual(task.deadline, deadline)
+        XCTAssertTrue(task.isCompleted)
+        XCTAssertTrue(task.needsRemoteReview)
+        XCTAssertEqual(summary.completedCount, 1)
+        XCTAssertEqual(summary.reviewCount, 1)
+    }
+
     func testCurrentNotificationRowsAreReadFromDedicatedPage() async throws {
         let html = #"""
         <!doctype html><html><body><main>
@@ -334,6 +382,12 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertNotNil(ManageBacDateParser.date(from: "2026-09-10T13:30:00+08:00", calendar: calendar))
         XCTAssertNotNil(ManageBacDateParser.date(from: "Sep 10, 2026 1:30 PM", calendar: calendar))
         XCTAssertNil(ManageBacDateParser.date(from: "Not a date", calendar: calendar))
+    }
+
+    func testTaskTypeAcronymsDoNotMatchInsideOtherWords() {
+        XCTAssertEqual(record(title: "Case study", deadline: "", identifier: "1").inferredType, .assignment)
+        XCTAssertEqual(record(title: "IA: first draft", deadline: "", identifier: "2").inferredType, .ia)
+        XCTAssertEqual(record(title: "CAS reflection", deadline: "", identifier: "3").inferredType, .cas)
     }
 
     func testRepeatedSyncUpdatesRemoteFieldsWithoutDuplicatingOrOverwritingLocalWork() throws {
