@@ -172,7 +172,7 @@ struct ManageBacSettingsView: View {
                 }
 
                 if let snapshot {
-                    HStack(spacing: 12) {
+                    VStack(spacing: 12) {
                         Button {
                             flow = .sync(snapshot)
                         } label: {
@@ -185,8 +185,7 @@ struct ManageBacSettingsView: View {
                             isShowingDisconnectConfirmation = true
                         } label: {
                             Label(String(localized: "Disconnect"), systemImage: "link.badge.minus")
-                                .lineLimit(1)
-                                .fixedSize(horizontal: true, vertical: false)
+                                .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered)
                         .tint(.red)

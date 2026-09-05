@@ -103,6 +103,7 @@ struct ManageBacTaskRecord: Codable, Equatable, Sendable {
 
 enum ManageBacRemoteTaskStatus: String, Codable, Sendable {
     case upcoming
+    case past
     case overdue
     case completed
     case unknown

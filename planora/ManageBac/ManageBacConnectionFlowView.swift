@@ -16,7 +16,7 @@ enum ManageBacFlow: Identifiable {
 struct ManageBacConnectionFlowView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \PlanoraTask.createdDate) private var tasks: [PlanoraTask]
-    @State private var session = ManageBacWebSession()
+    @State private var session: ManageBacWebSession
     @State private var hasStarted = false
 
     let store: PlanoraStore
@@ -24,20 +24,31 @@ struct ManageBacConnectionFlowView: View {
     let onComplete: (ManageBacConnectionSnapshot) -> Void
     let onCancel: () -> Void
 
+    @MainActor init(
+        store: PlanoraStore,
+        flow: ManageBacFlow,
+        session: ManageBacWebSession? = nil,
+        onComplete: @escaping (ManageBacConnectionSnapshot) -> Void,
+        onCancel: @escaping () -> Void
+    ) {
+        self.store = store
+        self.flow = flow
+        self.onComplete = onComplete
+        self.onCancel = onCancel
+        _session = State(initialValue: session ?? ManageBacWebSession())
+    }
+
     var body: some View {
 #if os(macOS)
         NavigationStack {
             flowContent
                 .navigationTitle(navigationTitle)
                 .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        if !isCompleted {
-                            Button(String(localized: "Cancel"), action: cancel)
-                        }
-                    }
                     ToolbarItem(placement: .confirmationAction) {
                         if isCompleted {
                             Button(String(localized: "Done"), action: finish)
+                        } else {
+                            Button(String(localized: "Cancel"), action: cancel)
                         }
                     }
                 }
@@ -95,14 +106,8 @@ struct ManageBacConnectionFlowView: View {
                     .fontWeight(.semibold)
                     .buttonStyle(.borderedProminent)
             } else {
-                Button(action: cancel) {
-                    Image(systemName: "xmark")
-                        .font(.headline.weight(.bold))
-                        .frame(width: 38, height: 38)
-                }
-                .buttonStyle(.bordered)
-                .buttonBorderShape(.circle)
-                .accessibilityLabel(String(localized: "Close"))
+                Button(String(localized: "Cancel"), action: cancel)
+                    .buttonStyle(.bordered)
             }
         }
         .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
@@ -115,14 +120,37 @@ struct ManageBacConnectionFlowView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 statusHeader
-                stepList
-                completionSummary
+                if isCompleted {
+                    completionSummary
+                    courseSummary
+                    DisclosureGroup(String(localized: "Sync Progress")) {
+                        stepRows
+                    }
+                } else {
+                    stepList
+                }
                 recoveryAction
             }
             .frame(maxWidth: 640, alignment: .leading)
             .padding(.horizontal, 30)
             .padding(.vertical, 28)
             .frame(maxWidth: .infinity)
+        }
+    }
+
+    @ViewBuilder
+    private var courseSummary: some View {
+        if isCompleted, !session.courses.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(String(localized: "Courses"))
+                    .font(.headline)
+                ForEach(session.courses, id: \.remoteIdentifier) { course in
+                    Text(verbatim: course.name)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Divider()
+                }
+            }
         }
     }
 
@@ -189,7 +217,22 @@ struct ManageBacConnectionFlowView: View {
         }
     }
 
+    @ViewBuilder
     private func summaryGrid(_ summary: ManageBacImportSummary) -> some View {
+#if os(iOS)
+        VStack(alignment: .leading, spacing: 12) {
+            LabeledContent(String(localized: "Courses"), value: "\(summary.courseCount)")
+            LabeledContent(String(localized: "Units"), value: "\(summary.unitCount)")
+            LabeledContent(String(localized: "New Tasks"), value: "\(summary.importedCount)")
+            LabeledContent(String(localized: "Updated Tasks"), value: "\(summary.updatedCount)")
+            LabeledContent(String(localized: "Messages"), value: "\(summary.messageCount)")
+            LabeledContent(String(localized: "Timetable"), value: "\(summary.scheduleCount)")
+            if summary.reviewCount > 0 {
+                LabeledContent(String(localized: "Needs Review"), value: "\(summary.reviewCount)")
+            }
+        }
+        .monospacedDigit()
+#else
         Grid(alignment: .leading, horizontalSpacing: 26, verticalSpacing: 10) {
             GridRow {
                 LabeledContent(String(localized: "Courses"), value: "\(summary.courseCount)")
@@ -210,6 +253,7 @@ struct ManageBacConnectionFlowView: View {
             }
         }
         .monospacedDigit()
+#endif
     }
 
     @ViewBuilder
@@ -294,6 +338,7 @@ struct ManageBacConnectionFlowView: View {
     private func startIfNeeded() {
         guard !hasStarted else { return }
         hasStarted = true
+        guard session.phase == .idle else { return }
         start()
     }
 

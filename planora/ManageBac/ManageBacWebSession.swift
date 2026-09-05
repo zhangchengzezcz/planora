@@ -41,10 +41,14 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored private(set) lazy var webView: WKWebView = makeWebView()
     @ObservationIgnored private var mode: Mode = .interactive
     @ObservationIgnored private var schoolHost: String?
-    @ObservationIgnored private var taskViews = ["upcoming", "overdue", "completed"]
+    @ObservationIgnored private let taskViews = ["upcoming", "past", "overdue"]
     @ObservationIgnored private var currentTaskViewIndex = 0
+    @ObservationIgnored private let workspacePaths = ["/student/notifications", "/student/timetables"]
+    @ObservationIgnored private var currentWorkspacePathIndex = 0
     @ObservationIgnored private var isHandlingPage = false
     @ObservationIgnored private var needsAnotherPageCheck = false
+    @ObservationIgnored private var pageCheckTask: Task<Void, Never>?
+    @ObservationIgnored private var pageCheckIdentifier: UUID?
     @ObservationIgnored private var authenticationProbeTask: Task<Void, Never>?
     @ObservationIgnored private var pageLoadWatchdogTask: Task<Void, Never>?
     @ObservationIgnored private var pageLoadGeneration = 0
@@ -71,6 +75,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     func cancel() {
+        pageLoadGeneration += 1
+        cancelPageCheck()
         authenticationProbeTask?.cancel()
         pageLoadWatchdogTask?.cancel()
         webView.stopLoading()
@@ -78,6 +84,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     func teardown() {
+        pageLoadGeneration += 1
+        cancelPageCheck()
         authenticationProbeTask?.cancel()
         authenticationProbeTask = nil
         pageLoadWatchdogTask?.cancel()
@@ -178,7 +186,10 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     private func resetForScan(mode: Mode) {
+        cancelPageCheck()
         webView.stopLoading()
+        webView.navigationDelegate = self
+        webView.uiDelegate = self
         self.mode = mode
         courses = []
         units = []
@@ -188,6 +199,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         programmeText = nil
         schoolHost = nil
         currentTaskViewIndex = 0
+        currentWorkspacePathIndex = 0
         completedStepCount = 0
         isHandlingPage = false
         needsAnotherPageCheck = false
@@ -202,13 +214,26 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         needsAnotherPageCheck = true
         guard !isHandlingPage else { return }
         isHandlingPage = true
-        Task {
+        let identifier = UUID()
+        pageCheckIdentifier = identifier
+        pageCheckTask = Task {
             repeat {
                 needsAnotherPageCheck = false
                 await handleLoadedPage()
+                guard !Task.isCancelled, pageCheckIdentifier == identifier else { return }
             } while needsAnotherPageCheck
             isHandlingPage = false
+            pageCheckTask = nil
+            pageCheckIdentifier = nil
         }
+    }
+
+    private func cancelPageCheck() {
+        pageCheckTask?.cancel()
+        pageCheckTask = nil
+        pageCheckIdentifier = nil
+        needsAnotherPageCheck = false
+        isHandlingPage = false
     }
 
     private func scheduleAuthenticationProbesIfNeeded() {
@@ -224,6 +249,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 guard let self, !Task.isCancelled,
                       self.phase == .authenticating || self.phase == .verifying else { return }
                 if await self.isAuthenticatedStudentPage() {
+                    guard !Task.isCancelled else { return }
                     self.enqueuePageCheck()
                     return
                 }
@@ -232,6 +258,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     private func handleLoadedPage() async {
+        let generation = pageLoadGeneration
         guard let url = webView.url, let host = url.host?.lowercased() else { return }
         if isSignInPage(url) {
             phase = mode == .silent ? .needsLogin : .authenticating
@@ -244,7 +271,9 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
 
         switch phase {
         case .authenticating, .verifying:
-            guard await isAuthenticatedStudentPage() else {
+            let authenticated = await isAuthenticatedStudentPage()
+            guard generation == pageLoadGeneration else { return }
+            guard authenticated else {
                 phase = mode == .silent ? .needsLogin : .authenticating
                 scheduleAuthenticationProbesIfNeeded()
                 return
@@ -254,11 +283,12 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
             schoolHost = host
             completedStepCount = 1
             phase = .loadingCourses
-            loadStudentPath("/student/classes/all")
+            loadStudentPath("/student/classes/my")
 
         case .loadingCourses:
             do {
                 let payload: CourseScanPayload = try await decodeJavaScript(Self.courseScript)
+                guard generation == pageLoadGeneration else { return }
                 courses = payload.courses
                 programmeText = payload.programmeText
                 completedStepCount = 2
@@ -266,11 +296,13 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 completedStepCount = 3
                 phase = .loadingUnits
                 await readCourseDetails()
+                guard generation == pageLoadGeneration else { return }
                 completedStepCount = 4
                 currentTaskViewIndex = 0
                 phase = .loadingTasks
                 loadStudentPath("/student/tasks_and_deadlines?view=\(taskViews[0])")
             } catch {
+                guard generation == pageLoadGeneration else { return }
                 phase = .failed(.pageStructureChanged)
             }
 
@@ -284,6 +316,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                     Self.taskScript,
                     arguments: ["sourceView": view]
                 )
+                guard generation == pageLoadGeneration else { return }
                 guard payload.pageRecognized else {
                     phase = .failed(.pageStructureChanged)
                     return
@@ -294,26 +327,33 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                     loadStudentPath("/student/tasks_and_deadlines?view=\(taskViews[currentTaskViewIndex])")
                 } else {
                     completedStepCount = 5
+                    currentWorkspacePathIndex = 0
                     phase = .loadingWorkspace
-                    loadStudentPath("/student/home")
+                    loadStudentPath(workspacePaths[0])
                 }
             } catch {
+                guard generation == pageLoadGeneration else { return }
                 phase = .failed(.pageStructureChanged)
             }
         case .loadingWorkspace:
             do {
-                let payload: WorkspaceScanPayload = try await decodeJavaScript(Self.workspaceScript)
-                messages = payload.messages
-                schedule = payload.schedule
-                completedStepCount = 6
-                finishImport()
+                let payload: WorkspaceScanPayload = try await decodeJavaScript(
+                    Self.workspaceScript,
+                    arguments: ["courseRecords": encodedCourseArguments]
+                )
+                guard generation == pageLoadGeneration else { return }
+                messages.append(contentsOf: payload.messages)
+                schedule.append(contentsOf: payload.schedule)
+                currentWorkspacePathIndex += 1
+                if currentWorkspacePathIndex < workspacePaths.count {
+                    loadStudentPath(workspacePaths[currentWorkspacePathIndex])
+                } else {
+                    completedStepCount = 6
+                    finishImport()
+                }
             } catch {
-                // Messages and timetables are optional school modules. A layout
-                // change here must not discard the core course/task snapshot.
-                messages = []
-                schedule = []
-                completedStepCount = 6
-                finishImport()
+                guard generation == pageLoadGeneration else { return }
+                advancePastWorkspacePage()
             }
         default:
             break
@@ -321,6 +361,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     private func readCourseDetails() async {
+        let generation = pageLoadGeneration
         let requests = courses.compactMap { course -> [String: String]? in
             guard let detailURL = course.detailURL, !detailURL.isEmpty else { return nil }
             return [
@@ -335,6 +376,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 Self.courseDetailsScript,
                 arguments: ["courseRequests": requests]
             )
+            guard generation == pageLoadGeneration else { return }
             let detailsByCourse = Dictionary(
                 payloads.map { ($0.courseIdentifier, $0) },
                 uniquingKeysWith: { first, _ in first }
@@ -352,6 +394,28 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         } catch {
             // Teacher and unit metadata is optional. A ManageBac layout update
             // must never block task and deadline synchronization.
+        }
+    }
+
+    private var encodedCourseArguments: [[String: Any]] {
+        courses.map { course in
+            [
+                "remoteIdentifier": course.remoteIdentifier,
+                "name": course.name,
+                "teacherNames": course.teacherNames
+            ]
+        }
+    }
+
+    private func advancePastWorkspacePage() {
+        // Notifications and timetables are optional school modules. A layout
+        // change in one module must not discard the core course/task snapshot.
+        currentWorkspacePathIndex += 1
+        if currentWorkspacePathIndex < workspacePaths.count {
+            loadStudentPath(workspacePaths[currentWorkspacePathIndex])
+        } else {
+            completedStepCount = 6
+            finishImport()
         }
     }
 
@@ -424,10 +488,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         webView.stopLoading()
         switch phase {
         case .loadingWorkspace:
-            messages = []
-            schedule = []
-            completedStepCount = 6
-            finishImport()
+            advancePastWorkspacePage()
         case .loadingTasks:
             currentTaskViewIndex += 1
             if currentTaskViewIndex < taskViews.count {
@@ -435,7 +496,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
             } else {
                 completedStepCount = 5
                 phase = .loadingWorkspace
-                loadStudentPath("/student/home")
+                currentWorkspacePathIndex = 0
+                loadStudentPath(workspacePaths[0])
             }
         default:
             phase = .failed(.invalidResponse)
@@ -506,26 +568,81 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         var schedule: [ManageBacScheduleRecord]
     }
 
-    private static let courseScript = #"""
+    static let courseScript = #"""
     const normalize = value => (value || '').replace(/\s+/g, ' ').trim();
     const absolute = value => { try { return new URL(value, location.origin).href; } catch (_) { return ''; } };
-    const courses = [];
-    const seen = new Set();
-    for (const link of document.querySelectorAll('a[href]')) {
-      const href = link.getAttribute('href') || '';
-      const url = (() => { try { return new URL(href, location.origin); } catch (_) { return null; } })();
-      if (!url || !/^\/student\/classes\/[^/?#]+\/?$/.test(url.pathname) || /\/(all|my)\/?$/.test(url.pathname)) continue;
-      const name = normalize(link.textContent);
-      const remoteIdentifier = url.pathname.replace(/\/$/, '').split('/').pop();
-      if (!name || !remoteIdentifier || seen.has(remoteIdentifier)) continue;
-      seen.add(remoteIdentifier);
-      const container = link.closest('article,li,tr,.card,[class*=class]') || link.parentElement;
-      const teacherNames = Array.from(container?.querySelectorAll('[class*=teacher], [data-role=teacher]') || []).map(node => normalize(node.textContent)).filter(Boolean);
-      courses.push({ remoteIdentifier, name, teacherNames, detailURL: absolute(href), programmeText: null });
+    const coursePath = /^\/student\/classes\/([^/?#]+)\/?$/;
+    const courseMap = new Map();
+
+    const courseContainer = link => {
+      let node = link.parentElement;
+      for (let depth = 0; node && depth < 8; depth += 1, node = node.parentElement) {
+        const text = normalize(node.textContent);
+        const links = Array.from(node.querySelectorAll('a[href]')).filter(item => {
+          try { return coursePath.test(new URL(item.getAttribute('href'), location.origin).pathname); } catch (_) { return false; }
+        });
+        const courseIDs = new Set(links.map(item => new URL(item.getAttribute('href'), location.origin).pathname));
+        if (courseIDs.size === 1 && /\bUnits?\b/i.test(text) && /\bTasks?\b/i.test(text) && text.length < 2500) return node;
+      }
+      return link.closest('article,li,tr,[class*=card]') || link.parentElement;
+    };
+
+    const readDocument = (doc, pageURL) => {
+      if (doc.querySelector('input[type="password"]')) throw new Error('Course session expired');
+      const content = doc.querySelector('main') || doc.body;
+      for (const link of content.querySelectorAll('a[href]')) {
+        if (link.closest('nav,aside,header')) continue;
+        const href = link.getAttribute('href') || '';
+        const url = (() => { try { return new URL(href, pageURL); } catch (_) { return null; } })();
+        const match = url?.pathname.match(coursePath);
+        if (!match || url.origin !== location.origin || ['all', 'my'].includes(match[1].toLowerCase())) continue;
+        const name = normalize(link.textContent);
+        if (!name || /^(classes|browse all classes|my classes)$/i.test(name)) continue;
+        const container = courseContainer(link);
+        const teacherNames = Array.from(container?.querySelectorAll('a[href^="javascript:void"],[class*=teacher],[data-role=teacher]') || [])
+          .map(node => normalize(node.textContent))
+          .filter(value => value && !/^(more information|classes?|units?|tasks?|updates?)$/i.test(value));
+        const existing = courseMap.get(match[1]);
+        courseMap.set(match[1], {
+          remoteIdentifier: match[1],
+          name: existing?.name?.startsWith('HS ') ? existing.name : name,
+          teacherNames: [...new Set([...(existing?.teacherNames || []), ...teacherNames])],
+          detailURL: url.href,
+          programmeText: null
+        });
+      }
+    };
+
+    readDocument(document, location.href);
+    const paginationURLs = [...new Set(Array.from(document.querySelectorAll('a[href*="/student/classes/my?page="]'))
+      .map(link => absolute(link.getAttribute('href')))
+      .filter(url => url && new URL(url).origin === location.origin))];
+    if (paginationURLs.length > 10) throw new Error('Course pagination limit exceeded');
+    const pages = await Promise.allSettled(paginationURLs.map(async url => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 6000);
+      try {
+        const response = await fetch(url, { method: 'GET', credentials: 'same-origin', signal: controller.signal, headers: { 'Accept': 'text/html' } });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return { html: await response.text(), url: response.url || url };
+      } finally {
+        clearTimeout(timeout);
+      }
+    }));
+    for (const page of pages) {
+      if (page.status !== 'fulfilled') throw new Error('Course pagination failed');
+      const doc = new DOMParser().parseFromString(page.value.html, 'text/html');
+      if (doc.querySelector('input[type="password"]') || !new URL(page.value.url).pathname.startsWith('/student/classes')) throw new Error('Course session expired');
+      readDocument(doc, page.value.url);
     }
-    const main = document.querySelector('main');
-    const programmeText = normalize(main?.querySelector('[class*=programme], [class*=program], [class*=year-group], nav[aria-label*=breadcrumb]')?.textContent) || null;
-    return JSON.stringify({ programmeText, courses });
+    const main = document.querySelector('main') || document.body;
+    if (!courseMap.size && !/my classes|no classes|我的课程|我的班级|暂无课程/i.test(normalize(main?.textContent))) {
+      throw new Error('Unrecognized course page');
+    }
+    const programmeText = normalize(main?.querySelector('[class*=programme],[class*=program],[class*=year-group],[data-testid*=programme],nav[aria-label*=breadcrumb]')?.textContent)
+      || normalize(Array.from(courseMap.values()).map(course => course.name).join(' '))
+      || null;
+    return JSON.stringify({ programmeText, courses: Array.from(courseMap.values()) });
     """#
 
     static let courseDetailsScript = #"""
@@ -660,111 +777,220 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     return JSON.stringify(results);
     """#
 
-    private static let taskScript = #"""
+    static let taskScript = #"""
     const normalize = value => (value || '').replace(/\s+/g, ' ').trim();
     const absolute = value => { try { return new URL(value, location.origin).href; } catch (_) { return ''; } };
-    const currentSourceView = sourceView;
+    const currentSourceView = String(sourceView || '').toLowerCase();
+    const taskPath = /\/student\/classes\/([^/?#]+)\/core_tasks\/([^/?#]+)/i;
     const candidates = [];
     const seen = new Set();
+
+    const readableContainer = link => {
+      const preferred = link.closest('[data-task-id],[data-deadline-id],article,tr,li,[class*=task-card],[class*=deadline-card]');
+      if (preferred) return preferred;
+      let node = link.parentElement;
+      for (let depth = 0; node && depth < 7; depth += 1, node = node.parentElement) {
+        const links = Array.from(node.querySelectorAll('a[href]')).filter(item => taskPath.test(absolute(item.getAttribute('href'))));
+        const text = normalize(node.textContent);
+        if (links.length === 1 && text.length >= normalize(link.textContent).length + 6 && text.length < 1800) return node;
+      }
+      return link.parentElement;
+    };
+
+    const displayDate = container => {
+      const time = container?.querySelector('time');
+      const explicit = time?.getAttribute('datetime')
+        || container?.querySelector('[data-deadline]')?.getAttribute('data-deadline')
+        || container?.querySelector('[data-date]')?.getAttribute('data-date');
+      if (explicit) return explicit;
+      const text = normalize(container?.textContent);
+      const match = text.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+(\d{1,2}:\d{2})\s*(AM|PM)\b/i);
+      if (!match) return null;
+      const currentYear = new Date().getFullYear();
+      const parsed = new Date(`${match[1]} ${match[0].match(/\d{1,2}/)?.[0]}, ${currentYear} ${match[2]} ${match[3]}`);
+      return Number.isNaN(parsed.valueOf()) ? match[0] : parsed.toISOString();
+    };
+
     for (const link of document.querySelectorAll('a[href]')) {
       const href = link.getAttribute('href') || '';
-      const path = (() => { try { return new URL(href, location.origin).pathname; } catch (_) { return href; } })();
-      const dataID = link.dataset.taskId || link.dataset.deadlineId || '';
-      if (!/\/(tasks|deadlines)\/\d+/.test(path) && !/\/tasks_and_deadlines\/\d+/.test(path) && !dataID) continue;
-      const container = link.closest('[data-task-id], [data-deadline-id], article, tr, li, .card, .task, .deadline') || link.parentElement;
-      const title = normalize(link.textContent || container?.querySelector('h1,h2,h3,h4,[class*=title]')?.textContent);
-      if (!title) continue;
       const detailURL = absolute(href);
-      const remoteIdentifier = dataID || detailURL;
-      if (!remoteIdentifier || seen.has(remoteIdentifier)) continue;
+      const match = (() => { try { return new URL(detailURL).pathname.match(taskPath); } catch (_) { return null; } })();
+      if (!match) continue;
+      const title = normalize(link.textContent);
+      if (!title || /^(tasks?|all tasks)$/i.test(title)) continue;
+      const courseIdentifier = match[1];
+      const taskIdentifier = match[2];
+      const remoteIdentifier = `${courseIdentifier}:${taskIdentifier}`;
+      if (seen.has(remoteIdentifier)) continue;
       seen.add(remoteIdentifier);
-      const time = container?.querySelector('time');
-      const dateNode = time || container?.querySelector('[data-deadline], [data-date], [class*=deadline], [class*=due], [class*=date]');
-      const deadlineText = time?.getAttribute('datetime') || dateNode?.getAttribute('data-deadline') || dateNode?.getAttribute('data-date') || normalize(dateNode?.textContent) || null;
-      const classLink = container?.querySelector('a[href*="/student/classes/"]');
-      const classURL = classLink ? new URL(classLink.getAttribute('href'), location.origin) : null;
-      const courseIdentifier = classURL?.pathname.replace(/\/$/, '').split('/').pop() || null;
-      const unitLink = container?.querySelector('a[href*="/unit/"], a[href*="/units/"]');
-      const unitURL = unitLink ? new URL(unitLink.getAttribute('href'), location.origin) : null;
-      const unitIdentifier = unitURL?.pathname.replace(/\/$/, '').split('/').pop() || null;
+      const container = readableContainer(link);
+      const classLink = Array.from(container?.querySelectorAll('a[href]') || []).find(item => {
+        try { return new URL(item.getAttribute('href'), location.origin).pathname === `/student/classes/${courseIdentifier}`; } catch (_) { return false; }
+      });
+      const unitLink = container?.querySelector('a[href*="/units/"]');
+      const unitMatch = (() => { try { return new URL(unitLink?.getAttribute('href'), location.origin).pathname.match(/\/units\/([^/?#]+)/); } catch (_) { return null; } })();
       candidates.push({
         remoteIdentifier,
         title,
         subject: normalize(classLink?.textContent),
-        deadlineText,
+        deadlineText: displayDate(container),
         detailURL,
         sourceView: currentSourceView,
         courseIdentifier,
-        unitIdentifier,
-        remoteStatus: ['upcoming','overdue','completed'].includes(currentSourceView) ? currentSourceView : 'unknown'
+        unitIdentifier: unitMatch?.[1] || null,
+        remoteStatus: ['upcoming','past','overdue','completed'].includes(currentSourceView) ? currentSourceView : 'unknown'
       });
     }
-    const main = document.querySelector('main');
+    const main = document.querySelector('main') || document.body;
     const text = normalize(main?.innerText).toLowerCase();
-    const emptyState = text.includes('no upcoming') || text.includes('no overdue') || text.includes('no completed') || text.includes('no tasks or deadlines');
-    const pageRecognized = Boolean(main && (emptyState || candidates.length > 0 || location.pathname.includes('tasks_and_deadlines')));
+    const emptyState = /no\s+(upcoming|past|overdue|tasks?)/.test(text);
+    const pageRecognized = Boolean(main && (emptyState || candidates.length > 0 || location.pathname.includes('/student/tasks_and_deadlines')));
     return JSON.stringify({ records: candidates, pageRecognized });
     """#
 
-    private static let workspaceScript = #"""
+    static let workspaceScript = #"""
     const normalize = value => (value || '').replace(/\s+/g, ' ').trim();
     const absolute = value => { try { return new URL(value, location.origin).href; } catch (_) { return ''; } };
+    const courses = Array.isArray(courseRecords) ? courseRecords : [];
     const messages = [];
-    const messageIDs = new Set();
-    for (const link of document.querySelectorAll('a[href]')) {
-      const href = link.getAttribute('href') || '';
-      if (!/(messages|discussions|message_board|notifications)/i.test(href)) continue;
-      const container = link.closest('article,li,tr,.card,[class*=message],[class*=notification]') || link.parentElement;
-      const title = normalize(link.textContent || container?.querySelector('h1,h2,h3,h4,[class*=title]')?.textContent);
-      if (!title) continue;
-      const detailURL = absolute(href);
-      const remoteIdentifier = link.dataset.messageId || container?.dataset?.messageId || detailURL;
-      if (!remoteIdentifier || messageIDs.has(remoteIdentifier)) continue;
-      messageIDs.add(remoteIdentifier);
-      const time = container?.querySelector('time');
-      const sender = container?.querySelector('[class*=author],[class*=sender],[data-role=author]');
-      const classLink = container?.querySelector('a[href*="/student/classes/"]');
-      const classURL = classLink ? new URL(classLink.getAttribute('href'), location.origin) : null;
-      messages.push({
-        remoteIdentifier,
-        title,
-        bodyPreview: normalize(container?.querySelector('p,[class*=body],[class*=preview]')?.textContent),
-        senderName: normalize(sender?.textContent),
-        publishedDateText: time?.getAttribute('datetime') || normalize(time?.textContent) || null,
-        isUnread: Boolean(container?.matches('[class*=unread],[data-unread=true]') || container?.querySelector('[class*=unread],[data-unread=true]')),
-        courseIdentifier: classURL?.pathname.replace(/\/$/, '').split('/').pop() || null,
-        detailURL
-      });
+    const schedule = [];
+    const path = location.pathname;
+
+    const nearestRow = (link, pattern, maxLength = 3000) => {
+      const preferred = link.closest('article,li,tr,[data-testid*=notification],[class*=notification-item],[class*=notification-row]');
+      if (preferred) return preferred;
+      let node = link.parentElement;
+      for (let depth = 0; node && depth < 8; depth += 1, node = node.parentElement) {
+        const matchingLinks = Array.from(node.querySelectorAll('a[href]')).filter(item => pattern.test(absolute(item.getAttribute('href'))));
+        const text = normalize(node.textContent);
+        if (matchingLinks.length === 1 && text.length > 12 && text.length < maxLength) return node;
+      }
+      return link.parentElement;
+    };
+
+    const dateToISO = raw => {
+      if (!raw) return null;
+      const clean = normalize(raw);
+      const withYear = /\b\d{4}\b/.test(clean) ? clean : `${clean}, ${new Date().getFullYear()}`;
+      const parsed = new Date(withYear);
+      return Number.isNaN(parsed.valueOf()) ? clean : parsed.toISOString();
+    };
+
+    if (path.startsWith('/student/notifications')) {
+      const notificationPath = /\/student\/notifications\/(\d+)/;
+      const links = Array.from(document.querySelectorAll('a[href]')).filter(link => notificationPath.test(absolute(link.getAttribute('href'))));
+      if (!links.length && /loading/i.test(document.body.innerText || '')) {
+        await new Promise(resolve => {
+          const started = Date.now();
+          const timer = setInterval(() => {
+            const ready = Array.from(document.querySelectorAll('a[href]')).some(link => notificationPath.test(absolute(link.getAttribute('href'))));
+            if (ready || Date.now() - started > 8000) {
+              clearInterval(timer);
+              resolve();
+            }
+          }, 200);
+        });
+      }
+      const seen = new Set();
+      for (const link of document.querySelectorAll('a[href]')) {
+        const detailURL = absolute(link.getAttribute('href'));
+        const match = (() => { try { return new URL(detailURL).pathname.match(notificationPath); } catch (_) { return null; } })();
+        if (!match || seen.has(match[1])) continue;
+        seen.add(match[1]);
+        const row = nearestRow(link, notificationPath);
+        const rowText = normalize(row?.textContent);
+        if (!rowText) continue;
+        const metadataNode = Array.from(row?.querySelectorAll('p,small,span,div') || [])
+          .map(node => normalize(node.textContent))
+          .find(value => value.split('·').length >= 3 && value.length < 300);
+        const metadata = (metadataNode || '').split('·').map(normalize).filter(Boolean);
+        const courseName = metadata[0] || '';
+        const senderName = metadata[1] || '';
+        const dateText = metadata[2] || normalize(row?.querySelector('time')?.textContent);
+        const course = courses.find(item => courseName && normalize(item.name).toLowerCase() === courseName.toLowerCase());
+        let title = normalize(row?.querySelector('h1,h2,h3,h4,[class*=title]')?.textContent);
+        if (!title || title === courseName) {
+          const taskTitle = rowText.match(/^((?:New|Updated) Task:\s*.*?):\s+.+?\s+has just/i);
+          const discussionTitle = rowText.match(/^(.*?):\s+.+?\s+has posted/i);
+          title = normalize(taskTitle?.[1] || discussionTitle?.[1] || rowText.split(/(?<=[.!?])\s/)[0]);
+        }
+        messages.push({
+          remoteIdentifier: match[1],
+          title,
+          bodyPreview: rowText,
+          senderName,
+          publishedDateText: dateToISO(dateText),
+          isUnread: Boolean(row?.matches('[class*=unread],[data-unread=true]') || row?.querySelector('[class*=unread],[data-unread=true]')),
+          courseIdentifier: course?.remoteIdentifier || null,
+          detailURL
+        });
+      }
     }
 
-    const schedule = [];
-    const scheduleIDs = new Set();
-    const scheduleNodes = document.querySelectorAll('[data-start],[data-start-time],[class*=timetable] [class*=event],[class*=schedule] [class*=event],[class*=lesson]');
-    for (const node of scheduleNodes) {
-      const times = Array.from(node.querySelectorAll('time'));
-      const startDateText = node.dataset.start || node.dataset.startTime || times[0]?.getAttribute('datetime');
-      const endDateText = node.dataset.end || node.dataset.endTime || times[1]?.getAttribute('datetime') || startDateText;
-      const title = normalize(node.querySelector('h1,h2,h3,h4,[class*=title],[class*=subject]')?.textContent || node.textContent);
-      if (!title || !startDateText || !endDateText) continue;
-      const link = node.querySelector('a[href]');
-      const detailURL = absolute(link?.getAttribute('href') || '');
-      const remoteIdentifier = node.dataset.eventId || node.dataset.lessonId || [title,startDateText,endDateText].join('|');
-      if (scheduleIDs.has(remoteIdentifier)) continue;
-      scheduleIDs.add(remoteIdentifier);
-      const classLink = node.querySelector('a[href*="/student/classes/"]');
-      const classURL = classLink ? new URL(classLink.getAttribute('href'), location.origin) : null;
-      const teachers = Array.from(node.querySelectorAll('[class*=teacher],[data-role=teacher]')).map(item => normalize(item.textContent)).filter(Boolean);
-      schedule.push({
-        remoteIdentifier,
-        title,
-        courseIdentifier: classURL?.pathname.replace(/\/$/, '').split('/').pop() || null,
-        startDateText,
-        endDateText,
-        location: normalize(node.querySelector('[class*=location],[class*=room],[data-role=location]')?.textContent) || null,
-        teacherNames: [...new Set(teachers)],
-        attendanceStatus: normalize(node.querySelector('[class*=attendance],[data-attendance]')?.textContent) || null,
-        detailURL: detailURL || null
+    if (path.startsWith('/student/timetables')) {
+      const table = Array.from(document.querySelectorAll('table')).find(item => /\bPeriod\b/i.test(item.innerText) && /\bMon\b/i.test(item.innerText));
+      const rows = Array.from(table?.querySelectorAll('tr') || []);
+      const headerCells = Array.from(rows[0]?.querySelectorAll('th,td') || []);
+      const rangeText = normalize(document.querySelector('input[aria-label*=date i],input[value*=" - "]')?.value || document.querySelector('input[value*=" - "]')?.value);
+      const fallbackYear = Number(rangeText.match(/\b(20\d{2})\b/)?.[1] || new Date().getFullYear());
+      const headers = headerCells.slice(1).map((cell, index) => {
+        const raw = normalize(cell.textContent);
+        const match = raw.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2})/i);
+        if (match) return `${match[1]} ${match[2]}, ${fallbackYear}`;
+        const start = rangeText.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),?\s+(20\d{2})/i);
+        if (!start) return null;
+        const date = new Date(`${start[1]} ${start[2]}, ${start[3]}`);
+        date.setDate(date.getDate() + index);
+        return date.toISOString().slice(0, 10);
       });
+      const timePattern = /(\d{1,2}:\d{2}\s*(?:AM|PM))\s*-\s*(\d{1,2}:\d{2}\s*(?:AM|PM))/i;
+      const normalizedCourseName = value => normalize(value)
+        .replace(/^HS\s+/i, '')
+        .replace(/\s*\(Grade\s+\d+\)\s*$/i, '')
+        .trim();
+      const toISO = (day, time) => {
+        if (!day || !time) return null;
+        const parsed = new Date(`${day} ${time}`);
+        return Number.isNaN(parsed.valueOf()) ? null : parsed.toISOString();
+      };
+      const seen = new Set();
+      for (const row of rows.slice(1)) {
+        const cells = Array.from(row.querySelectorAll('th,td'));
+        const period = normalize(cells[0]?.textContent);
+        for (let index = 1; index < cells.length && index <= headers.length; index += 1) {
+          const cell = cells[index];
+          const cellText = normalize(cell?.textContent);
+          const timeMatch = cellText.match(timePattern);
+          if (!timeMatch) continue;
+          let details = normalize(cellText.replace(timePattern, ''));
+          const course = courses
+            .map(item => ({ ...item, shortName: normalizedCourseName(item.name) }))
+            .filter(item => item.shortName && details.toLowerCase().includes(item.shortName.toLowerCase()))
+            .sort((a, b) => b.shortName.length - a.shortName.length)[0];
+          const title = course?.shortName || normalize(details.replace(/\bGrade\s+\d+\b/i, '').replace(/^\d+\s+/, ''));
+          const teachers = Array.from(new Set((course?.teacherNames || []).filter(name => details.toLowerCase().includes(normalize(name).toLowerCase()))));
+          if (course) details = normalize(details.replace(new RegExp(course.shortName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), ''));
+          for (const teacher of teachers) details = normalize(details.replace(new RegExp(teacher.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), ''));
+          details = normalize(details.replace(/\bGrade\s+\d+\b/i, '').replace(/^\d+\s+/, ''));
+          const startDateText = toISO(headers[index - 1], timeMatch[1]);
+          const endDateText = toISO(headers[index - 1], timeMatch[2]);
+          if (!startDateText || !endDateText || !title) continue;
+          const remoteIdentifier = [headers[index - 1], period, course?.remoteIdentifier || title, timeMatch[1]].join('|');
+          if (seen.has(remoteIdentifier)) continue;
+          seen.add(remoteIdentifier);
+          schedule.push({
+            remoteIdentifier,
+            title,
+            courseIdentifier: course?.remoteIdentifier || null,
+            startDateText,
+            endDateText,
+            location: details || null,
+            teacherNames: teachers,
+            attendanceStatus: null,
+            detailURL: null
+          });
+        }
+      }
     }
     return JSON.stringify({ messages, schedule });
     """#

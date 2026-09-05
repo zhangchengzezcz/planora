@@ -1,10 +1,270 @@
 import SwiftData
 import WebKit
 import XCTest
+import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 @testable import planora
 
 @MainActor
 final class ManageBacIntegrationTests: XCTestCase {
+#if os(iOS)
+    func testImportCompletionLayoutOnNarrowPhone() async throws {
+        let session = ManageBacWebSession()
+        session.phase = .completed(ManageBacImportSummary(
+            courseCount: 12, unitCount: 24, importedCount: 18, updatedCount: 3,
+            messageCount: 8, scheduleCount: 30
+        ))
+        session.completedStepCount = 9
+        session.courses = [ManageBacCourseRecord(
+            remoteIdentifier: "123", name: "全球视野 Global Perspectives PDP2",
+            teacherNames: [], detailURL: nil, programmeText: nil
+        )]
+        let store = PlanoraStore(storage: .preview, loadSavedProfile: false)
+        let container = try makeContainer()
+        let content = ManageBacConnectionFlowView(
+            store: store, flow: .connect, session: session,
+            onComplete: { _ in }, onCancel: {}
+        ).modelContainer(container)
+        let controller = UIHostingController(rootView: content)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.first as? UIWindowScene)
+        let window = UIWindow(windowScene: scene)
+        window.frame = CGRect(x: 0, y: 0, width: 375, height: 812)
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true; window.rootViewController = nil }
+        try await Task.sleep(for: .milliseconds(300))
+        controller.view.layoutIfNeeded()
+        let image = UIGraphicsImageRenderer(bounds: controller.view.bounds).image { _ in
+            controller.view.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
+        }
+        let attachment = XCTAttachment(image: image)
+        attachment.name = "ManageBac-iPhone-completed"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("managebac-iphone-completed.png")
+        try image.pngData()?.write(to: url)
+        print("IMPORT_SCREENSHOT=\(url.path)")
+        XCTAssertEqual(session.phase, .completed(ManageBacImportSummary(
+            courseCount: 12, unitCount: 24, importedCount: 18, updatedCount: 3,
+            messageCount: 8, scheduleCount: 30
+        )))
+    }
+#endif
+    func testConnectionCanRestartAfterTeardown() {
+        let session = ManageBacWebSession()
+        session.teardown()
+        XCTAssertNil(session.webView.navigationDelegate)
+        session.startInteractiveConnection()
+        XCTAssertTrue(session.webView.navigationDelegate === session)
+        XCTAssertTrue(session.webView.uiDelegate === session)
+        XCTAssertEqual(session.phase, .authenticating)
+        session.cancel()
+        XCTAssertEqual(session.phase, .failed(.cancelled))
+        session.teardown()
+    }
+
+    func testRepeatedMobileCourseLinksKeepTeacherMapping() async throws {
+        let webView = try await loadedWebView(html: #"""
+        <html><body><main><section>
+          <div><a href="/student/classes/123">Math PDP2</a></div>
+          <div><a href="/student/classes/123">Math PDP2</a></div>
+          <a href="javascript:void(0)">Teacher One</a>
+          <span>Units (2) Tasks (3)</span>
+        </section><a href="https://other.example/student/classes/999">Unrelated</a>
+        </main></body></html>
+        """#, url: "https://school.managebac.cn/student/classes/my")
+        let result = try await webView.callAsyncJavaScript(
+            ManageBacWebSession.courseScript, arguments: [:], in: nil, contentWorld: .page
+        )
+        let json = try XCTUnwrap(result as? String)
+        let payload = try JSONDecoder().decode(CourseListFixturePayload.self, from: Data(json.utf8))
+        XCTAssertEqual(payload.courses.count, 1)
+        XCTAssertEqual(payload.courses.first?.teacherNames, ["Teacher One"])
+    }
+
+    func testCoursePaginationFailureDoesNotReturnPartialSuccess() async throws {
+        let webView = try await loadedWebView(html: #"""
+        <html><body><main>
+        <a href="/student/classes/123">Math PDP2</a>
+        <a href="/student/classes/my?page=2">2</a>
+        <script>window.fetch = async () => { throw new Error('Offline'); };</script>
+        </main></body></html>
+        """#, url: "https://school.managebac.cn/student/classes/my")
+        do {
+            _ = try await webView.callAsyncJavaScript(
+                ManageBacWebSession.courseScript, arguments: [:], in: nil, contentWorld: .page
+            )
+            XCTFail("Partial course lists must not be imported as a successful sync")
+        } catch {
+            XCTAssertEqual((error as NSError).domain, WKError.errorDomain)
+        }
+    }
+
+    func testCourseScanRejectsLoginAndIgnoresSidebarCourses() async throws {
+        let webView = try await loadedWebView(html: #"""
+        <html><body><aside><a href="/student/classes/999">Old Physics</a></aside>
+        <main><h1>My Classes</h1><nav><a href="/student/classes/888">Old Maths</a></nav>
+        <a href="/student/classes/123">Current Maths</a></main></body></html>
+        """#, url: "https://school.managebac.cn/student/classes/my")
+        let result = try await webView.callAsyncJavaScript(
+            ManageBacWebSession.courseScript, arguments: [:], in: nil, contentWorld: .page
+        )
+        let json = try XCTUnwrap(result as? String)
+        let payload = try JSONDecoder().decode(CourseListFixturePayload.self, from: Data(json.utf8))
+        XCTAssertEqual(payload.courses.map(\.remoteIdentifier), ["123"])
+
+        _ = try await webView.evaluateJavaScript("document.body.innerHTML = '<input type=\"password\">';")
+        do {
+            _ = try await webView.callAsyncJavaScript(
+                ManageBacWebSession.courseScript, arguments: [:], in: nil, contentWorld: .page
+            )
+            XCTFail("A login form must not be treated as an empty course list")
+        } catch {
+            XCTAssertEqual((error as NSError).domain, WKError.errorDomain)
+        }
+    }
+
+    func testCurrentManageBacClassCardsReadCourseAndTeachers() async throws {
+        let html = #"""
+        <!doctype html><html><body><main>
+          <section class="class-card">
+            <a href="/student/classes/11501444">HS Math PDP2 (Grade 10)</a>
+            <a href="javascript:void(0);">Dr. Kwadwo Bonsu</a>
+            <a href="javascript:void(0)">Craig Blouin</a>
+            <button>Units (21)</button><button>Tasks (4)</button><button>Updates (10)</button>
+          </section>
+        </main></body></html>
+        """#
+        let webView = try await loadedWebView(
+            html: html,
+            url: "https://school.managebac.cn/student/classes/my"
+        )
+
+        let result = try await webView.callAsyncJavaScript(
+            ManageBacWebSession.courseScript,
+            arguments: [:],
+            in: nil,
+            contentWorld: .page
+        )
+        let json = try XCTUnwrap(result as? String)
+        let payload = try JSONDecoder().decode(CourseListFixturePayload.self, from: Data(json.utf8))
+
+        XCTAssertEqual(payload.courses.count, 1)
+        XCTAssertEqual(payload.courses[0].remoteIdentifier, "11501444")
+        XCTAssertEqual(payload.courses[0].name, "HS Math PDP2 (Grade 10)")
+        XCTAssertEqual(payload.courses[0].teacherNames, ["Dr. Kwadwo Bonsu", "Craig Blouin"])
+    }
+
+    func testCurrentManageBacTaskRouteAndPastStatusAreRecognized() async throws {
+        let html = #"""
+        <!doctype html><html><body><main>
+          <article class="task-card">
+            <a href="/student/classes/11501444/core_tasks/27538517">Homework 03</a>
+            <span>Sep 8, 1:20 PM</span>
+            <a href="/student/classes/11501444">HS Math PDP2 (Grade 10)</a>
+            <span>Summative</span><span>Classwork</span>
+          </article>
+        </main></body></html>
+        """#
+        let webView = try await loadedWebView(
+            html: html,
+            url: "https://school.managebac.cn/student/tasks_and_deadlines?view=past"
+        )
+
+        let result = try await webView.callAsyncJavaScript(
+            ManageBacWebSession.taskScript,
+            arguments: ["sourceView": "past"],
+            in: nil,
+            contentWorld: .page
+        )
+        let json = try XCTUnwrap(result as? String)
+        let payload = try JSONDecoder().decode(ManageBacScanPayload.self, from: Data(json.utf8))
+
+        XCTAssertTrue(payload.pageRecognized)
+        XCTAssertEqual(payload.records.count, 1)
+        XCTAssertEqual(payload.records[0].remoteIdentifier, "11501444:27538517")
+        XCTAssertEqual(payload.records[0].courseIdentifier, "11501444")
+        XCTAssertEqual(payload.records[0].subject, "HS Math PDP2 (Grade 10)")
+        XCTAssertEqual(payload.records[0].remoteStatus, .past)
+        XCTAssertNotNil(payload.records[0].deadline)
+    }
+
+    func testCurrentNotificationRowsAreReadFromDedicatedPage() async throws {
+        let html = #"""
+        <!doctype html><html><body><main>
+          <section><h4>New For You</h4>
+            <article class="notification-item unread">
+              <a href="/student/notifications/245152680"></a>
+              <p>New Task: Homework 03: Dr. Kwadwo Bonsu has just added a new Task Homework 03 in HS Math PDP2 (Grade 10). When: September 8, 2026 at 1:20 PM</p>
+              <small>HS Math PDP2 (Grade 10) · Dr. Kwadwo Bonsu · Sep 4</small>
+            </article>
+          </section>
+        </main></body></html>
+        """#
+        let webView = try await loadedWebView(
+            html: html,
+            url: "https://school.managebac.cn/student/notifications"
+        )
+        let result = try await webView.callAsyncJavaScript(
+            ManageBacWebSession.workspaceScript,
+            arguments: ["courseRecords": [[
+                "remoteIdentifier": "11501444",
+                "name": "HS Math PDP2 (Grade 10)",
+                "teacherNames": ["Dr. Kwadwo Bonsu"]
+            ]]],
+            in: nil,
+            contentWorld: .page
+        )
+        let json = try XCTUnwrap(result as? String)
+        let payload = try JSONDecoder().decode(WorkspaceFixturePayload.self, from: Data(json.utf8))
+
+        XCTAssertEqual(payload.messages.count, 1)
+        XCTAssertEqual(payload.messages[0].remoteIdentifier, "245152680")
+        XCTAssertEqual(payload.messages[0].courseIdentifier, "11501444")
+        XCTAssertEqual(payload.messages[0].senderName, "Dr. Kwadwo Bonsu")
+        XCTAssertEqual(payload.messages[0].title, "New Task: Homework 03")
+        XCTAssertTrue(payload.messages[0].isUnread)
+        XCTAssertTrue(payload.schedule.isEmpty)
+    }
+
+    func testCurrentWeeklyTimetableTableIsRead() async throws {
+        let html = #"""
+        <!doctype html><html><body><main>
+          <input aria-label="Select Date" value="Aug 31, 2026 - Sep 6, 2026">
+          <table><thead><tr><th>Period</th><th>Aug 31, Mon</th><th>Sep 1, Tue</th></tr></thead>
+          <tbody><tr><th>1</th>
+            <td>7:30 AM - 8:10 AM History Grade 10 阶梯教室201</td>
+            <td>7:30 AM - 8:10 AM 1 GP PDP2 Grade 10 Marce Steyn 536</td>
+          </tr></tbody></table>
+        </main></body></html>
+        """#
+        let webView = try await loadedWebView(
+            html: html,
+            url: "https://school.managebac.cn/student/timetables"
+        )
+        let result = try await webView.callAsyncJavaScript(
+            ManageBacWebSession.workspaceScript,
+            arguments: ["courseRecords": [
+                ["remoteIdentifier": "history", "name": "HS History (Grade 10)", "teacherNames": []],
+                ["remoteIdentifier": "gp", "name": "HS GP PDP2 (Grade 10)", "teacherNames": ["Marce Steyn"]]
+            ]],
+            in: nil,
+            contentWorld: .page
+        )
+        let json = try XCTUnwrap(result as? String)
+        let payload = try JSONDecoder().decode(WorkspaceFixturePayload.self, from: Data(json.utf8))
+
+        XCTAssertEqual(payload.schedule.count, 2)
+        XCTAssertEqual(payload.schedule[0].title, "History")
+        XCTAssertEqual(payload.schedule[0].location, "阶梯教室201")
+        XCTAssertEqual(payload.schedule[1].courseIdentifier, "gp")
+        XCTAssertEqual(payload.schedule[1].teacherNames, ["Marce Steyn"])
+        XCTAssertEqual(payload.schedule[1].location, "536")
+        XCTAssertTrue(payload.messages.isEmpty)
+    }
+
     func testRedesignedUnitGridIsReadWithoutCoursePageNavigation() async throws {
         let detailHTML = #"""
         <!doctype html>
@@ -408,6 +668,21 @@ final class ManageBacIntegrationTests: XCTestCase {
         )
     }
 
+    private func loadedWebView(html: String, url: String) async throws -> WKWebView {
+        let webView = WKWebView(frame: .zero)
+        webView.loadHTMLString(html, baseURL: try XCTUnwrap(URL(string: url)))
+        for _ in 0..<250 {
+            if !webView.isLoading, webView.url?.host == URL(string: url)?.host,
+               let ready = try? await webView.evaluateJavaScript("document.readyState === 'complete' && document.body !== null"),
+               ready as? Bool == true {
+                return webView
+            }
+            try await Task.sleep(for: .milliseconds(20))
+        }
+        XCTFail("The offline ManageBac fixture did not finish loading")
+        throw ManageBacConnectionError.invalidResponse
+    }
+
     private func record(title: String, deadline: String, identifier: String) -> ManageBacTaskRecord {
         ManageBacTaskRecord(
             remoteIdentifier: identifier,
@@ -418,6 +693,15 @@ final class ManageBacIntegrationTests: XCTestCase {
             sourceView: "upcoming"
         )
     }
+}
+
+private struct WorkspaceFixturePayload: Decodable {
+    var messages: [ManageBacMessageRecord]
+    var schedule: [ManageBacScheduleRecord]
+}
+
+private struct CourseListFixturePayload: Decodable {
+    var courses: [ManageBacCourseRecord]
 }
 
 private struct CourseDetailFixturePayload: Decodable {
