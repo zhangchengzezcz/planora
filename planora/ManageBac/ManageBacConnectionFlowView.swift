@@ -58,9 +58,10 @@ struct ManageBacConnectionFlowView: View {
         .onDisappear(perform: session.teardown)
 #else
         flowContent
-            .safeAreaInset(edge: .top, spacing: 0) {
+            .safeAreaBar(edge: .top, spacing: 0) {
                 connectionHeader
             }
+            .scrollEdgeEffectStyle(.automatic, for: .top)
             .onAppear(perform: startIfNeeded)
             .onDisappear(perform: session.teardown)
 #endif
@@ -102,9 +103,15 @@ struct ManageBacConnectionFlowView: View {
             Spacer()
 
             if isCompleted {
-                Button(String(localized: "Done"), action: finish)
-                    .fontWeight(.semibold)
-                    .buttonStyle(.borderedProminent)
+                Button(action: finish) {
+                    Text(String(localized: "Done"))
+                        .font(.subheadline.weight(.semibold))
+                        .frame(minWidth: 44, minHeight: 44)
+                        .padding(.horizontal, 16)
+                        .glassEffect(.regular.interactive(), in: Capsule())
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
             } else {
                 Button(String(localized: "Cancel"), action: cancel)
                     .buttonStyle(.bordered)
@@ -112,7 +119,6 @@ struct ManageBacConnectionFlowView: View {
         }
         .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
         .padding(.vertical, 10)
-        .background(.regularMaterial)
     }
 #endif
 
