@@ -22,6 +22,9 @@ struct HomeDashboardView: View {
         ScrollView(showsIndicators: false) {
             contentStack(snapshot: snapshot)
         }
+#if os(iOS)
+        .swipeActionsContainer()
+#endif
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
         .planoraHiddenNavigationBar()
         .background(PlanoraBackground())
@@ -500,6 +503,10 @@ private struct DashboardTaskInteraction<Content: View>: View {
     let store: PlanoraStore
     let task: PlanoraTask
     let content: Content
+#if os(iOS)
+    @Environment(\.modelContext) private var modelContext
+    @State private var isShowingCompletionConfirmation = false
+#endif
 
     init(
         store: PlanoraStore,
@@ -512,6 +519,40 @@ private struct DashboardTaskInteraction<Content: View>: View {
     }
 
     var body: some View {
+#if os(iOS)
+        NavigationLink {
+            TaskDetailView(store: store, task: task)
+        } label: {
+            content
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(DashboardTaskNavigationButtonStyle())
+        .accessibilityHint(String(localized: "Open task details"))
+        .accessibilityAction(named: Text(String(localized: "Mark Complete"))) {
+            requestCompletion()
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button(String(localized: "Mark Complete"), systemImage: "checkmark") {
+                requestCompletion()
+            }
+            .tint(Color.planoraGreen)
+        } onPresentationChanged: { _ in }
+        .alert(String(localized: "Mark Complete"), isPresented: $isShowingCompletionConfirmation) {
+            Button(String(localized: "Cancel"), role: .cancel) {}
+            Button(String(localized: "Mark Complete")) {
+                guard !task.isCompleted, !task.isDeleted, !task.isArchived else { return }
+                task.setCompleted(true)
+                PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+            }
+        } message: {
+            if task.subtasks.contains(where: { !$0.isCompleted }) {
+                Text(task.title + "\n\n" + String(localized: "Completing this task will also mark every subtask as complete."))
+            } else {
+                Text(task.title)
+            }
+        }
+#else
         ZStack(alignment: .leading) {
             NavigationLink {
                 TaskDetailView(store: store, task: task)
@@ -528,7 +569,15 @@ private struct DashboardTaskInteraction<Content: View>: View {
                 .frame(width: completionRegionWidth)
                 .frame(maxHeight: .infinity)
         }
+#endif
     }
+
+#if os(iOS)
+    private func requestCompletion() {
+        guard !task.isCompleted, !task.isDeleted, !task.isArchived else { return }
+        isShowingCompletionConfirmation = true
+    }
+#endif
 }
 
 private struct DashboardTaskNavigationButtonStyle: ButtonStyle {
@@ -552,7 +601,7 @@ private struct TaskList: View {
                 TaskRow(store: store, task: task)
 
                 if index != tasks.indices.last {
-                    Divider().padding(.leading, 62)
+                    Divider().padding(.leading, 18)
                 }
             }
         }

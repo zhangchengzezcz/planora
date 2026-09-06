@@ -337,6 +337,10 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
             }
         case .loadingWorkspace:
             do {
+                if workspacePaths[currentWorkspacePathIndex] == "/student/notifications" {
+                    let _: Bool = try await decodeJavaScript(Self.notificationHistoryScript)
+                    guard generation == pageLoadGeneration else { return }
+                }
                 let payload: WorkspaceScanPayload = try await decodeJavaScript(
                     Self.workspaceScript,
                     arguments: ["courseRecords": encodedCourseArguments]
@@ -353,7 +357,11 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 }
             } catch {
                 guard generation == pageLoadGeneration else { return }
-                advancePastWorkspacePage()
+                if workspacePaths[currentWorkspacePathIndex] == "/student/notifications" {
+                    phase = .failed(.pageStructureChanged)
+                } else {
+                    advancePastWorkspacePage()
+                }
             }
         default:
             break
@@ -488,7 +496,11 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         webView.stopLoading()
         switch phase {
         case .loadingWorkspace:
-            advancePastWorkspacePage()
+            if workspacePaths[currentWorkspacePathIndex] == "/student/notifications" {
+                phase = .failed(.invalidResponse)
+            } else {
+                advancePastWorkspacePage()
+            }
         case .loadingTasks:
             // A missing task page is not an empty page. Keep the existing store intact.
             phase = .failed(.invalidResponse)
@@ -851,6 +863,48 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     return JSON.stringify({ records: candidates, pageRecognized });
     """#
 
+    // The current website lazily appends Previous Notifications as this pane scrolls.
+    // Never open notification links: opening one can mark the school record as read.
+    static let notificationHistoryScript = #"""
+    const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const started = Date.now();
+    let pane;
+    while (Date.now() - started < 12000) {
+      if (document.querySelector('input[type="password"]')) throw new Error('Login expired');
+      pane = document.querySelector('.mn-timeline-wrapper');
+      if (pane?.querySelector('a[href*="/student/notifications/"]')) break;
+      const main = document.querySelector('main, #main-content');
+      if (/no notifications|no messages/i.test(main?.textContent || '')) return JSON.stringify(true);
+      await pause(200);
+    }
+    if (!pane?.querySelector('a[href*="/student/notifications/"]')) throw new Error('Notification list not recognized');
+    const initialTop = pane.scrollTop;
+    const count = () => pane.querySelectorAll('a[href*="/student/notifications/"]').length;
+    try {
+      for (let batch = 0; batch < 500; batch++) {
+        if (Date.now() - started > 120000) throw new Error('Notification history timed out');
+        const before = count();
+        // Scroll only the list, never click its mark-read or star controls.
+        pane.scrollTop = Math.max(0, pane.scrollHeight - pane.clientHeight);
+        pane.dispatchEvent(new Event('scroll', { bubbles: true }));
+        let changed = false;
+        for (let attempt = 0; attempt < 40; attempt++) {
+          await pause(200);
+          if (!pane.isConnected || document.querySelector('input[type="password"]')) throw new Error('Notification session changed');
+          if (count() > before) { changed = true; break; }
+        }
+        if (changed) continue;
+        if (pane.querySelector('[aria-busy="true"], .loading, .spinner, [role="alert"]')) {
+          throw new Error('Notification history did not finish loading');
+        }
+        return JSON.stringify(true);
+      }
+      throw new Error('Notification history limit exceeded');
+    } finally {
+      if (pane.isConnected) pane.scrollTop = initialTop;
+    }
+    """#
+
     static let workspaceScript = #"""
     const normalize = value => (value || '').replace(/\s+/g, ' ').trim();
     const absolute = value => { try { return new URL(value, location.origin).href; } catch (_) { return ''; } };
@@ -860,7 +914,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     const path = location.pathname;
 
     const nearestRow = (link, pattern, maxLength = 3000) => {
-      const preferred = link.closest('article,li,tr,[data-testid*=notification],[class*=notification-item],[class*=notification-row]');
+      const preferred = link.closest('.mn-item,article,li,tr,[data-testid*=notification],[class*=notification-item],[class*=notification-row]');
       if (preferred) return preferred;
       let node = link.parentElement;
       for (let depth = 0; node && depth < 8; depth += 1, node = node.parentElement) {
@@ -898,12 +952,12 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
       for (const link of document.querySelectorAll('a[href]')) {
         const detailURL = absolute(link.getAttribute('href'));
         const match = (() => { try { return new URL(detailURL).pathname.match(notificationPath); } catch (_) { return null; } })();
-        if (!match || seen.has(match[1])) continue;
+        if (!match || new URL(detailURL).origin !== location.origin || seen.has(match[1])) continue;
         seen.add(match[1]);
         const row = nearestRow(link, notificationPath);
         const rowText = normalize(row?.textContent);
         if (!rowText) continue;
-        const metadataNode = Array.from(row?.querySelectorAll('p,small,span,div') || [])
+        const metadataNode = normalize(row?.querySelector('.author-name-secondary')?.textContent) || Array.from(row?.querySelectorAll('p,small,span,div') || [])
           .map(node => normalize(node.textContent))
           .find(value => value.split('·').length >= 3 && value.length < 300);
         const metadata = (metadataNode || '').split('·').map(normalize).filter(Boolean);
@@ -911,7 +965,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         const senderName = metadata[1] || '';
         const dateText = metadata[2] || normalize(row?.querySelector('time')?.textContent);
         const course = courses.find(item => courseName && normalize(item.name).toLowerCase() === courseName.toLowerCase());
-        let title = normalize(row?.querySelector('h1,h2,h3,h4,[class*=title]')?.textContent);
+        let title = normalize(row?.querySelector('.author-name strong,h1,h2,h3,h4,[class*=title]')?.textContent);
         if (!title || title === courseName) {
           const taskTitle = rowText.match(/^((?:New|Updated) Task:\s*.*?):\s+.+?\s+has just/i);
           const discussionTitle = rowText.match(/^(.*?):\s+.+?\s+has posted/i);
@@ -923,7 +977,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
           bodyPreview: rowText,
           senderName,
           publishedDateText: dateToISO(dateText),
-          isUnread: Boolean(row?.matches('[class*=unread],[data-unread=true]') || row?.querySelector('[class*=unread],[data-unread=true]')),
+          isUnread: Boolean(row?.matches('.unread,[data-unread="true"]') || row?.querySelector('.unread,[data-unread="true"]')),
           courseIdentifier: course?.remoteIdentifier || null,
           detailURL
         });

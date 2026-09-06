@@ -277,6 +277,47 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertTrue(payload.schedule.isEmpty)
     }
 
+    func testNotificationHistoryLoadsReadAndUnreadWithoutOpeningMessages() async throws {
+        let html = #"""
+        <html><body><main><div class="mn-timeline-wrapper" style="height:80px;overflow:auto">
+          <div class="mn-item unread" style="height:100px">
+            <a href="/student/notifications/1" onclick="document.body.dataset.opened='yes';return false"></a>
+            <div class="author-name"><strong>New message</strong></div>
+            <div class="author-name-secondary">Physics · Teacher · Sep 5</div>
+          </div>
+        </div></main><script>
+          let page = 1;
+          document.querySelector('.mn-timeline-wrapper').addEventListener('scroll', function() {
+            if (page >= 3) return;
+            const id = ++page;
+            setTimeout(() => this.insertAdjacentHTML('beforeend', `
+              <div class="mn-item" style="height:100px">
+                <a href="/student/notifications/${id}" onclick="document.body.dataset.opened='yes';return false"></a>
+                <div class="author-name"><strong>Read message ${id}</strong></div>
+                <div class="author-name-secondary">Physics · Teacher · Sep 4</div>
+              </div>`), 100);
+          });
+        </script></body></html>
+        """#
+        let webView = try await loadedWebView(html: html, url: "https://school.managebac.cn/student/notifications")
+        _ = try await webView.callAsyncJavaScript(ManageBacWebSession.notificationHistoryScript, arguments: [:], in: nil, contentWorld: .page)
+        let result = try await webView.callAsyncJavaScript(ManageBacWebSession.workspaceScript, arguments: ["courseRecords": []], in: nil, contentWorld: .page)
+        let payload = try JSONDecoder().decode(WorkspaceFixturePayload.self, from: Data(try XCTUnwrap(result as? String).utf8))
+        XCTAssertEqual(payload.messages.map(\.remoteIdentifier), ["1", "2", "3"])
+        XCTAssertEqual(payload.messages.map(\.isUnread), [true, false, false])
+        XCTAssertEqual(payload.messages.last?.title, "Read message 3")
+        let opened = try await webView.evaluateJavaScript("document.body.dataset.opened === 'yes'")
+        XCTAssertEqual(opened as? Bool, false)
+
+        let container = try makeContainer()
+        let snapshot = ManageBacSyncSnapshot(schoolHost: "school.managebac.cn", courses: [], units: [], tasks: [], messages: payload.messages)
+        _ = try ManageBacTaskImporter.importSnapshot(snapshot, currentCurriculum: .ib, existingTasks: [], into: container.mainContext)
+        _ = try ManageBacTaskImporter.importSnapshot(snapshot, currentCurriculum: .ib, existingTasks: [], into: container.mainContext)
+        let stored = try container.mainContext.fetch(FetchDescriptor<PlanoraMessage>())
+        XCTAssertEqual(stored.count, 3)
+        XCTAssertEqual(stored.filter { !$0.isUnread }.count, 2)
+    }
+
     func testCurrentWeeklyTimetableTableIsRead() async throws {
         let html = #"""
         <!doctype html><html><body><main>
@@ -718,6 +759,7 @@ final class ManageBacIntegrationTests: XCTestCase {
     private func makeContainer() throws -> ModelContainer {
         try ModelContainer(
             for: PlanoraTask.self, PlanoraCourse.self, PlanoraUnit.self, PlanoraTopic.self, PlanoraAssessment.self,
+            PlanoraTeacher.self, PlanoraMessage.self, PlanoraScheduleEvent.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
     }
