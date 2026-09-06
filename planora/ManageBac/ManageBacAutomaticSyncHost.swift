@@ -3,6 +3,8 @@ import SwiftData
 import SwiftUI
 
 struct ManageBacAutomaticSyncHost: View {
+    private static let automaticSyncInterval: TimeInterval = 2 * 60
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @Query(sort: \PlanoraTask.createdDate) private var tasks: [PlanoraTask]
@@ -32,6 +34,9 @@ struct ManageBacAutomaticSyncHost: View {
             snapshot = ManageBacConnectionStorage.load()
             synchronizeIfNeeded()
         }
+        .onReceive(Timer.publish(every: Self.automaticSyncInterval, on: .main, in: .common).autoconnect()) { _ in
+            synchronizeIfNeeded()
+        }
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .active else { return }
             synchronizeIfNeeded()
@@ -49,12 +54,15 @@ struct ManageBacAutomaticSyncHost: View {
     }
 
     private func synchronizeIfNeeded() {
-        guard scenePhase == .active,
-              !isSyncing,
-              let snapshot else { return }
+#if os(iOS)
+        // iOS suspends WebKit work after the app leaves the foreground. The
+        // active-phase check also ensures a due sync is resumed on return.
+        guard scenePhase == .active else { return }
+#endif
+        guard !isSyncing, let snapshot else { return }
 
         let referenceDate = max(snapshot.lastSyncDate, lastAttemptDate ?? .distantPast)
-        guard needsLaunchSync || Date().timeIntervalSince(referenceDate) >= 15 * 60 else { return }
+        guard needsLaunchSync || Date().timeIntervalSince(referenceDate) >= Self.automaticSyncInterval else { return }
 
         isSyncing = true
         needsLaunchSync = false

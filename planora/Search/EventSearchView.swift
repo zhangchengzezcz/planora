@@ -79,7 +79,7 @@ struct EventSearchView: View {
                 .padding(.top, 18)
 
                 EventSearchField(text: $searchText, isFocused: $isSearchFocused)
-                filterBar
+                resultsHeader
 
                 if results.isEmpty {
                     EmptyEventSearchCard(
@@ -87,7 +87,7 @@ struct EventSearchView: View {
                         hasTasks: !tasks.isEmpty
                     )
                 } else {
-                    DashboardSection(title: trimmedSearchText.isEmpty && !hasActiveFilters ? String(localized: "All Items") : String(localized: "Search Results")) {
+                    GlassPanel(padding: 0) {
                         LazyVStack(spacing: 0) {
                             ForEach(results) { task in
                                 NavigationLink {
@@ -135,8 +135,14 @@ struct EventSearchView: View {
         }
     }
 
-    private var filterBar: some View {
+    private var resultsHeader: some View {
         HStack {
+            Text(trimmedSearchText.isEmpty && !hasActiveFilters ? String(localized: "All Items") : String(localized: "Search Results"))
+                .font(.title2.weight(.bold))
+                .foregroundStyle(Color.planoraInk)
+
+            Spacer(minLength: 16)
+
             Menu {
                 Menu {
                     filterButton(title: String(localized: "All Subjects"), isSelected: selectedSubject == nil) {
@@ -222,7 +228,6 @@ struct EventSearchView: View {
                     .contentShape(Capsule())
             }
             .buttonStyle(.plain)
-            Spacer()
         }
     }
 
