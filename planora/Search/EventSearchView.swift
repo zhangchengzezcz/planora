@@ -217,6 +217,9 @@ struct EventSearchView: View {
                 Label(String(localized: "Filters"), systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                     .font(.subheadline.weight(.medium))
                     .frame(minHeight: 44)
+                    .padding(.horizontal, 16)
+                    .glassEffect(.regular.interactive(), in: Capsule())
+                    .contentShape(Capsule())
             }
             .buttonStyle(.plain)
             Spacer()

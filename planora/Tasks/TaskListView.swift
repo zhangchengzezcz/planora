@@ -194,6 +194,9 @@ struct TaskListView: View {
                     Label(statusFilter.title, systemImage: "line.3.horizontal.decrease.circle")
                         .font(.subheadline.weight(.medium))
                         .frame(minHeight: 44)
+                        .padding(.horizontal, 16)
+                        .glassEffect(.regular.interactive(), in: Capsule())
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 Spacer()
@@ -208,6 +211,9 @@ struct TaskListView: View {
                         Text(isSelecting ? String(localized: "Done") : String(localized: "Select"))
                             .font(.subheadline.weight(.medium))
                             .frame(minWidth: 44, minHeight: 44)
+                            .padding(.horizontal, 16)
+                            .glassEffect(.regular.interactive(), in: Capsule())
+                            .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(isSelecting ? String(localized: "Done") : String(localized: "Select"))
