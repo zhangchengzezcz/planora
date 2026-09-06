@@ -10,6 +10,43 @@ import UIKit
 @MainActor
 final class ManageBacIntegrationTests: XCTestCase {
 #if os(iOS)
+    func testMobileWorkspaceScreensAtNarrowWidth() async throws {
+        let store = PlanoraStore(storage: .preview, loadSavedProfile: false)
+        store.userName = "Mitty"
+        let container = try makeContainer()
+        container.mainContext.insert(PlanoraMessage(externalIdentifier: "fixture-message", title: "Course update", isUnread: true))
+        try container.mainContext.save()
+        let screens: [(String, AnyView)] = [
+            ("home", AnyView(HomeDashboardView(store: store, onCreateRequested: {}))),
+            ("tasks", AnyView(TaskListView(store: store))),
+            ("courses", AnyView(CoursesWorkspaceView(store: store))),
+            ("profile", AnyView(ProfileView(store: store))),
+            ("search", AnyView(EventSearchView(store: store, isActive: false))),
+            ("messages", AnyView(ManageBacMessagesView()))
+        ]
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.first as? UIWindowScene)
+        for (name, screen) in screens {
+            let controller = UIHostingController(rootView: NavigationStack { screen }
+                .modelContainer(container).environment(\.locale, Locale(identifier: "zh-Hans")))
+            let window = UIWindow(windowScene: scene)
+            window.frame = CGRect(x: 0, y: 0, width: 375, height: 812)
+            window.rootViewController = controller
+            window.makeKeyAndVisible()
+            try await Task.sleep(for: .milliseconds(400))
+            controller.view.layoutIfNeeded()
+            let image = UIGraphicsImageRenderer(bounds: controller.view.bounds).image { _ in
+                controller.view.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
+            }
+            let attachment = XCTAttachment(image: image)
+            attachment.name = "mobile-\(name)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+            try image.pngData()?.write(to: FileManager.default.temporaryDirectory.appendingPathComponent("planora-mobile-\(name).png"))
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+    }
+
     func testImportCompletionLayoutOnNarrowPhone() async throws {
         let session = ManageBacWebSession()
         session.phase = .completed(ManageBacImportSummary(
@@ -52,6 +89,22 @@ final class ManageBacIntegrationTests: XCTestCase {
         )))
     }
 #endif
+    func testWeeklyTimetableUsesLatestSourceDayAndMondayToFriday() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let oldSync = Date(timeIntervalSince1970: 1)
+        let newSync = Date(timeIntervalSince1970: 2)
+        func event(_ id: String, _ date: String, _ sync: Date) throws -> PlanoraScheduleEvent {
+            let start = try XCTUnwrap(ManageBacDateParser.date(from: date, calendar: calendar))
+            return PlanoraScheduleEvent(externalIdentifier: id, title: id, startDate: start, endDate: start.addingTimeInterval(2400), lastSyncDate: sync)
+        }
+        let events = try [event("old", "2026-08-31 08:00", oldSync), event("new", "2026-09-07 08:00", newSync), event("next", "2026-09-07 09:00", newSync), event("weekend", "2026-09-06 09:00", newSync)]
+        let days = ManageBacWeeklyTimetable.days(events: events, calendar: calendar)
+        XCTAssertEqual(days.map(\.0), [2, 3, 4, 5, 6])
+        XCTAssertEqual(days[0].1.map(\.externalIdentifier), ["new", "next"])
+        XCTAssertTrue(days[1].1.isEmpty)
+    }
+
     func testConnectionCanRestartAfterTeardown() {
         let session = ManageBacWebSession()
         session.teardown()

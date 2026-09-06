@@ -1,4 +1,43 @@
 import SwiftUI
+import SwiftData
+
+struct ProfileHeaderActions: View {
+    let store: PlanoraStore
+
+    var body: some View {
+        HStack(spacing: 10) {
+            ProfileAvatarLink(store: store)
+            MessageBellLink()
+        }
+        .fixedSize()
+    }
+}
+
+struct MessageBellLink: View {
+    @Query(filter: #Predicate<PlanoraMessage> { $0.isUnread }) private var unreadMessages: [PlanoraMessage]
+
+    var body: some View {
+        NavigationLink {
+            ManageBacMessagesView()
+        } label: {
+            Image(systemName: "bell")
+                .font(.system(size: 19, weight: .medium))
+                .foregroundStyle(.primary)
+                .frame(width: 44, height: 44)
+                .glassEffect(.regular.interactive(), in: Circle())
+                .overlay(alignment: .topTrailing) {
+                    if !unreadMessages.isEmpty {
+                        Circle().fill(.red).frame(width: 8, height: 8)
+                            .padding(3)
+                            .accessibilityHidden(true)
+                    }
+                }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(String(localized: "Messages"))
+        .accessibilityValue(Text(unreadMessages.count, format: .number))
+    }
+}
 
 struct ProfileAvatarLink: View {
     let store: PlanoraStore

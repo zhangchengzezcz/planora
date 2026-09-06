@@ -1,4 +1,18 @@
 import SwiftUI
+import SwiftData
+
+struct ManageBacMessagesView: View {
+    @Query(sort: \PlanoraMessage.publishedDate, order: .reverse) private var messages: [PlanoraMessage]
+
+    var body: some View {
+        ScrollView {
+            ManageBacMessageList(messages: messages)
+        }
+        .navigationTitle(String(localized: "Messages"))
+        .planoraDetailNavigationBar()
+        .background(PlanoraBackground())
+    }
+}
 
 enum CoursesWorkspaceSection: String, CaseIterable, Identifiable {
     case courses
@@ -28,7 +42,7 @@ struct ManageBacMessageList: View {
             )
             .frame(maxWidth: .infinity, minHeight: 280)
         } else {
-            VStack(spacing: 0) {
+            LazyVStack(spacing: 0) {
                 ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
                     messageRow(message)
                     if index < messages.count - 1 { Divider().padding(.leading, 52) }
@@ -72,11 +86,16 @@ struct ManageBacMessageList: View {
 
 struct ManageBacTimetableList: View {
     let events: [PlanoraScheduleEvent]
+    @Environment(\.locale) private var locale
 
-    private var grouped: [(Date, [PlanoraScheduleEvent])] {
-        Dictionary(grouping: events) { Calendar.current.startOfDay(for: $0.startDate) }
-            .map { ($0.key, $0.value.sorted { $0.startDate < $1.startDate }) }
-            .sorted { $0.0 < $1.0 }
+    private var grouped: [(Int, [PlanoraScheduleEvent])] {
+        ManageBacWeeklyTimetable.days(events: events)
+    }
+
+    private func weekdayName(_ weekday: Int) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        return formatter.standaloneWeekdaySymbols[weekday - 1]
     }
 
     var body: some View {
@@ -91,7 +110,7 @@ struct ManageBacTimetableList: View {
             VStack(alignment: .leading, spacing: 20) {
                 ForEach(grouped, id: \.0) { day, items in
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(day, format: .dateTime.weekday(.wide).month().day())
+                        Text(weekdayName(day))
                             .font(.headline).padding(.horizontal, 14).padding(.bottom, 8)
                         ForEach(Array(items.enumerated()), id: \.element.id) { index, event in
                             HStack(alignment: .top, spacing: 14) {
@@ -99,7 +118,7 @@ struct ManageBacTimetableList: View {
                                     .font(.subheadline.monospacedDigit()).foregroundStyle(.secondary).frame(width: 58, alignment: .leading)
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(event.title).font(.headline)
-                                    HStack(spacing: 8) {
+                                    VStack(alignment: .leading, spacing: 4) {
                                         if let location = event.location, !location.isEmpty { Label(location, systemImage: "door.left.hand.open") }
                                         if !event.teacherNames.isEmpty { Label(event.teacherNames.joined(separator: ", "), systemImage: "person") }
                                     }
@@ -115,6 +134,27 @@ struct ManageBacTimetableList: View {
                     }
                 }
             }
+        }
+    }
+}
+
+enum ManageBacWeeklyTimetable {
+    static func days(events: [PlanoraScheduleEvent], calendar: Calendar = .current) -> [(Int, [PlanoraScheduleEvent])] {
+        let byWeekday = Dictionary(grouping: events) { calendar.component(.weekday, from: $0.startDate) }
+        return (2...6).map { weekday in
+            let byDate = Dictionary(grouping: byWeekday[weekday] ?? []) { calendar.startOfDay(for: $0.startDate) }
+            // Stored snapshots can span several weeks. Show the most recently synced
+            // source day, not every historical occurrence of the same weekday.
+            let latestDay = byDate.keys.max { lhs, rhs in
+                let left = byDate[lhs]!.map(\.lastSyncDate).max()!
+                let right = byDate[rhs]!.map(\.lastSyncDate).max()!
+                return left == right ? lhs < rhs : left < right
+            }
+            let items = latestDay.flatMap { byDate[$0] } ?? []
+            return (weekday, items.sorted {
+                if $0.startDate != $1.startDate { return $0.startDate < $1.startDate }
+                return $0.title.localizedStandardCompare($1.title) == .orderedAscending
+            })
         }
     }
 }

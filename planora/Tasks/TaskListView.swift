@@ -177,32 +177,43 @@ struct TaskListView: View {
                         .font(.largeTitle.weight(.bold))
                         .foregroundStyle(Color.planoraInk)
 
-                    Text(String(localized: "Tasks are displayed and sorted using your settings."))
-                        .font(.callout.weight(.medium))
-                        .foregroundStyle(.secondary)
                 }
 
                 Spacer(minLength: 8)
+                ProfileHeaderActions(store: store)
+            }
+
+            HStack {
+                Menu {
+                    Picker(String(localized: "Status"), selection: $statusFilter) {
+                        ForEach(PlanoraTaskListStatus.allCases) { value in
+                            Text(value.title).tag(value)
+                        }
+                    }
+                } label: {
+                    Label(statusFilter.title, systemImage: "line.3.horizontal.decrease.circle")
+                        .font(.subheadline.weight(.medium))
+                        .frame(minHeight: 44)
+                }
+                .buttonStyle(.plain)
+                Spacer()
                 if statusFilter != .deleted {
-                    Button(isSelecting ? String(localized: "Done") : String(localized: "Select")) {
+                    Button {
                         if isSelecting {
                             finishSelection()
                         } else {
                             isSelecting = true
                         }
+                    } label: {
+                        Text(isSelecting ? String(localized: "Done") : String(localized: "Select"))
+                            .font(.subheadline.weight(.medium))
+                            .frame(minWidth: 44, minHeight: 44)
                     }
-                    .buttonStyle(.bordered)
-                }
-                ProfileAvatarLink(store: store)
-            }
-
-            Picker(String(localized: "Status"), selection: $statusFilter) {
-                ForEach(PlanoraTaskListStatus.allCases) { value in
-                    Text(value.title).tag(value)
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(isSelecting ? String(localized: "Done") : String(localized: "Select"))
+                    .help(isSelecting ? String(localized: "Done") : String(localized: "Select"))
                 }
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
             .onChange(of: statusFilter) { _, _ in finishSelection() }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -24,6 +24,11 @@ struct GlassPanel<Content: View>: View {
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
 
+#if os(iOS)
+        content
+            .padding(padding)
+            .background(Color(uiColor: .secondarySystemGroupedBackground), in: shape)
+#else
         content
             .padding(padding)
             .background(Color.planoraGlassFill, in: shape)
@@ -31,5 +36,6 @@ struct GlassPanel<Content: View>: View {
             .glassEffect(.regular.tint(tint).interactive(interactive), in: shape)
             .overlay(shape.stroke(Color.planoraGlassStroke, lineWidth: 1))
             .shadow(color: Color.planoraShadow, radius: 24, x: 0, y: 12)
+#endif
     }
 }

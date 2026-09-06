@@ -71,13 +71,10 @@ struct EventSearchView: View {
                             .font(.largeTitle.weight(.bold))
                             .foregroundStyle(Color.planoraInk)
 
-                        Text(String(localized: "Quickly find tasks, events, and important dates."))
-                            .font(.callout.weight(.medium))
-                            .foregroundStyle(.secondary)
                     }
 
                     Spacer(minLength: 8)
-                    ProfileAvatarLink(store: store)
+                    ProfileHeaderActions(store: store)
                 }
                 .padding(.top, 18)
 
@@ -139,8 +136,8 @@ struct EventSearchView: View {
     }
 
     private var filterBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+        HStack {
+            Menu {
                 Menu {
                     filterButton(title: String(localized: "All Subjects"), isSelected: selectedSubject == nil) {
                         selectedSubject = nil
@@ -155,11 +152,7 @@ struct EventSearchView: View {
                         }
                     }
                 } label: {
-                    SearchFilterChip(
-                        title: selectedSubjectTitle,
-                        systemImage: "book.closed",
-                        isActive: selectedSubject != nil
-                    )
+                    Label(selectedSubjectTitle, systemImage: "book.closed")
                 }
 
                 Menu {
@@ -173,11 +166,7 @@ struct EventSearchView: View {
                         }
                     }
                 } label: {
-                    SearchFilterChip(
-                        title: selectedType?.title ?? String(localized: "Task Type"),
-                        systemImage: "square.grid.2x2",
-                        isActive: selectedType != nil
-                    )
+                    Label(selectedType?.title ?? String(localized: "Task Type"), systemImage: "square.grid.2x2")
                 }
 
                 Menu {
@@ -187,11 +176,7 @@ struct EventSearchView: View {
                         }
                     }
                 } label: {
-                    SearchFilterChip(
-                        title: deadlineFilter == .all ? String(localized: "Deadline") : deadlineFilter.title,
-                        systemImage: "calendar",
-                        isActive: deadlineFilter != .all
-                    )
+                    Label(deadlineFilter == .all ? String(localized: "Deadline") : deadlineFilter.title, systemImage: "calendar")
                 }
 
                 Menu {
@@ -201,11 +186,7 @@ struct EventSearchView: View {
                         }
                     }
                 } label: {
-                    SearchFilterChip(
-                        title: completionFilter == .all ? String(localized: "Status") : completionFilter.title,
-                        systemImage: "checkmark.circle",
-                        isActive: completionFilter != .all
-                    )
+                    Label(completionFilter == .all ? String(localized: "Status") : completionFilter.title, systemImage: "checkmark.circle")
                 }
 
                 Menu {
@@ -219,11 +200,7 @@ struct EventSearchView: View {
                         }
                     }
                 } label: {
-                    SearchFilterChip(
-                        title: selectedPriority?.title ?? String(localized: "Priority"),
-                        systemImage: "flag",
-                        isActive: selectedPriority != nil
-                    )
+                    Label(selectedPriority?.title ?? String(localized: "Priority"), systemImage: "flag")
                 }
 
                 if hasActiveFilters {
@@ -236,10 +213,14 @@ struct EventSearchView: View {
                     }
                     .buttonStyle(.plain)
                 }
+            } label: {
+                Label(String(localized: "Filters"), systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                    .font(.subheadline.weight(.medium))
+                    .frame(minHeight: 44)
             }
+            .buttonStyle(.plain)
+            Spacer()
         }
-        .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
-        .padding(.horizontal, -PlanoraTheme.pageHorizontalPadding)
     }
 
     private func filterButton(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
@@ -346,29 +327,6 @@ private enum SearchCompletionFilter: String, CaseIterable, Identifiable {
         case .open: String(localized: "Open")
         case .completed: String(localized: "Completed")
         }
-    }
-}
-
-private struct SearchFilterChip: View {
-    let title: String
-    let systemImage: String
-    let isActive: Bool
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: systemImage)
-            Text(title)
-                .lineLimit(1)
-            Image(systemName: "chevron.down")
-                .font(.caption2.weight(.bold))
-        }
-        .font(.caption.weight(.bold))
-        .foregroundStyle(isActive ? Color.white : Color.planoraInk)
-        .frame(minHeight: 36)
-        .padding(.horizontal, 12)
-        .background(isActive ? Color.planoraDeepGreen : Color.planoraGlassFill, in: Capsule())
-        .overlay(Capsule().stroke(isActive ? Color.clear : Color.planoraControlStroke, lineWidth: 1))
-        .contentShape(Capsule())
     }
 }
 

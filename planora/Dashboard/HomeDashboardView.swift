@@ -365,18 +365,14 @@ private struct HomeHeader: View {
     let onCurriculumSelected: (Curriculum) -> Void
 
     var body: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 12) {
                 Text(PlanoraLocalization.format(String(localized: "home_hello_user_format"), store.userName))
-                    .font(.largeTitle.weight(.bold))
+                    .font(.title2.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
-
-                Text(String(localized: "What needs attention now?"))
-                    .font(.callout.weight(.medium))
-                    .foregroundStyle(.secondary)
+                Spacer(minLength: 12)
+                ProfileHeaderActions(store: store)
             }
-
-            Spacer(minLength: 12)
 
             Menu {
                 ForEach(Curriculum.allCases) { curriculum in
@@ -395,15 +391,10 @@ private struct HomeHeader: View {
                         .font(.caption.weight(.bold))
                 }
                 .foregroundStyle(store.curriculum.tint)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(Color.planoraGlassFill, in: Capsule())
-                .glassEffect(.regular.tint(store.curriculum.tint.opacity(0.12)).interactive(), in: Capsule())
-                .overlay(Capsule().stroke(Color.planoraGlassStroke, lineWidth: 1))
+                .frame(minHeight: 44)
             }
             .buttonStyle(.plain)
 
-            ProfileAvatarLink(store: store)
         }
     }
 }

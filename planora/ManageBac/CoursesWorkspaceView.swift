@@ -6,7 +6,6 @@ struct CoursesWorkspaceView: View {
 
     @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
-    @Query(sort: \PlanoraMessage.publishedDate, order: .reverse) private var messages: [PlanoraMessage]
     @Query(sort: \PlanoraScheduleEvent.startDate) private var schedule: [PlanoraScheduleEvent]
     @State private var connection = ManageBacConnectionStorage.load()
     @State private var section: CoursesWorkspaceSection = .courses
@@ -26,7 +25,7 @@ struct CoursesWorkspaceView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
                 Picker(String(localized: "Courses"), selection: $section) {
-                    ForEach(CoursesWorkspaceSection.allCases) { item in Text(item.title).tag(item) }
+                    ForEach([CoursesWorkspaceSection.courses, .timetable]) { item in Text(item.title).tag(item) }
                 }
                 .pickerStyle(.segmented)
 
@@ -38,7 +37,7 @@ struct CoursesWorkspaceView: View {
                 case .timetable:
                     ManageBacTimetableList(events: schedule)
                 case .messages:
-                    ManageBacMessageList(messages: messages)
+                    EmptyView()
                 }
             }
             .padding(.top, 10)
@@ -63,13 +62,10 @@ struct CoursesWorkspaceView: View {
                     .font(.largeTitle.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
 
-                Text(String(localized: "Courses, teachers, units, and imported tasks stay connected in one local workspace."))
-                    .font(.callout.weight(.medium))
-                    .foregroundStyle(.secondary)
             }
 
             Spacer(minLength: 8)
-            ProfileAvatarLink(store: store)
+            ProfileHeaderActions(store: store)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)

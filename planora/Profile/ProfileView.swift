@@ -98,9 +98,16 @@ struct ProfileView: View {
     // MARK: - Page Sections
 
     private var profileTitle: some View {
-        Text(String(localized: "Me"))
-            .font(.largeTitle.weight(.bold))
-            .foregroundStyle(Color.planoraInk)
+        HStack {
+            Text(String(localized: "Me"))
+                .font(.largeTitle.weight(.bold))
+                .foregroundStyle(Color.planoraInk)
+            Spacer()
+            HStack(spacing: 10) {
+                ProfileAvatarView(name: store.userName, size: 38)
+                MessageBellLink()
+            }
+        }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
             .padding(.top, 18)
@@ -485,6 +492,7 @@ private struct AppearanceSettingsView: View {
                 }
                 .padding(.top, 18)
 
+                #if !os(iOS)
                 AppearanceControlSection(title: String(localized: "Color Theme")) {
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(PlanoraColorTheme.allCases) { theme in
@@ -501,6 +509,8 @@ private struct AppearanceSettingsView: View {
                     }
                 }
 
+                #endif
+
                 AppearanceControlSection(title: String(localized: "Display Mode")) {
                     Picker(String(localized: "Display Mode"), selection: binding(\.displayMode)) {
                         ForEach(PlanoraDisplayMode.allCases) { mode in
@@ -510,6 +520,7 @@ private struct AppearanceSettingsView: View {
                     .pickerStyle(.segmented)
                 }
 
+                #if !os(iOS)
                 AppearanceControlSection(title: String(localized: "Background")) {
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(PlanoraBackgroundStyle.allCases) { style in
@@ -522,6 +533,8 @@ private struct AppearanceSettingsView: View {
                         }
                     }
                 }
+
+                #endif
 
                 AppearanceControlSection(title: String(localized: "Accent Color")) {
                     HStack(spacing: 18) {

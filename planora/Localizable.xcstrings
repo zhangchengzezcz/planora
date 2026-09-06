@@ -1855,6 +1855,13 @@
         }
       }
     },
+    "Filters" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Filters" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "フィルター" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "筛选" } }
+      }
+    },
     "Clear Filters" : {
       "localizations" : {
         "en" : {
