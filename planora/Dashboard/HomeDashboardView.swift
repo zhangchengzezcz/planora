@@ -368,8 +368,10 @@ private struct HomeHeader: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .center, spacing: 12) {
                 Text(PlanoraLocalization.format(String(localized: "home_hello_user_format"), store.userName))
-                    .font(.title2.weight(.bold))
+                    .font(.largeTitle.weight(.bold))
                     .foregroundStyle(Color.planoraInk)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
                 Spacer(minLength: 12)
                 ProfileHeaderActions(store: store)
             }
@@ -392,6 +394,9 @@ private struct HomeHeader: View {
                 }
                 .foregroundStyle(store.curriculum.tint)
                 .frame(minHeight: 44)
+                .padding(.horizontal, 16)
+                .glassEffect(.regular.interactive(), in: Capsule())
+                .contentShape(Capsule())
             }
             .buttonStyle(.plain)
 
