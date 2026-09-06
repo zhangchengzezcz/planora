@@ -33,8 +33,12 @@ enum CoursesWorkspaceSection: String, CaseIterable, Identifiable {
 struct ManageBacMessageList: View {
     let messages: [PlanoraMessage]
 
+    private var orderedMessages: [PlanoraMessage] {
+        ManageBacMessageOrdering.sorted(messages)
+    }
+
     var body: some View {
-        if messages.isEmpty {
+        if orderedMessages.isEmpty {
             ContentUnavailableView(
                 String(localized: "No Messages"),
                 systemImage: "message",
@@ -43,9 +47,9 @@ struct ManageBacMessageList: View {
             .frame(maxWidth: .infinity, minHeight: 280)
         } else {
             LazyVStack(spacing: 0) {
-                ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
+                ForEach(Array(orderedMessages.enumerated()), id: \.element.id) { index, message in
                     messageRow(message)
-                    if index < messages.count - 1 { Divider().padding(.leading, 52) }
+                    if index < orderedMessages.count - 1 { Divider().padding(.leading, 52) }
                 }
             }
         }
@@ -81,6 +85,56 @@ struct ManageBacMessageList: View {
         } else {
             content
         }
+    }
+}
+
+enum ManageBacMessageOrdering {
+    private struct Key: Sendable {
+        let publishedDate: Date?
+        let numericIdentifier: UInt64?
+        let lastSyncDate: Date
+        let externalIdentifier: String
+    }
+
+    @MainActor
+    static func sorted(_ messages: [PlanoraMessage]) -> [PlanoraMessage] {
+        messages
+            .map { message in
+                (
+                    message: message,
+                    key: Key(
+                        publishedDate: message.publishedDate,
+                        numericIdentifier: UInt64(message.externalIdentifier),
+                        lastSyncDate: message.lastSyncDate,
+                        externalIdentifier: message.externalIdentifier
+                    )
+                )
+            }
+            .sorted { newestFirst($0.key, $1.key) }
+            .map(\.message)
+    }
+
+    nonisolated private static func newestFirst(_ lhs: Key, _ rhs: Key) -> Bool {
+        if let lhsDate = lhs.publishedDate,
+           let rhsDate = rhs.publishedDate,
+           lhsDate != rhsDate {
+            return lhsDate > rhsDate
+        }
+
+        if lhs.publishedDate != nil, rhs.publishedDate == nil { return true }
+        if lhs.publishedDate == nil, rhs.publishedDate != nil { return false }
+
+        // ManageBac frequently omits the time, so every message from one day
+        // receives the same timestamp. Its numeric notification identifier is
+        // monotonic and provides a stable newest-first order for those ties.
+        if let lhsIdentifier = lhs.numericIdentifier,
+           let rhsIdentifier = rhs.numericIdentifier,
+           lhsIdentifier != rhsIdentifier {
+            return lhsIdentifier > rhsIdentifier
+        }
+
+        if lhs.lastSyncDate != rhs.lastSyncDate { return lhs.lastSyncDate > rhs.lastSyncDate }
+        return lhs.externalIdentifier.localizedStandardCompare(rhs.externalIdentifier) == .orderedDescending
     }
 }
 

@@ -105,6 +105,17 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertTrue(days[1].1.isEmpty)
     }
 
+    func testMessagesUseStableNewestFirstOrderWhenDatesMatchOrAreMissing() {
+        let day = Date(timeIntervalSince1970: 1_788_537_600)
+        let older = PlanoraMessage(externalIdentifier: "245152680", title: "Older", publishedDate: day)
+        let newer = PlanoraMessage(externalIdentifier: "245152681", title: "Newer", publishedDate: day)
+        let undated = PlanoraMessage(externalIdentifier: "245152679", title: "Undated")
+
+        let ordered = ManageBacMessageOrdering.sorted([older, undated, newer])
+
+        XCTAssertEqual(ordered.map(\.externalIdentifier), ["245152681", "245152680", "245152679"])
+    }
+
     func testConnectionCanRestartAfterTeardown() {
         let session = ManageBacWebSession()
         session.teardown()
