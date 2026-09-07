@@ -812,12 +812,35 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         || container?.querySelector('[data-deadline]')?.getAttribute('data-deadline')
         || container?.querySelector('[data-date]')?.getAttribute('data-date');
       if (explicit) return explicit;
-      const text = normalize(container?.textContent);
-      const match = text.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),?\s+(?:(\d{4})\s+)?(\d{1,2}:\d{2})\s*(AM|PM)\b/i);
-      if (!match) return null;
-      const currentYear = new Date().getFullYear();
-      const parsed = new Date(`${match[1]} ${match[2]}, ${match[3] || currentYear} ${match[4]} ${match[5]}`);
-      return Number.isNaN(parsed.valueOf()) ? match[0] : parsed.toISOString();
+
+      const parseCandidate = raw => {
+        const text = normalize(raw).replace(/^(?:due|deadline)\s*[:\-]?\s*/i, '');
+        if (!text) return null;
+        const match = text.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),?\s+(?:(\d{4})\s*,?\s*)?(\d{1,2}:\d{2})\s*(AM|PM)/i);
+        const twentyFourHour = text.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2}),?\s+(?:(\d{4})\s*,?\s*)?(\d{1,2}:\d{2})(?!\s*(?:AM|PM))/i);
+        const parts = match || twentyFourHour;
+        if (!parts) return null;
+
+        const now = new Date();
+        let year = Number(parts[3] || now.getFullYear());
+        let parsed = new Date(`${parts[1]} ${parts[2]}, ${year} ${parts[4]}${match ? ` ${parts[5]}` : ''}`);
+        if (!parts[3] && !Number.isNaN(parsed.valueOf())) {
+          const halfYear = 183 * 24 * 60 * 60 * 1000;
+          if (currentSourceView === 'upcoming' && parsed.valueOf() < now.valueOf() - halfYear) year += 1;
+          if ((currentSourceView === 'past' || currentSourceView === 'overdue') && parsed.valueOf() > now.valueOf() + halfYear) year -= 1;
+          parsed = new Date(`${parts[1]} ${parts[2]}, ${year} ${parts[4]}${match ? ` ${parts[5]}` : ''}`);
+        }
+        return Number.isNaN(parsed.valueOf()) ? null : parsed.toISOString();
+      };
+
+      const dateNodes = container?.querySelectorAll(
+        '.f-tile__description span, [class*=deadline] time, [class*=deadline] span, [class*=due] time, [class*=due] span, [class*=date] time, [class*=date] span'
+      ) || [];
+      for (const node of dateNodes) {
+        const parsed = parseCandidate(node.textContent);
+        if (parsed) return parsed;
+      }
+      return parseCandidate(container?.textContent);
     };
 
     for (const link of main.querySelectorAll('a[href]')) {

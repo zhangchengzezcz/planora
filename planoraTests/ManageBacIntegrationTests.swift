@@ -224,12 +224,13 @@ final class ManageBacIntegrationTests: XCTestCase {
     func testCurrentManageBacTaskRouteAndPastStatusAreRecognized() async throws {
         let html = #"""
         <!doctype html><html><body><main>
-          <article class="task-card">
-            <a href="/student/classes/11501444/core_tasks/27538517">Homework 03</a>
-            <span>Sep 8, 1:20 PM</span>
-            <a href="/student/classes/11501444">HS Math PDP2 (Grade 10)</a>
-            <span>Summative</span><span>Classwork</span>
-          </article>
+          <div class="f-tile f-task-tile">
+            <div class="f-tile__body">
+              <p class="f-tile__title"><a href="/student/classes/11501444/core_tasks/27538517">Homework 03</a></p>
+              <div class="f-tile__description"><div><span>Sep 8, 1:20 PM</span><a href="/student/classes/11501444">HS Math PDP2 (Grade 10)</a><span>Summative</span><span>Classwork</span></div></div>
+            </div>
+            <span>Not Assessed Yet</span>
+          </div>
         </main></body></html>
         """#
         let webView = try await loadedWebView(
@@ -252,7 +253,9 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(payload.records[0].courseIdentifier, "11501444")
         XCTAssertEqual(payload.records[0].subject, "HS Math PDP2 (Grade 10)")
         XCTAssertEqual(payload.records[0].remoteStatus, .past)
-        XCTAssertNotNil(payload.records[0].deadline)
+        let deadline = try XCTUnwrap(payload.records[0].deadline)
+        XCTAssertEqual(Calendar.current.component(.month, from: deadline), 9)
+        XCTAssertEqual(Calendar.current.component(.day, from: deadline), 8)
     }
 
     func testTaskAssessmentIsSeparateFromDatesSubmissionAndPoints() async throws {
