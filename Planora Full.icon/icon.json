@@ -1,0 +1,185 @@
+{
+  "features" : [
+    "refractivity"
+  ],
+  "fill-specializations" : [
+    {
+      "value" : {
+        "automatic-gradient" : "extended-srgb:0.35000,0.65000,0.85000,1.00000"
+      }
+    },
+    {
+      "appearance" : "dark",
+      "value" : {
+        "automatic-gradient" : "display-p3:0.09747,0.17395,0.25928,1.00000"
+      }
+    }
+  ],
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "fill" : "none",
+          "glass" : false,
+          "image-name" : "Edges.svg",
+          "name" : "Controlled 3px edge"
+        }
+      ],
+      "name" : "Fine edges · 26 compatible",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0
+      },
+      "specular" : false,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0
+      }
+    },
+    {
+      "layers" : [
+        {
+          "fill" : "none",
+          "glass" : true,
+          "image-name" : "Flow01.svg",
+          "name" : "Flow 1 · Left"
+        },
+        {
+          "fill" : "none",
+          "glass" : true,
+          "image-name" : "Flow02.svg",
+          "name" : "Flow 1 · Right"
+        },
+        {
+          "fill" : "none",
+          "glass" : true,
+          "image-name" : "Flow03.svg",
+          "name" : "Flow 2 · Left"
+        },
+        {
+          "fill" : "none",
+          "glass" : true,
+          "image-name" : "Flow04.svg",
+          "name" : "Flow 2 · Right"
+        },
+        {
+          "fill" : "none",
+          "glass" : true,
+          "image-name" : "Flow05.svg",
+          "name" : "Flow 3 · Left"
+        },
+        {
+          "fill" : "none",
+          "glass" : true,
+          "image-name" : "Flow06.svg",
+          "name" : "Flow 3 · Right"
+        },
+        {
+          "fill" : "none",
+          "glass" : true,
+          "image-name" : "Flow07.svg",
+          "name" : "Flow 4 · Left"
+        },
+        {
+          "fill" : "none",
+          "glass" : true,
+          "image-name" : "Flow08.svg",
+          "name" : "Flow 4 · Right"
+        }
+      ],
+      "name" : "Clear task bodies",
+      "opacity" : 0.45,
+      "refractivity" : {
+        "depth" : 0.06,
+        "enabled" : true,
+        "strength" : 0.15
+      },
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.08
+      },
+      "specular" : false,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.2
+      }
+    },
+    {
+      "layers" : [
+        {
+          "blend-mode" : "normal",
+          "fill" : "none",
+          "glass-specializations" : [
+            {
+              "value" : true
+            },
+            {
+              "appearance" : "dark",
+              "value" : false
+            }
+          ],
+          "hidden" : false,
+          "image-name" : "Aurora.svg",
+          "name" : "Aurora",
+          "opacity-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : 0
+            }
+          ]
+        }
+      ],
+      "name" : "Aurora Light field",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0
+      },
+      "specular" : false,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0
+      }
+    },
+    {
+      "layers" : [
+        {
+          "fill" : "none",
+          "glass-specializations" : [
+            {
+              "value" : false
+            },
+            {
+              "appearance" : "dark",
+              "value" : true
+            }
+          ],
+          "hidden" : false,
+          "image-name" : "Aurora 2.svg",
+          "name" : "Aurora",
+          "opacity-specializations" : [
+            {
+              "value" : 0
+            },
+            {
+              "appearance" : "dark",
+              "value" : 1
+            }
+          ]
+        }
+      ],
+      "name" : "Aurora Dark field",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0
+      },
+      "specular" : false,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}

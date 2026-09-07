@@ -13,11 +13,19 @@ struct QuickCreateTaskView: View {
     @State private var selectedSubject = ""
     @State private var hasDeadline = true
     @State private var deadline = Date()
+    @State private var recognizedTaskType: TaskType?
+    @State private var priority: TaskPriority = .medium
 
     private var taskType: TaskType {
+        if let recognizedTaskType, availableTaskTypes.contains(recognizedTaskType) {
+            return recognizedTaskType
+        }
         let saved = QuickCreatePreferences.lastTaskType
-        let available = TaskType.availableTypes(for: store.curriculum, selectedSubjects: store.selectedSubjectTitles)
-        return available.contains(saved) ? saved : (available.first ?? .assignment)
+        return availableTaskTypes.contains(saved) ? saved : (availableTaskTypes.first ?? .assignment)
+    }
+
+    private var availableTaskTypes: [TaskType] {
+        TaskType.availableTypes(for: store.curriculum, selectedSubjects: store.selectedSubjectTitles)
     }
 
     private var subjectOptions: [String] {
@@ -30,11 +38,23 @@ struct QuickCreateTaskView: View {
             && !selectedSubject.isEmpty
     }
 
+    private var recognition: TaskRecognitionResult {
+        TaskTextRecognizer.recognize(
+            title,
+            subjects: subjectOptions,
+            availableTypes: availableTaskTypes
+        )
+    }
+
     var body: some View {
         Form {
             Section {
                 TextField(String(localized: "Task Title"), text: $title)
                     .font(.title3.weight(.semibold))
+
+                if recognition.hasRecognizedMetadata {
+                    RecognitionPreview(result: recognition, action: applyRecognition)
+                }
             }
 
             Section(String(localized: "Subject")) {
@@ -61,6 +81,12 @@ struct QuickCreateTaskView: View {
                 )
                 .font(.caption)
                 .foregroundStyle(.secondary)
+
+                if priority != .medium {
+                    Label(priority.title, systemImage: priority.symbol)
+                        .font(.caption)
+                        .foregroundStyle(priority == .high ? .red : .secondary)
+                }
             }
         }
         .scrollContentBackground(.hidden)
@@ -94,7 +120,7 @@ struct QuickCreateTaskView: View {
             tracksProgress: taskType.tracksProgressByDefault,
             progressState: taskType.defaultProgressState,
             notes: "",
-            importance: TaskPriority.medium.rawValue
+            importance: priority.rawValue
         )
         task.courseID = courses.first {
             !$0.isArchived && ($0.displayName == selectedSubject || $0.originalName == selectedSubject)
@@ -113,6 +139,69 @@ struct QuickCreateTaskView: View {
         store.selectedTab = .home
         onComplete?()
         dismiss()
+    }
+
+    private func applyRecognition() {
+        let result = recognition
+        guard result.hasRecognizedMetadata else { return }
+
+        title = result.title
+        if let subject = result.subject, subjectOptions.contains(subject) {
+            selectedSubject = subject
+        }
+        if let type = result.type, availableTaskTypes.contains(type) {
+            recognizedTaskType = type
+        }
+        if let deadline = result.deadline {
+            self.deadline = deadline
+            hasDeadline = true
+        }
+        if let priority = result.priority {
+            self.priority = priority
+        }
+    }
+}
+
+private struct RecognitionPreview: View {
+    let result: TaskRecognitionResult
+    let action: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    if let subject = result.subject {
+                        RecognitionChip(title: PlanoraFormat.subjectDisplayName(subject), systemImage: "book.closed.fill")
+                    }
+                    if let type = result.type {
+                        RecognitionChip(title: type.title, systemImage: type.symbol)
+                    }
+                    if let deadline = result.deadline {
+                        RecognitionChip(title: PlanoraFormat.monthDay(deadline), systemImage: "calendar")
+                    }
+                    if let priority = result.priority {
+                        RecognitionChip(title: priority.title, systemImage: priority.symbol)
+                    }
+                }
+            }
+
+            Button(String(localized: "Apply"), action: action)
+                .font(.subheadline.weight(.semibold))
+        }
+    }
+}
+
+private struct RecognitionChip: View {
+    let title: String
+    let systemImage: String
+
+    var body: some View {
+        Label(title, systemImage: systemImage)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(Color.planoraInk)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(Color.planoraGlassFill, in: Capsule())
     }
 }
 
