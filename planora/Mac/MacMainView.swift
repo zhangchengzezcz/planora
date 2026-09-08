@@ -102,6 +102,8 @@ struct MacMainView: View {
             MacTaskWorkspaceView(store: store, searchText: searchText, selection: $selectedTaskID)
         case .courses:
             MacCoursesWorkspaceView(store: store)
+        case .messages:
+            MacMessagesWorkspaceView()
         case .profile:
             MacProfileView(store: store)
         }
@@ -137,6 +139,7 @@ enum MacDestination: String, CaseIterable, Identifiable {
     case week
     case tasks
     case courses
+    case messages
     case profile
 
     var id: String { rawValue }
@@ -148,6 +151,7 @@ enum MacDestination: String, CaseIterable, Identifiable {
         case .week: String(localized: "This Week")
         case .tasks: String(localized: "Tasks")
         case .courses: String(localized: "Courses")
+        case .messages: String(localized: "Messages")
         case .profile: String(localized: "Profile")
         }
     }
@@ -159,6 +163,7 @@ enum MacDestination: String, CaseIterable, Identifiable {
         case .week: "calendar"
         case .tasks: "checklist"
         case .courses: "books.vertical"
+        case .messages: "envelope"
         case .profile: "person.crop.circle"
         }
     }
@@ -180,6 +185,7 @@ private struct MacSidebar: View {
         sort: \PlanoraTask.createdDate,
         order: .reverse
     ) private var pinnedTaskResults: [PlanoraTask]
+    @Query(filter: #Predicate<PlanoraMessage> { $0.isUnread }) private var unreadMessages: [PlanoraMessage]
 
     private var pinnedTasks: [PlanoraTask] {
         Array(pinnedTaskResults.prefix(7))
@@ -210,6 +216,7 @@ private struct MacSidebar: View {
                     link(.home)
                     link(.tasks)
                     link(.courses)
+                    link(.messages)
                 }
 
                 Section(String(localized: "Planning")) {
@@ -316,6 +323,7 @@ private struct MacSidebar: View {
 
     private func link(_ destination: MacDestination) -> some View {
         Label(destination.title, systemImage: destination.systemImage)
+            .badge(destination == .messages ? unreadMessages.count : 0)
             .tag(destination)
     }
 }

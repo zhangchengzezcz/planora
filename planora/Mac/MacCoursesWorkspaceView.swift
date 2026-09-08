@@ -7,10 +7,9 @@ struct MacCoursesWorkspaceView: View {
     @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
     @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
-    @Query(sort: \PlanoraMessage.publishedDate, order: .reverse) private var messages: [PlanoraMessage]
     @Query(sort: \PlanoraScheduleEvent.startDate) private var schedule: [PlanoraScheduleEvent]
     @State private var isShowingManageBac = false
-    @State private var section: CoursesWorkspaceSection = .courses
+    @State private var section: MacCoursesWorkspaceSection = .courses
 
     private var activeCourses: [PlanoraCourse] {
         courses.filter { !$0.isArchived }
@@ -19,7 +18,7 @@ struct MacCoursesWorkspaceView: View {
     var body: some View {
         VStack(spacing: 0) {
             Picker(String(localized: "Courses"), selection: $section) {
-                ForEach(CoursesWorkspaceSection.allCases) { item in Text(item.title).tag(item) }
+                ForEach(MacCoursesWorkspaceSection.allCases) { item in Text(item.title).tag(item) }
             }
             .pickerStyle(.segmented)
             .frame(maxWidth: 430)
@@ -46,8 +45,6 @@ struct MacCoursesWorkspaceView: View {
                     }
                 case .timetable:
                     ScrollView { ManageBacTimetableList(events: schedule).padding(24) }
-                case .messages:
-                    ScrollView { ManageBacMessageList(messages: messages).padding(24) }
                 }
             }
         }
@@ -71,6 +68,35 @@ struct MacCoursesWorkspaceView: View {
             }
             .frame(minWidth: 680, idealWidth: 760, minHeight: 600, idealHeight: 720)
         }
+    }
+}
+
+private enum MacCoursesWorkspaceSection: String, CaseIterable, Identifiable {
+    case courses
+    case timetable
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .courses: String(localized: "Courses")
+        case .timetable: String(localized: "Timetable")
+        }
+    }
+}
+
+struct MacMessagesWorkspaceView: View {
+    @Query(sort: \PlanoraMessage.publishedDate, order: .reverse) private var messages: [PlanoraMessage]
+
+    var body: some View {
+        ScrollView {
+            ManageBacMessageList(messages: messages)
+                .frame(maxWidth: 760)
+                .padding(24)
+                .frame(maxWidth: .infinity)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(nsColor: .windowBackgroundColor))
     }
 }
 
