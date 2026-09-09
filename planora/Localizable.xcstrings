@@ -6083,6 +6083,13 @@
         }
       }
     },
+    "ManageBac Result" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "ManageBac Result" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ManageBac 評価結果" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "ManageBac 成绩" } }
+      }
+    },
     "ManageBac Source" : {
       "localizations" : {
         "en" : {

@@ -38,6 +38,9 @@ final class PlanoraTask {
     var courseID: UUID?
     var unitID: UUID?
     var remoteStatusRawValue: String?
+    var remoteGradeText: String?
+    var remoteScoreEarned: Double?
+    var remoteScorePossible: Double?
     var needsRemoteReview: Bool = false
     var archivedDate: Date?
     var deletedDate: Date?
@@ -101,6 +104,9 @@ final class PlanoraTask {
         self.courseID = nil
         self.unitID = nil
         self.remoteStatusRawValue = nil
+        self.remoteGradeText = nil
+        self.remoteScoreEarned = nil
+        self.remoteScorePossible = nil
         self.needsRemoteReview = false
         self.archivedDate = nil
         self.deletedDate = nil
@@ -161,6 +167,22 @@ final class PlanoraTask {
 
     var isManageBacTask: Bool {
         externalSource == .manageBac
+    }
+
+    var manageBacAssessmentSummary: String? {
+        let grade = remoteGradeText?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let points: String? = if let remoteScoreEarned, let remoteScorePossible {
+            "\(remoteScoreEarned.formatted(.number.precision(.fractionLength(0...2)))) / \(remoteScorePossible.formatted(.number.precision(.fractionLength(0...2))))"
+        } else {
+            nil
+        }
+
+        switch (grade?.isEmpty == false ? grade : nil, points) {
+        case let (grade?, points?): return "\(grade) · \(points)"
+        case let (grade?, nil): return grade
+        case let (nil, points?): return points
+        case (nil, nil): return nil
+        }
     }
 
     var isArchived: Bool { archivedDate != nil }

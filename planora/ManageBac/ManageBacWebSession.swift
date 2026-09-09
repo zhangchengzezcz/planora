@@ -795,7 +795,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     const seen = new Set();
 
     const readableContainer = link => {
-      const preferred = link.closest('[data-task-id],[data-deadline-id],article,tr,li,[class*=task-card],[class*=deadline-card]');
+      const preferred = link.closest('[data-task-id],[data-deadline-id],article,tr,li,.f-task-tile,[class*=task-card],[class*=deadline-card]');
       if (preferred) return preferred;
       let node = link.parentElement;
       for (let depth = 0; node && depth < 7; depth += 1, node = node.parentElement) {
@@ -862,12 +862,17 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
       });
       const unitLink = container?.querySelector('a[href*="/units/"]');
       const unitMatch = (() => { try { return new URL(unitLink?.getAttribute('href'), location.origin).pathname.match(/\/units\/([^/?#]+)/); } catch (_) { return null; } })();
-      // Only an exact, standalone result label is evidence of binary completion.
-      // A title/description containing "complete", a score or Submitted is not.
+      const assessment = container?.querySelector('.f-task-score--assessment');
+      const gradeText = normalize(assessment?.querySelector('h1,h2,h3,h4,h5,h6,[class*=grade]')?.textContent) || null;
+      const pointsText = normalize(assessment?.querySelector('p,[class*=points],[class*=score-value]')?.textContent);
+      const pointsMatch = pointsText.match(/(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)/);
+      // Only ManageBac's submitted result or an exact standalone result label
+      // is evidence of binary completion. A score or "Submitted" alone is not.
+      const result = container?.querySelector('.f-task-score');
       const binaryComplete = Array.from(container?.querySelectorAll('span,div,p,strong') || []).some(node =>
         !node.children.length && !node.closest('a,button,h1,h2,h3,h4,h5,h6') &&
         /^(complete|completed)$/i.test(normalize(node.textContent))
-      );
+      ) || Boolean(result?.matches('.f-task-score--submitted') && /^(complete|completed)$/i.test(normalize(result.textContent)));
       candidates.push({
         remoteIdentifier,
         title,
@@ -877,7 +882,10 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         sourceView: currentSourceView,
         courseIdentifier,
         unitIdentifier: unitMatch?.[1] || null,
-        remoteStatus: binaryComplete ? 'completed' : (['upcoming','past','overdue'].includes(currentSourceView) ? currentSourceView : 'unknown')
+        remoteStatus: binaryComplete ? 'completed' : (['upcoming','past','overdue'].includes(currentSourceView) ? currentSourceView : 'unknown'),
+        remoteGradeText: gradeText,
+        remoteScoreEarned: pointsMatch ? Number(pointsMatch[1]) : null,
+        remoteScorePossible: pointsMatch ? Number(pointsMatch[2]) : null
       });
     }
     const text = normalize(main?.innerText).toLowerCase();

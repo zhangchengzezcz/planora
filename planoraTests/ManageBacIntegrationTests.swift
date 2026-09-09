@@ -258,6 +258,62 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(Calendar.current.component(.day, from: deadline), 8)
     }
 
+    func testCurrentManageBacResultReadsTeacherCompletionAndScore() async throws {
+        let html = #"""
+        <!doctype html><html><body><main>
+          <div class="f-tile f-tile--inline f-task-tile">
+            <div class="f-tile__body">
+              <a href="/student/classes/chemistry/core_tasks/graded">Lab Equipment</a>
+              <span>Sep 4, 2026 9:05 AM</span><a href="/student/classes/chemistry">Chemistry</a>
+            </div>
+            <div class="f-task-score f-task-score--assessment"><h4>7</h4><p>3<span>/3</span> pts</p></div>
+          </div>
+          <div class="f-tile f-tile--inline f-task-tile">
+            <div class="f-tile__body">
+              <a href="/student/classes/math/core_tasks/complete">Holiday Homework</a>
+              <span>Sep 3, 2026 2:55 PM</span><a href="/student/classes/math">Math</a>
+            </div>
+            <div class="f-task-score f-task-score--submitted"><p>Complete</p></div>
+          </div>
+        </main></body></html>
+        """#
+        let webView = try await loadedWebView(
+            html: html,
+            url: "https://school.managebac.cn/student/tasks_and_deadlines?view=past"
+        )
+
+        let result = try await webView.callAsyncJavaScript(
+            ManageBacWebSession.taskScript,
+            arguments: ["sourceView": "past"],
+            in: nil,
+            contentWorld: .page
+        )
+        let payload = try JSONDecoder().decode(
+            ManageBacScanPayload.self,
+            from: Data(try XCTUnwrap(result as? String).utf8)
+        )
+
+        XCTAssertEqual(payload.records.count, 2)
+        XCTAssertEqual(payload.records[0].remoteGradeText, "7")
+        XCTAssertEqual(payload.records[0].remoteScoreEarned, 3)
+        XCTAssertEqual(payload.records[0].remoteScorePossible, 3)
+        XCTAssertEqual(payload.records[0].remoteStatus, .past)
+        XCTAssertEqual(payload.records[1].remoteStatus, .completed)
+
+        let container = try makeContainer()
+        _ = try ManageBacTaskImporter.importRecords(
+            payload.records,
+            courses: [],
+            existingTasks: [],
+            into: container.mainContext
+        )
+        let tasks = try container.mainContext.fetch(FetchDescriptor<PlanoraTask>())
+        let gradedTask = try XCTUnwrap(tasks.first { $0.externalIdentifier == "chemistry:graded" })
+        let completedTask = try XCTUnwrap(tasks.first { $0.externalIdentifier == "math:complete" })
+        XCTAssertEqual(gradedTask.manageBacAssessmentSummary, "7 · 3 / 3")
+        XCTAssertTrue(completedTask.isCompleted)
+    }
+
     func testTaskAssessmentIsSeparateFromDatesSubmissionAndPoints() async throws {
         let cards = ["<span>Complete</span>", "<span>Not Assessed Yet</span>",
                      "<span>7</span><span>3 / 3 pts</span>", "<span>Submitted</span>",
@@ -552,6 +608,10 @@ final class ManageBacIntegrationTests: XCTestCase {
         task.externalIdentifier = "deadline-7"
         task.externalURLString = "https://school.managebac.cn/student/tasks/7"
         task.externalUpdatedAt = Date(timeIntervalSince1970: 1_790_000_000)
+        task.remoteGradeText = "7"
+        task.remoteScoreEarned = 3
+        task.remoteScorePossible = 3
+        task.remoteStatusRawValue = "completed"
 
         let json = try TaskBackupCodec.json(for: [task])
         let restored = try XCTUnwrap(TaskBackupCodec.tasks(from: json).first)
@@ -560,6 +620,11 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(restored.externalIdentifier, task.externalIdentifier)
         XCTAssertEqual(restored.externalURLString, task.externalURLString)
         XCTAssertEqual(restored.externalUpdatedAt, task.externalUpdatedAt)
+        XCTAssertEqual(restored.remoteGradeText, "7")
+        XCTAssertEqual(restored.remoteScoreEarned, 3)
+        XCTAssertEqual(restored.remoteScorePossible, 3)
+        XCTAssertEqual(restored.manageBacAssessmentSummary, task.manageBacAssessmentSummary)
+        XCTAssertEqual(restored.remoteStatusRawValue, "completed")
     }
 
     func testProgrammeDetectionTreatsPDPAsIGCSESuggestion() {

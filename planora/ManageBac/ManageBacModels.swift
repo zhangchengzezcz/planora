@@ -54,6 +54,9 @@ struct ManageBacTaskRecord: Codable, Equatable, Sendable {
     var courseIdentifier: String?
     var unitIdentifier: String?
     var remoteStatus: ManageBacRemoteTaskStatus
+    var remoteGradeText: String?
+    var remoteScoreEarned: Double?
+    var remoteScorePossible: Double?
 
     init(
         remoteIdentifier: String,
@@ -64,7 +67,10 @@ struct ManageBacTaskRecord: Codable, Equatable, Sendable {
         sourceView: String,
         courseIdentifier: String? = nil,
         unitIdentifier: String? = nil,
-        remoteStatus: ManageBacRemoteTaskStatus? = nil
+        remoteStatus: ManageBacRemoteTaskStatus? = nil,
+        remoteGradeText: String? = nil,
+        remoteScoreEarned: Double? = nil,
+        remoteScorePossible: Double? = nil
     ) {
         self.remoteIdentifier = remoteIdentifier
         self.title = title
@@ -75,6 +81,9 @@ struct ManageBacTaskRecord: Codable, Equatable, Sendable {
         self.courseIdentifier = courseIdentifier
         self.unitIdentifier = unitIdentifier
         self.remoteStatus = remoteStatus ?? ManageBacRemoteTaskStatus(sourceView: sourceView)
+        self.remoteGradeText = remoteGradeText
+        self.remoteScoreEarned = remoteScoreEarned
+        self.remoteScorePossible = remoteScorePossible
     }
 
     var stableIdentifier: String {

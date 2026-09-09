@@ -13,6 +13,7 @@ struct MacTaskWorkspaceView: View {
     @State private var selectedSubject = ""
     @State private var tableSelection = Set<PlanoraTask.ID>()
     @State private var isShowingBulkActions = false
+    @State private var detailTask: PlanoraTask?
 
     private var subjects: [String] {
         Array(Set(tasks.map(\.subject).filter { !$0.isEmpty })).sorted()
@@ -103,6 +104,9 @@ struct MacTaskWorkspaceView: View {
                 }
                 .contextMenu(forSelectionType: PlanoraTask.ID.self) { ids in
                     if let id = ids.first, let task = tasks.first(where: { $0.id == id }) {
+                        Button(String(localized: "Task Details"), systemImage: "doc.text") {
+                            detailTask = task
+                        }
                         if task.isDeleted {
                             Button(String(localized: "Restore Task"), systemImage: "arrow.uturn.backward") {
                                 PlanoraTaskOperations.restoreFromRecentlyDeleted([task], modelContext: modelContext)
@@ -125,11 +129,26 @@ struct MacTaskWorkspaceView: View {
                         }
                         }
                     }
+                } primaryAction: { ids in
+                    if ids.count == 1, let id = ids.first {
+                        detailTask = tasks.first { $0.id == id }
+                    }
                 }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .windowBackgroundColor))
+        .sheet(item: $detailTask) { task in
+            NavigationStack {
+                TaskDetailView(store: store, task: task)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(String(localized: "Done")) { detailTask = nil }
+                        }
+                    }
+            }
+            .frame(minWidth: 620, idealWidth: 760, minHeight: 600, idealHeight: 800)
+        }
         .onChange(of: tableSelection) { _, ids in
             selection = ids.count == 1 ? ids.first : nil
         }
@@ -185,6 +204,11 @@ struct MacTaskWorkspaceView: View {
             }
 
             Spacer()
+            if let selectedTask {
+                Button(String(localized: "Task Details"), systemImage: "doc.text") {
+                    detailTask = selectedTask
+                }
+            }
             if !tableSelection.isEmpty && status != .deleted {
                 Button(String(localized: "Actions"), systemImage: "ellipsis.circle") {
                     isShowingBulkActions = true
@@ -321,6 +345,12 @@ private struct MacTaskInspector: View {
                 }
                 if let completedDate = task.completedDate {
                     LabeledContent(String(localized: "Completed"), value: completedDate.formatted(date: .abbreviated, time: .shortened))
+                }
+                if let assessment = task.manageBacAssessmentSummary {
+                    LabeledContent(String(localized: "ManageBac Result"), value: assessment)
+                }
+                if task.isManageBacTask, task.remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue {
+                    LabeledContent("ManageBac", value: String(localized: "Completed"))
                 }
             }
 

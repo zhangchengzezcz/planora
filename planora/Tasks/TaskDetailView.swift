@@ -150,6 +150,20 @@ struct TaskDetailView: View {
                     tint: .planoraAmber
                 )
                 if task.isManageBacTask {
+                    if task.remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue {
+                        Divider().padding(.leading, 50)
+                        DetailRow(icon: "checkmark.seal", title: "ManageBac",
+                                  value: String(localized: "Completed"), tint: .planoraGreen)
+                    }
+                    if let assessment = task.manageBacAssessmentSummary {
+                        Divider().padding(.leading, 50)
+                        DetailRow(
+                            icon: "chart.bar.doc.horizontal.fill",
+                            title: String(localized: "ManageBac Result"),
+                            value: assessment,
+                            tint: .planoraGreen
+                        )
+                    }
                     Divider().padding(.leading, 50)
                     manageBacSourceRow
                 }

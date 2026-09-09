@@ -325,6 +325,11 @@ enum ManageBacTaskImporter {
         task.externalURLString = record.detailURL
         task.externalUpdatedAt = Date()
         task.remoteStatusRawValue = record.remoteStatus.rawValue
+        if let grade = record.remoteGradeText { task.remoteGradeText = grade }
+        if let earned = record.remoteScoreEarned, let possible = record.remoteScorePossible {
+            task.remoteScoreEarned = earned
+            task.remoteScorePossible = possible
+        }
         task.needsRemoteReview = record.deadline == nil
     }
 
@@ -341,6 +346,15 @@ enum ManageBacTaskImporter {
                 }
                 if result[index].unitIdentifier == nil {
                     result[index].unitIdentifier = record.unitIdentifier
+                }
+                if result[index].remoteGradeText == nil {
+                    result[index].remoteGradeText = record.remoteGradeText
+                }
+                if result[index].remoteScoreEarned == nil {
+                    result[index].remoteScoreEarned = record.remoteScoreEarned
+                }
+                if result[index].remoteScorePossible == nil {
+                    result[index].remoteScorePossible = record.remoteScorePossible
                 }
             } else {
                 indices[record.stableIdentifier] = result.count

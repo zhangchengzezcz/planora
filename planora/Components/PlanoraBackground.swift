@@ -7,20 +7,7 @@ struct PlanoraBackground: View {
 #if os(iOS)
         Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
 #else
-        ZStack {
-            appearance.backgroundStyle.swatch
-
-            LinearGradient(
-                colors: [
-                    .planoraSurfaceOverlayTop,
-                    appearance.accent.color.opacity(0.09),
-                    .planoraSurfaceOverlayGreen.opacity(0.7)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        }
-        .ignoresSafeArea()
+        Color(nsColor: .windowBackgroundColor).ignoresSafeArea()
 #endif
     }
 }

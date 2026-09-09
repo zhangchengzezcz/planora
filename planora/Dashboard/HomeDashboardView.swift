@@ -19,12 +19,7 @@ struct HomeDashboardView: View {
     var body: some View {
         let snapshot = HomeDashboardSnapshot(tasks: tasks)
 
-        ScrollView(showsIndicators: false) {
-            contentStack(snapshot: snapshot)
-        }
-#if os(iOS)
-        .swipeActionsContainer()
-#endif
+        dashboardContent(snapshot: snapshot)
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
         .planoraHiddenNavigationBar()
         .background(PlanoraBackground())
@@ -70,6 +65,52 @@ struct HomeDashboardView: View {
         } else {
             PlanoraTaskPersistence.reconcile(tasks: tasks)
         }
+    }
+
+    @ViewBuilder
+    private func dashboardContent(snapshot: HomeDashboardSnapshot) -> some View {
+#if os(iOS)
+        if #available(iOS 27.0, *) {
+            ScrollView(showsIndicators: false) {
+                contentStack(snapshot: snapshot)
+            }
+            .swipeActionsContainer()
+        } else {
+            List {
+                HomeHeader(store: store) { requestCurriculumSwitch(to: $0) }
+                PlanningDestinationStrip(store: store)
+                if let focusTask = snapshot.focusTask {
+                    TodayFocusCard(store: store, task: focusTask)
+                    if !snapshot.upcomingProgressTasks.isEmpty {
+                        Section(String(localized: "Upcoming Tasks")) {
+                            ForEach(snapshot.upcomingProgressTasks) { task in
+                                TaskRow(store: store, task: task)
+                            }
+                        }
+                    }
+                    if !snapshot.upcomingTimelineItems.isEmpty {
+                        Section(String(localized: "Dates and Events")) {
+                            ForEach(snapshot.upcomingTimelineItems) { task in
+                                TaskRow(store: store, task: task)
+                            }
+                        }
+                    }
+                } else if snapshot.hasTasks {
+                    AllTasksCompletedCard()
+                } else {
+                    EmptyTasksCard(action: onCreateRequested)
+                }
+                learningProgressSection(snapshot: snapshot)
+                calendarPreviewSection(snapshot: snapshot)
+            }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+        }
+#else
+        ScrollView(showsIndicators: false) {
+            contentStack(snapshot: snapshot)
+        }
+#endif
     }
 
     private func contentStack(snapshot: HomeDashboardSnapshot) -> some View {
@@ -516,24 +557,7 @@ private struct DashboardTaskInteraction<Content: View>: View {
 
     var body: some View {
 #if os(iOS)
-        NavigationLink {
-            TaskDetailView(store: store, task: task)
-        } label: {
-            content
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(DashboardTaskNavigationButtonStyle())
-        .accessibilityHint(String(localized: "Open task details"))
-        .accessibilityAction(named: Text(String(localized: "Mark Complete"))) {
-            requestCompletion()
-        }
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            Button(String(localized: "Mark Complete"), systemImage: "checkmark") {
-                requestCompletion()
-            }
-            .tint(Color.planoraGreen)
-        } onPresentationChanged: { _ in }
+        swipeableTaskLink
         .alert(String(localized: "Mark Complete"), isPresented: $isShowingCompletionConfirmation) {
             Button(String(localized: "Cancel"), role: .cancel) {}
             Button(String(localized: "Mark Complete")) {
@@ -569,6 +593,41 @@ private struct DashboardTaskInteraction<Content: View>: View {
     }
 
 #if os(iOS)
+    private var taskLink: some View {
+        NavigationLink {
+            TaskDetailView(store: store, task: task)
+        } label: {
+            content
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(DashboardTaskNavigationButtonStyle())
+        .accessibilityHint(String(localized: "Open task details"))
+        .accessibilityAction(named: Text(String(localized: "Mark Complete"))) {
+            requestCompletion()
+        }
+    }
+
+    @ViewBuilder
+    private var swipeableTaskLink: some View {
+        if #available(iOS 27.0, *) {
+            taskLink.swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                completionAction
+            } onPresentationChanged: { _ in }
+        } else {
+            taskLink.swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                completionAction
+            }
+        }
+    }
+
+    private var completionAction: some View {
+        Button(String(localized: "Mark Complete"), systemImage: "checkmark") {
+            requestCompletion()
+        }
+        .tint(Color.planoraGreen)
+    }
+
     private func requestCompletion() {
         guard !task.isCompleted, !task.isDeleted, !task.isArchived else { return }
         isShowingCompletionConfirmation = true

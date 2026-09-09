@@ -31,11 +31,8 @@ struct GlassPanel<Content: View>: View {
 #else
         content
             .padding(padding)
-            .background(Color.planoraGlassFill, in: shape)
-            .background(tint.opacity(0.42), in: shape)
-            .glassEffect(.regular.tint(tint).interactive(interactive), in: shape)
-            .overlay(shape.stroke(Color.planoraGlassStroke, lineWidth: 1))
-            .shadow(color: Color.planoraShadow, radius: 24, x: 0, y: 12)
+            .background(Color(nsColor: .controlBackgroundColor), in: shape)
+            .overlay(shape.stroke(.separator.opacity(0.35), lineWidth: 0.5))
 #endif
     }
 }

@@ -629,6 +629,9 @@ private struct PlanoraTaskBackupItem: Codable {
     var courseID: UUID?
     var unitID: UUID?
     var remoteStatusRawValue: String?
+    var remoteGradeText: String?
+    var remoteScoreEarned: Double?
+    var remoteScorePossible: Double?
     var needsRemoteReview: Bool
     var archivedDate: Date?
     var deletedDate: Date?
@@ -677,6 +680,9 @@ private struct PlanoraTaskBackupItem: Codable {
         courseID = task.courseID
         unitID = task.unitID
         remoteStatusRawValue = task.remoteStatusRawValue
+        remoteGradeText = task.remoteGradeText
+        remoteScoreEarned = task.remoteScoreEarned
+        remoteScorePossible = task.remoteScorePossible
         needsRemoteReview = task.needsRemoteReview
         archivedDate = task.archivedDate
         deletedDate = task.deletedDate
@@ -744,6 +750,9 @@ private struct PlanoraTaskBackupItem: Codable {
         restoredTask.courseID = courseID
         restoredTask.unitID = unitID
         restoredTask.remoteStatusRawValue = remoteStatusRawValue
+        restoredTask.remoteGradeText = remoteGradeText
+        restoredTask.remoteScoreEarned = remoteScoreEarned
+        restoredTask.remoteScorePossible = remoteScorePossible
         restoredTask.needsRemoteReview = needsRemoteReview
         restoredTask.archivedDate = archivedDate
         restoredTask.deletedDate = deletedDate
@@ -1056,6 +1065,13 @@ private extension PlanoraTask {
         externalIdentifier = source.externalIdentifier
         externalURLString = source.externalURLString
         externalUpdatedAt = source.externalUpdatedAt
+        courseID = source.courseID
+        unitID = source.unitID
+        remoteStatusRawValue = source.remoteStatusRawValue
+        remoteGradeText = source.remoteGradeText
+        remoteScoreEarned = source.remoteScoreEarned
+        remoteScorePossible = source.remoteScorePossible
+        needsRemoteReview = source.needsRemoteReview
         isPinned = source.isPinned
         archivedDate = source.archivedDate
         deletedDate = source.deletedDate

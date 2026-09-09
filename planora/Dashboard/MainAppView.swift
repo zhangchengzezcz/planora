@@ -11,7 +11,6 @@ struct MainAppView: View {
     var body: some View {
 #if os(macOS)
         MacMainView(store: store)
-            .background { ManageBacAutomaticSyncHost(store: store) }
 #else
         TabView(selection: $store.selectedTab) {
             Tab(String(localized: "Home"), systemImage: "house.fill", value: MainTab.home) {
@@ -28,9 +27,17 @@ struct MainAppView: View {
                 }
             }
 
-            Tab(String(localized: "New"), systemImage: "plus", value: MainTab.create, role: .prominent) {
-                NavigationStack {
-                    CreateTabPlaceholder()
+            if #available(iOS 27.0, *) {
+                Tab(String(localized: "New"), systemImage: "plus", value: MainTab.create, role: .prominent) {
+                    NavigationStack {
+                        CreateTabPlaceholder()
+                    }
+                }
+            } else {
+                Tab(String(localized: "New"), systemImage: "plus", value: MainTab.create) {
+                    NavigationStack {
+                        CreateTabPlaceholder()
+                    }
                 }
             }
 
