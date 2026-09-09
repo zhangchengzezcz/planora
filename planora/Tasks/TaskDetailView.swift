@@ -308,21 +308,20 @@ struct TaskDetailView: View {
             title: task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"),
             systemImage: task.isCompleted ? "arrow.uturn.backward" : "checkmark.circle.fill"
         ) {
-            if !task.isCompleted, task.subtasks.contains(where: { !$0.isCompleted }) {
-                isShowingIncompleteSubtasksConfirmation = true
-            } else {
-                toggleCompletion()
-            }
+            isShowingIncompleteSubtasksConfirmation = true
         }
-        .confirmationDialog(
-            String(localized: "Some subtasks are not finished."),
+        .alert(
+            task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"),
             isPresented: $isShowingIncompleteSubtasksConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button(String(localized: "Complete Task and Subtasks")) { toggleCompletion() }
+            presenting: task
+        ) { _ in
+            Button(task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete")) { toggleCompletion() }
             Button(String(localized: "Cancel"), role: .cancel) {}
-        } message: {
-            Text(String(localized: "Completing this task will also mark every subtask as complete."))
+        } message: { _ in
+            Text(task.title)
+            if !task.isCompleted && task.subtasks.contains(where: { !$0.isCompleted }) {
+                Text(String(localized: "Completing this task will also mark every subtask as complete."))
+            }
         }
     }
 
@@ -404,11 +403,11 @@ struct TaskCompletionButton: View {
     @Bindable var task: PlanoraTask
     var expandsHitArea = false
     @Environment(\.modelContext) private var modelContext
+    @State private var taskPendingCompletion: PlanoraTask?
 
     var body: some View {
         Button {
-            task.setCompleted(!task.isCompleted)
-            PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+            taskPendingCompletion = task
         } label: {
             if expandsHitArea {
                 completionIndicator
@@ -422,6 +421,7 @@ struct TaskCompletionButton: View {
         }
         .buttonStyle(.plain)
         .disabled(task.isDeleted)
+        .taskCompletionConfirmation(task: $taskPendingCompletion)
         .accessibilityLabel(task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"))
     }
 
@@ -429,6 +429,38 @@ struct TaskCompletionButton: View {
         Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
             .font(.title3.weight(.semibold))
             .foregroundStyle(task.isCompleted ? Color.planoraGreen : Color.gray)
+    }
+}
+
+extension View {
+    func taskCompletionConfirmation(task: Binding<PlanoraTask?>) -> some View {
+        modifier(TaskCompletionConfirmation(task: task))
+    }
+}
+
+private struct TaskCompletionConfirmation: ViewModifier {
+    @Binding var task: PlanoraTask?
+    @Environment(\.modelContext) private var modelContext
+
+    func body(content: Content) -> some View {
+        content.alert(
+            task?.isCompleted == true ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"),
+            isPresented: Binding(get: { task != nil }, set: { if !$0 { task = nil } }),
+            presenting: task
+        ) { target in
+            Button(String(localized: "Cancel"), role: .cancel) { task = nil }
+            Button(target.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete")) {
+                guard !target.isDeleted else { return }
+                target.setCompleted(!target.isCompleted)
+                PlanoraTaskPersistence.saveAndSynchronize(target, in: modelContext)
+                task = nil
+            }
+        } message: { target in
+            Text(target.title)
+            if !target.isCompleted && target.subtasks.contains(where: { !$0.isCompleted }) {
+                Text(String(localized: "Completing this task will also mark every subtask as complete."))
+            }
+        }
     }
 }
 

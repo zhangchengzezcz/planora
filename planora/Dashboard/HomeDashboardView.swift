@@ -69,8 +69,7 @@ struct HomeDashboardView: View {
 
     @ViewBuilder
     private func dashboardContent(snapshot: HomeDashboardSnapshot) -> some View {
-#if os(iOS)
-        if #available(iOS 27.0, *) {
+        if #available(iOS 27.0, macOS 27.0, *) {
             ScrollView(showsIndicators: false) {
                 contentStack(snapshot: snapshot)
             }
@@ -106,11 +105,6 @@ struct HomeDashboardView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
         }
-#else
-        ScrollView(showsIndicators: false) {
-            contentStack(snapshot: snapshot)
-        }
-#endif
     }
 
     private func contentStack(snapshot: HomeDashboardSnapshot) -> some View {
@@ -414,10 +408,19 @@ private struct HomeHeader: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
                 Spacer(minLength: 12)
+#if os(macOS)
+                curriculumMenu
+#endif
                 ProfileHeaderActions(store: store)
             }
+#if !os(macOS)
+            curriculumMenu
+#endif
+        }
+    }
 
-            Menu {
+    private var curriculumMenu: some View {
+        Menu {
                 ForEach(Curriculum.allCases) { curriculum in
                     Button {
                         onCurriculumSelected(curriculum)
@@ -440,8 +443,6 @@ private struct HomeHeader: View {
                 .contentShape(Capsule())
             }
             .buttonStyle(.plain)
-
-        }
     }
 }
 
@@ -536,14 +537,11 @@ private struct TodayFocusCard: View {
 }
 
 private struct DashboardTaskInteraction<Content: View>: View {
-    private let completionRegionWidth: CGFloat = 62
     let store: PlanoraStore
     let task: PlanoraTask
     let content: Content
-#if os(iOS)
     @Environment(\.modelContext) private var modelContext
     @State private var isShowingCompletionConfirmation = false
-#endif
 
     init(
         store: PlanoraStore,
@@ -556,7 +554,6 @@ private struct DashboardTaskInteraction<Content: View>: View {
     }
 
     var body: some View {
-#if os(iOS)
         swipeableTaskLink
         .alert(String(localized: "Mark Complete"), isPresented: $isShowingCompletionConfirmation) {
             Button(String(localized: "Cancel"), role: .cancel) {}
@@ -572,27 +569,8 @@ private struct DashboardTaskInteraction<Content: View>: View {
                 Text(task.title)
             }
         }
-#else
-        ZStack(alignment: .leading) {
-            NavigationLink {
-                TaskDetailView(store: store, task: task)
-            } label: {
-                content
-                    .padding(.leading, completionRegionWidth)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(DashboardTaskNavigationButtonStyle())
-            .accessibilityHint(String(localized: "Open task details"))
-
-            TaskCompletionButton(task: task, expandsHitArea: true)
-                .frame(width: completionRegionWidth)
-                .frame(maxHeight: .infinity)
-        }
-#endif
     }
 
-#if os(iOS)
     private var taskLink: some View {
         NavigationLink {
             TaskDetailView(store: store, task: task)
@@ -603,6 +581,9 @@ private struct DashboardTaskInteraction<Content: View>: View {
         }
         .buttonStyle(DashboardTaskNavigationButtonStyle())
         .accessibilityHint(String(localized: "Open task details"))
+        .contextMenu {
+            completionAction
+        }
         .accessibilityAction(named: Text(String(localized: "Mark Complete"))) {
             requestCompletion()
         }
@@ -610,7 +591,7 @@ private struct DashboardTaskInteraction<Content: View>: View {
 
     @ViewBuilder
     private var swipeableTaskLink: some View {
-        if #available(iOS 27.0, *) {
+        if #available(iOS 27.0, macOS 27.0, *) {
             taskLink.swipeActions(edge: .trailing, allowsFullSwipe: true) {
                 completionAction
             } onPresentationChanged: { _ in }
@@ -632,7 +613,6 @@ private struct DashboardTaskInteraction<Content: View>: View {
         guard !task.isCompleted, !task.isDeleted, !task.isArchived else { return }
         isShowingCompletionConfirmation = true
     }
-#endif
 }
 
 private struct DashboardTaskNavigationButtonStyle: ButtonStyle {

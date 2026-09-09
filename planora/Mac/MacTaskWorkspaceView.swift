@@ -14,6 +14,7 @@ struct MacTaskWorkspaceView: View {
     @State private var tableSelection = Set<PlanoraTask.ID>()
     @State private var isShowingBulkActions = false
     @State private var detailTask: PlanoraTask?
+    @State private var taskPendingCompletion: PlanoraTask?
 
     private var subjects: [String] {
         Array(Set(tasks.map(\.subject).filter { !$0.isEmpty })).sorted()
@@ -74,7 +75,6 @@ struct MacTaskWorkspaceView: View {
                 Table(visibleTasks, selection: $tableSelection) {
                     TableColumn(String(localized: "Task")) { task in
                         HStack(spacing: 8) {
-                            TaskCompletionButton(task: task)
                             Image(systemName: task.type.symbol)
                                 .foregroundStyle(.secondary)
                             Text(task.title).lineLimit(1)
@@ -124,8 +124,7 @@ struct MacTaskWorkspaceView: View {
                         }
                         Divider()
                         Button(task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete")) {
-                            task.setCompleted(!task.isCompleted)
-                            PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+                            taskPendingCompletion = task
                         }
                         }
                     }
@@ -138,6 +137,7 @@ struct MacTaskWorkspaceView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .windowBackgroundColor))
+        .taskCompletionConfirmation(task: $taskPendingCompletion)
         .sheet(item: $detailTask) { task in
             NavigationStack {
                 TaskDetailView(store: store, task: task)
@@ -412,11 +412,7 @@ private struct MacTaskInspector: View {
                     PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
                 }
                 Button(task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete")) {
-                    if !task.isCompleted && task.subtasks.contains(where: { !$0.isCompleted }) {
-                        isConfirmingIncompleteSubtasks = true
-                    } else {
-                        toggleCompletion()
-                    }
+                    isConfirmingIncompleteSubtasks = true
                 }
                 Button(task.isArchived ? String(localized: "Restore from Archive") : String(localized: "Archive")) {
                     task.archivedDate = task.isArchived ? nil : Date()
@@ -428,14 +424,17 @@ private struct MacTaskInspector: View {
         .formStyle(.grouped)
         .padding(.vertical, 8)
         .onDisappear { PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext) }
-        .confirmationDialog(
-            String(localized: "Some subtasks are not finished."),
+        .alert(
+            task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete"),
             isPresented: $isConfirmingIncompleteSubtasks
         ) {
-            Button(String(localized: "Complete Task and Subtasks")) { toggleCompletion() }
+            Button(task.isCompleted ? String(localized: "Mark Incomplete") : String(localized: "Mark Complete")) { toggleCompletion() }
             Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
-            Text(String(localized: "Completing this task will also mark every subtask as complete."))
+            Text(task.title)
+            if !task.isCompleted && task.subtasks.contains(where: { !$0.isCompleted }) {
+                Text(String(localized: "Completing this task will also mark every subtask as complete."))
+            }
         }
     }
 

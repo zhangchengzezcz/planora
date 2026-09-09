@@ -294,13 +294,16 @@ private struct PlanningTaskRow: View {
     let store: PlanoraStore
     let task: PlanoraTask
     let tint: Color
+    @State private var taskPendingCompletion: PlanoraTask?
 
     var body: some View {
         NavigationLink {
             TaskDetailView(store: store, task: task)
         } label: {
             HStack(spacing: 12) {
+#if os(iOS)
                 TaskCompletionButton(task: task)
+#endif
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(task.title)
@@ -327,6 +330,12 @@ private struct PlanningTaskRow: View {
             .background(tint.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
         .buttonStyle(.plain)
+        .contextMenu {
+            Button(String(localized: "Mark Complete"), systemImage: "checkmark") {
+                taskPendingCompletion = task
+            }
+        }
+        .taskCompletionConfirmation(task: $taskPendingCompletion)
     }
 }
 

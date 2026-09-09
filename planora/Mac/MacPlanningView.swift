@@ -75,17 +75,30 @@ struct MacPlanningView: View {
 private struct MacTaskSection: View {
     let title: String
     let tasks: [PlanoraTask]
+    @State private var taskPendingCompletion: PlanoraTask?
 
     var body: some View {
         if !tasks.isEmpty {
             Section(title) {
                 ForEach(tasks) { task in
-                    HStack(spacing: 10) {
-                        TaskCompletionButton(task: task)
-                        MacCompactTaskRow(task: task)
-                    }
+                    MacCompactTaskRow(task: task)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(String(localized: "Mark Complete"), systemImage: "checkmark") {
+                                taskPendingCompletion = task
+                            }
+                            .tint(Color.planoraGreen)
+                        }
+                        .contextMenu {
+                            Button(String(localized: "Mark Complete"), systemImage: "checkmark") {
+                                taskPendingCompletion = task
+                            }
+                        }
+                        .accessibilityAction(named: Text(String(localized: "Mark Complete"))) {
+                            taskPendingCompletion = task
+                        }
                 }
             }
+            .taskCompletionConfirmation(task: $taskPendingCompletion)
         }
     }
 }

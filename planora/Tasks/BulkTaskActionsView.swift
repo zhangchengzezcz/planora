@@ -38,6 +38,7 @@ struct BulkTaskActionsView: View {
     @State private var hasPlannedDate = true
     @State private var plannedDate = Date()
     @State private var isConfirmingDelete = false
+    @State private var isConfirmingCompletion = false
 
     private var includesRecurringTask: Bool {
         selectedTasks.contains(where: \.isRecurring)
@@ -96,6 +97,8 @@ struct BulkTaskActionsView: View {
                     Button(action == .delete ? String(localized: "Delete") : String(localized: "Apply")) {
                         if action == .delete {
                             isConfirmingDelete = true
+                        } else if action == .complete {
+                            isConfirmingCompletion = true
                         } else {
                             apply()
                         }
@@ -110,6 +113,12 @@ struct BulkTaskActionsView: View {
                 if let existingDate = selectedTasks.compactMap(\.plannedDate).first {
                     plannedDate = existingDate
                 }
+            }
+            .alert(String(localized: "Mark Complete"), isPresented: $isConfirmingCompletion) {
+                Button(String(localized: "Mark Complete")) { apply() }
+                Button(String(localized: "Cancel"), role: .cancel) {}
+            } message: {
+                Text(String(localized: "Completing a task also completes its remaining subtasks."))
             }
             .alert(String(localized: "Delete Selected Tasks?"), isPresented: $isConfirmingDelete) {
                 Button(String(localized: "Delete"), role: .destructive) { apply() }

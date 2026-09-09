@@ -7,6 +7,7 @@ struct TaskListView: View {
     @Environment(\.planoraTaskDisplay) private var displaySettings
     @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var tasks: [PlanoraTask]
     @State private var taskPendingDeletion: PlanoraTask?
+    @State private var taskPendingCompletion: PlanoraTask?
     @State private var isShowingDeleteConfirmation = false
     @State private var selectedTask: PlanoraTask?
     @State private var isSelecting = false
@@ -90,8 +91,7 @@ struct TaskListView: View {
                                         if task.isDeleted {
                                             PlanoraTaskOperations.restoreFromRecentlyDeleted([task], modelContext: modelContext)
                                         } else {
-                                            task.setCompleted(!task.isCompleted)
-                                            PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+                                            taskPendingCompletion = task
                                         }
                                     } label: {
                                         Label(
@@ -136,6 +136,7 @@ struct TaskListView: View {
         .navigationDestination(item: $selectedTask) { task in
             TaskDetailView(store: store, task: task)
         }
+        .taskCompletionConfirmation(task: $taskPendingCompletion)
         .alert(String(localized: "Delete Task?"), isPresented: $isShowingDeleteConfirmation, presenting: taskPendingDeletion) { task in
             if task.isRecurring {
                 Button(String(localized: "Delete This Occurrence"), role: .destructive) {
