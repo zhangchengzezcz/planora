@@ -1,4 +1,24 @@
 import SwiftUI
+
+struct ManageBacTaskResultLabel: View {
+    let task: PlanoraTask
+
+    var body: some View {
+        if task.isManageBacTask {
+            VStack(alignment: .leading, spacing: 4) {
+                if let result = task.manageBacAssessmentSummary {
+                    Label(result, systemImage: "chart.bar.doc.horizontal")
+                        .accessibilityLabel(String(localized: "ManageBac Result") + ": " + result)
+                }
+                if task.remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue {
+                    Label("ManageBac · " + String(localized: "Completed"), systemImage: "checkmark.seal")
+                }
+            }
+            .font(.caption.weight(.medium))
+            .foregroundStyle(Color.planoraDeepGreen)
+        }
+    }
+}
 import SwiftData
 
 struct ProfileHeaderActions: View {

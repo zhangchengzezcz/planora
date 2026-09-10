@@ -342,6 +342,7 @@ private struct TaskListRow: View {
                         Text(task.subject.planoraTaskListSubjectName)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
+                        ManageBacTaskResultLabel(task: task)
                     }
 
                     Spacer(minLength: 10)

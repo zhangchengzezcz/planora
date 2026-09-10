@@ -2079,6 +2079,7 @@
       }
     },
     "Complete Task and Subtasks" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5094,6 +5095,7 @@
     },
     "hello_name_format" : {
       "comment" : "Home greeting",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6085,9 +6087,24 @@
     },
     "ManageBac Result" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "ManageBac Result" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ManageBac 評価結果" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "ManageBac 成绩" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ManageBac Result"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ManageBac 評価結果"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ManageBac 成绩"
+          }
+        }
       }
     },
     "ManageBac Source" : {
@@ -10162,6 +10179,7 @@
       }
     },
     "See what needs your attention next." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10580,6 +10598,7 @@
       }
     },
     "Some subtasks are not finished." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11196,6 +11215,7 @@
       }
     },
     "Tap + to create your first task." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11703,6 +11723,7 @@
       }
     },
     "Tasks planned for the current week" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11747,6 +11768,7 @@
       }
     },
     "Tasks scheduled or due today" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

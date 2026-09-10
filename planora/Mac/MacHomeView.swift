@@ -29,6 +29,7 @@ struct MacCompactTaskRow: View {
                 Text(PlanoraFormat.subjectDisplayName(task.subject))
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                ManageBacTaskResultLabel(task: task)
             }
             Spacer()
             if let date = task.plannedDate ?? task.deadline {

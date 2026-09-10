@@ -1,5 +1,8 @@
 import Foundation
 import SwiftUI
+#if os(macOS)
+import AppKit
+#endif
 
 enum PlanoraTheme {
     static let pageHorizontalPadding: CGFloat = 20
@@ -372,7 +375,11 @@ extension Color {
     }
 #else
     nonisolated private static func planoraDynamic(light: Color, dark: Color) -> Color {
-        light
+        let lightColor = NSColor(light)
+        let darkColor = NSColor(dark)
+        return Color(nsColor: NSColor(name: nil) { appearance in
+            appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? darkColor : lightColor
+        })
     }
 #endif
 }

@@ -258,6 +258,40 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(Calendar.current.component(.day, from: deadline), 8)
     }
 
+    func testClassTasksReadScoresAndExplicitCompletionWithoutUsingSectionHeading() async throws {
+        let html = #"""
+        <html><body><main><h1>Chemistry</h1><h2>All Tasks</h2><h3>Completed</h3>
+        <div class="fusion-card-item short-assignment section hstack flex-wrap">
+          <div class="hstack"><div class="date-badge past-due"><div class="month">Sep</div><div class="day">4</div></div>
+          <div class="flex-1"><div class="h4 title"><a href="/student/classes/42/core_tasks/1">Lab</a></div>
+          <span class="due-date"><div class="due regular">Friday at 9:05 AM</div></span></div></div>
+          <div class="assessment task-score assessment-cell"><span class="grade grade-success">7</span><div class="points">3 / 3 pts</div></div>
+        </div>
+        <div class="short-assignment"><a href="/student/classes/42/core_tasks/2">Homework</a>
+          <div class="assessment task-score"><span class="cell submitted">Complete</span></div><div>Comment 7/10</div>
+        </div>
+        <div class="short-assignment"><a href="/student/classes/42/core_tasks/3">Complete the exercises</a>
+          <div class="assessment task-score"><span class="not-assessed">Not Assessed Yet</span></div>
+        </div></main></body></html>
+        """#
+        let webView = try await loadedWebView(html: html, url: "https://school.managebac.cn/student/classes/42/core_tasks")
+        let raw = try await webView.callAsyncJavaScript(ManageBacWebSession.taskScript,
+            arguments: ["sourceView": "course"], in: nil, contentWorld: .page)
+        let payload = try JSONDecoder().decode(ManageBacScanPayload.self,
+            from: Data(try XCTUnwrap(raw as? String).utf8))
+        XCTAssertTrue(payload.pageRecognized)
+        XCTAssertEqual(payload.records.count, 3)
+        XCTAssertEqual(payload.records[0].remoteGradeText, "7")
+        XCTAssertEqual(payload.records[0].remoteScoreEarned, 3)
+        XCTAssertEqual(payload.records[0].remoteScorePossible, 3)
+        XCTAssertNotNil(payload.records[0].deadline)
+        XCTAssertEqual(payload.records[0].remoteStatus, .unknown)
+        XCTAssertEqual(payload.records[1].remoteStatus, .completed)
+        XCTAssertNil(payload.records[1].remoteScoreEarned)
+        XCTAssertEqual(payload.records[2].remoteStatus, .unknown)
+        XCTAssertNil(payload.records[2].remoteGradeText)
+    }
+
     func testCurrentManageBacResultReadsTeacherCompletionAndScore() async throws {
         let html = #"""
         <!doctype html><html><body><main>

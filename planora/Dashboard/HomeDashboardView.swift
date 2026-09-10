@@ -477,6 +477,7 @@ private struct TodayFocusCard: View {
                     Text(task.subject.planoraDisplaySubjectName)
                         .font(.callout.weight(.semibold))
                         .foregroundStyle(.secondary)
+                    ManageBacTaskResultLabel(task: task)
                 }
 
                 Spacer()
@@ -665,6 +666,7 @@ private struct TaskRow: View {
                         Text(task.subject.planoraDisplaySubjectName)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
+                        ManageBacTaskResultLabel(task: task)
                     }
 
                     Spacer()

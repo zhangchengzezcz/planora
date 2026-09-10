@@ -77,7 +77,10 @@ struct MacTaskWorkspaceView: View {
                         HStack(spacing: 8) {
                             Image(systemName: task.type.symbol)
                                 .foregroundStyle(.secondary)
-                            Text(task.title).lineLimit(1)
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(task.title).lineLimit(1)
+                                ManageBacTaskResultLabel(task: task)
+                            }
                         }
                     }
                     .width(min: 220, ideal: 330)

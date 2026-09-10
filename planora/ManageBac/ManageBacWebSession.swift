@@ -43,6 +43,10 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored private var schoolHost: String?
     @ObservationIgnored private let taskViews = ["upcoming", "past", "overdue"]
     @ObservationIgnored private var currentTaskViewIndex = 0
+    private var taskPaths: [String] {
+        taskViews.map { "/student/tasks_and_deadlines?view=\($0)" }
+        + courses.map { "/student/classes/\($0.remoteIdentifier)/core_tasks" }
+    }
     @ObservationIgnored private let workspacePaths = ["/student/notifications", "/student/timetables"]
     @ObservationIgnored private var currentWorkspacePathIndex = 0
     @ObservationIgnored private var isHandlingPage = false
@@ -300,7 +304,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 completedStepCount = 4
                 currentTaskViewIndex = 0
                 phase = .loadingTasks
-                loadStudentPath("/student/tasks_and_deadlines?view=\(taskViews[0])")
+                loadStudentPath(taskPaths[0])
             } catch {
                 guard generation == pageLoadGeneration else { return }
                 phase = .failed(.pageStructureChanged)
@@ -311,7 +315,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
 
         case .loadingTasks:
             do {
-                let view = taskViews[currentTaskViewIndex]
+                let view = currentTaskViewIndex < taskViews.count ? taskViews[currentTaskViewIndex] : "course"
                 let payload: ManageBacScanPayload = try await decodeJavaScript(
                     Self.taskScript,
                     arguments: ["sourceView": view]
@@ -323,8 +327,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 }
                 records.append(contentsOf: payload.records)
                 currentTaskViewIndex += 1
-                if currentTaskViewIndex < taskViews.count {
-                    loadStudentPath("/student/tasks_and_deadlines?view=\(taskViews[currentTaskViewIndex])")
+                if currentTaskViewIndex < taskPaths.count {
+                    loadStudentPath(taskPaths[currentTaskViewIndex])
                 } else {
                     completedStepCount = 5
                     currentWorkspacePathIndex = 0
@@ -795,7 +799,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     const seen = new Set();
 
     const readableContainer = link => {
-      const preferred = link.closest('[data-task-id],[data-deadline-id],article,tr,li,.f-task-tile,[class*=task-card],[class*=deadline-card]');
+      const preferred = link.closest('.short-assignment,.f-task-tile,[data-task-id],[data-deadline-id],article,tr,li,[class*=task-card],[class*=deadline-card]');
       if (preferred) return preferred;
       let node = link.parentElement;
       for (let depth = 0; node && depth < 7; depth += 1, node = node.parentElement) {
@@ -840,6 +844,12 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         const parsed = parseCandidate(node.textContent);
         if (parsed) return parsed;
       }
+      const badge = container?.querySelector('.date-badge');
+      const clock = normalize(container?.querySelector('.due-date')?.textContent).match(/\d{1,2}:\d{2}\s*(?:AM|PM)/i);
+      if (badge && clock) {
+        const parsed = parseCandidate(`${normalize(badge.querySelector('.month')?.textContent)} ${normalize(badge.querySelector('.day')?.textContent)}, ${clock[0]}`);
+        if (parsed) return parsed;
+      }
       return parseCandidate(container?.textContent);
     };
 
@@ -862,21 +872,21 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
       });
       const unitLink = container?.querySelector('a[href*="/units/"]');
       const unitMatch = (() => { try { return new URL(unitLink?.getAttribute('href'), location.origin).pathname.match(/\/units\/([^/?#]+)/); } catch (_) { return null; } })();
-      const assessment = container?.querySelector('.f-task-score--assessment');
-      const gradeText = normalize(assessment?.querySelector('h1,h2,h3,h4,h5,h6,[class*=grade]')?.textContent) || null;
-      const pointsText = normalize(assessment?.querySelector('p,[class*=points],[class*=score-value]')?.textContent);
+      const assessment = container?.querySelector('.task-score, .f-task-score--assessment');
+      const gradeText = normalize(assessment?.querySelector('.grade,h1,h2,h3,h4,h5,h6,[class*=grade]')?.textContent) || null;
+      const pointsText = normalize(assessment?.querySelector('.points,p,[class*=points],[class*=score-value]')?.textContent);
       const pointsMatch = pointsText.match(/(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)/);
       // Only ManageBac's submitted result or an exact standalone result label
       // is evidence of binary completion. A score or "Submitted" alone is not.
-      const result = container?.querySelector('.f-task-score');
-      const binaryComplete = Array.from(container?.querySelectorAll('span,div,p,strong') || []).some(node =>
+      const result = container?.querySelector('.task-score,.f-task-score');
+      const binaryComplete = Array.from((result || container)?.querySelectorAll('span,div,p,strong') || []).some(node =>
         !node.children.length && !node.closest('a,button,h1,h2,h3,h4,h5,h6') &&
         /^(complete|completed)$/i.test(normalize(node.textContent))
       ) || Boolean(result?.matches('.f-task-score--submitted') && /^(complete|completed)$/i.test(normalize(result.textContent)));
       candidates.push({
         remoteIdentifier,
         title,
-        subject: normalize(classLink?.textContent),
+        subject: normalize(classLink?.textContent) || (currentSourceView === 'course' ? normalize(main.querySelector('h1')?.textContent) : ''),
         deadlineText: displayDate(container),
         detailURL,
         sourceView: currentSourceView,
@@ -890,7 +900,9 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
     const text = normalize(main?.innerText).toLowerCase();
     const emptyState = /no\s+(upcoming|past|overdue|tasks?)/.test(text);
-    const pageRecognized = emptyState || candidates.length > 0;
+    const coursePage = currentSourceView === 'course' && /\/student\/classes\/[^/]+\/core_tasks\/?$/.test(location.pathname)
+      && Array.from(main.querySelectorAll('h2')).some(node => /^all tasks$/i.test(normalize(node.textContent)));
+    const pageRecognized = emptyState || candidates.length > 0 || coursePage;
     return JSON.stringify({ records: candidates, pageRecognized });
     """#
 
