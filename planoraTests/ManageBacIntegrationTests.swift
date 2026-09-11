@@ -292,6 +292,31 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertNil(payload.records[2].remoteGradeText)
     }
 
+    func testResponsiveResultCopiesAndNestedCompletion() async throws {
+        let html = #"""
+        <html><body><main><h1>Chemistry</h1><h2>All Tasks</h2>
+        <div class="short-assignment"><a href="/student/classes/42/core_tasks/1">Lab</a>
+          <div class="task-score"><span class="grade"></span><p>N/A</p></div>
+          <div class="task-score"><span class="grade">6</span><p>Assessment</p><p>8.5 / 10 pts</p></div>
+          <div class="task-score"><span><svg></svg>Complete</span></div>
+        </div>
+        <div class="short-assignment"><a href="/student/classes/42/core_tasks/2">Complete</a>
+          <div>Comment: Complete</div><div class="task-score">Not Assessed Yet</div>
+        </div></main></body></html>
+        """#
+        let webView = try await loadedWebView(html: html, url: "https://school.managebac.cn/student/classes/42/core_tasks")
+        let raw = try await webView.callAsyncJavaScript(ManageBacWebSession.taskScript,
+            arguments: ["sourceView": "course"], in: nil, contentWorld: .page)
+        let payload = try JSONDecoder().decode(ManageBacScanPayload.self,
+            from: Data(try XCTUnwrap(raw as? String).utf8))
+        XCTAssertEqual(payload.records.count, 2)
+        XCTAssertEqual(payload.records[0].remoteGradeText, "6")
+        XCTAssertEqual(payload.records[0].remoteScoreEarned, 8.5)
+        XCTAssertEqual(payload.records[0].remoteScorePossible, 10)
+        XCTAssertEqual(payload.records[0].remoteStatus, .completed)
+        XCTAssertEqual(payload.records[1].remoteStatus, .unknown)
+    }
+
     func testCurrentManageBacResultReadsTeacherCompletionAndScore() async throws {
         let html = #"""
         <!doctype html><html><body><main>

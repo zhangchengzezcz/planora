@@ -13,12 +13,14 @@ struct TaskDetailView: View {
     @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
     @Query(sort: \PlanoraTopic.title) private var topics: [PlanoraTopic]
     @State private var isShowingDeleteConfirmation = false
+    @State private var isShowingEditor = false
     @State private var isShowingIncompleteSubtasksConfirmation = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 detailHeader
+                ManageBacTaskResultPanel(task: task)
                 overviewPanel
 
                 if task.tracksProgress {
@@ -62,15 +64,32 @@ struct TaskDetailView: View {
                 }
                 }
                 ToolbarItem(placement: .primaryAction) {
+                #if os(macOS)
+                Button(String(localized: "Edit")) { isShowingEditor = true }
+                #else
                 NavigationLink {
                     EditTaskView(store: store, task: task)
                 } label: {
                     Text(String(localized: "Edit"))
                         .fontWeight(.semibold)
                 }
+                #endif
                 }
             }
         }
+        #if os(macOS)
+        .sheet(isPresented: $isShowingEditor) {
+            NavigationStack {
+                EditTaskView(store: store, task: task)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(String(localized: "Cancel")) { isShowingEditor = false }
+                        }
+                    }
+            }
+            .frame(width: 640, height: 720)
+        }
+        #endif
         .confirmationDialog(
             task.isRecurring ? String(localized: "Delete Repeating Task") : String(localized: "Delete Task?"),
             isPresented: $isShowingDeleteConfirmation,
@@ -968,6 +987,9 @@ private struct EditTaskView: View {
         .scrollContentBackground(.hidden)
         .background(PlanoraBackground())
         .navigationTitle(String(localized: "Edit Task"))
+        #if os(macOS)
+        .formStyle(.grouped)
+        #endif
         .planoraDetailNavigationBar()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {

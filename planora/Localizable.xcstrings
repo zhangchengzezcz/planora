@@ -10068,6 +10068,20 @@
         }
       }
     },
+    "ManageBac Grade" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Grade" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "評定" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "等级" } }
+      }
+    },
+    "No ManageBac results yet" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No ManageBac results yet" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ManageBac の成績はまだありません" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无 ManageBac 成绩" } }
+      }
+    },
     "Score" : {
       "localizations" : {
         "en" : {

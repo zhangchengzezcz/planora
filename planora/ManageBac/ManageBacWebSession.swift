@@ -872,17 +872,22 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
       });
       const unitLink = container?.querySelector('a[href*="/units/"]');
       const unitMatch = (() => { try { return new URL(unitLink?.getAttribute('href'), location.origin).pathname.match(/\/units\/([^/?#]+)/); } catch (_) { return null; } })();
-      const assessment = container?.querySelector('.task-score, .f-task-score--assessment');
-      const gradeText = normalize(assessment?.querySelector('.grade,h1,h2,h3,h4,h5,h6,[class*=grade]')?.textContent) || null;
-      const pointsText = normalize(assessment?.querySelector('.points,p,[class*=points],[class*=score-value]')?.textContent);
-      const pointsMatch = pointsText.match(/(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)/);
+      // Responsive pages may render separate desktop/mobile result cells.
+      // Inspect each result rather than stopping at an empty first copy.
+      const results = Array.from(container?.querySelectorAll('.task-score,.f-task-score') || []);
+      const gradeText = results.flatMap(result => Array.from(result.querySelectorAll('.grade,h1,h2,h3,h4,h5,h6,[class*=grade]')))
+        .map(node => normalize(node.textContent)).find(text => text && !/^(N\/A|not assessed yet)$/i.test(text)) || null;
+      const pointsMatch = results.flatMap(result => Array.from(result.querySelectorAll('.points,p,[class*=points],[class*=score-value]')))
+        .map(node => normalize(node.textContent).match(/(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)/)).find(Boolean);
       // Only ManageBac's submitted result or an exact standalone result label
       // is evidence of binary completion. A score or "Submitted" alone is not.
-      const result = container?.querySelector('.task-score,.f-task-score');
-      const binaryComplete = Array.from((result || container)?.querySelectorAll('span,div,p,strong') || []).some(node =>
-        !node.children.length && !node.closest('a,button,h1,h2,h3,h4,h5,h6') &&
+      const binaryComplete = results.some(result => Array.from([result, ...result.querySelectorAll('span,div,p,strong')]).some(node =>
+        !node.closest('a,button,h1,h2,h3,h4,h5,h6') &&
         /^(complete|completed)$/i.test(normalize(node.textContent))
-      ) || Boolean(result?.matches('.f-task-score--submitted') && /^(complete|completed)$/i.test(normalize(result.textContent)));
+      )) || (results.length === 0 && Array.from(container?.querySelectorAll('span,div,p,strong') || []).some(node =>
+        !node.children.length && !node.closest('a,button,h1,h2,h3,h4,h5,h6,[class*=comment]') &&
+        /^(complete|completed)$/i.test(normalize(node.textContent))
+      ));
       candidates.push({
         remoteIdentifier,
         title,

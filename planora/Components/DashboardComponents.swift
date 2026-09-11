@@ -14,8 +14,55 @@ struct ManageBacTaskResultLabel: View {
                     Label("ManageBac · " + String(localized: "Completed"), systemImage: "checkmark.seal")
                 }
             }
-            .font(.caption.weight(.medium))
+            .font(.callout.weight(.semibold))
             .foregroundStyle(Color.planoraDeepGreen)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
+
+struct ManageBacTaskResultPanel: View {
+    let task: PlanoraTask
+
+    var body: some View {
+        if task.isManageBacTask,
+           task.manageBacAssessmentSummary != nil || task.remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(String(localized: "ManageBac Result"))
+                    .font(.headline)
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .firstTextBaseline, spacing: 24) { values }
+                    VStack(alignment: .leading, spacing: 12) { values }
+                }
+                if task.remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue {
+                    Label("ManageBac · " + String(localized: "Completed"), systemImage: "checkmark.seal.fill")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Color.planoraDeepGreen)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 12)
+        }
+    }
+
+    @ViewBuilder private var values: some View {
+        if let grade = task.remoteGradeText, !grade.isEmpty {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(String(localized: "ManageBac Grade")).font(.subheadline).foregroundStyle(.secondary)
+                Text(grade).font(.system(size: 32, weight: .bold)).monospacedDigit()
+            }
+        }
+        if let earned = task.remoteScoreEarned {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(String(localized: "Score")).font(.subheadline).foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
+                    Text(earned.formatted()).font(.system(size: 28, weight: .bold))
+                    if let possible = task.remoteScorePossible {
+                        Text("/ " + possible.formatted()).font(.title3).foregroundStyle(.secondary)
+                    }
+                }
+                .monospacedDigit()
+            }
         }
     }
 }

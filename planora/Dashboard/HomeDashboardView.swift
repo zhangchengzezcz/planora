@@ -13,6 +13,7 @@ struct HomeDashboardView: View {
     @State private var isShowingCurriculumSwitchConfirmation = false
     @State private var calendarMonthDate = Date()
     @State private var hasRefreshedScheduledWork = false
+    @State private var resultSubject = ""
 
     // MARK: - View
 
@@ -100,6 +101,7 @@ struct HomeDashboardView: View {
                     EmptyTasksCard(action: onCreateRequested)
                 }
                 learningProgressSection(snapshot: snapshot)
+                resultsSection
                 calendarPreviewSection(snapshot: snapshot)
             }
             .listStyle(.plain)
@@ -117,6 +119,7 @@ struct HomeDashboardView: View {
 
             taskOverviewSection(snapshot: snapshot)
             learningProgressSection(snapshot: snapshot)
+            resultsSection
             calendarPreviewSection(snapshot: snapshot)
         }
         .padding(.top, 18)
@@ -183,6 +186,53 @@ struct HomeDashboardView: View {
                     )
                 }
                 .padding(20)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var resultsSection: some View {
+        let results = tasks.filter {
+            !$0.isDeleted && !$0.isArchived && $0.isManageBacTask && $0.manageBacAssessmentSummary != nil
+        }.sorted {
+            ($0.deadline ?? $0.createdDate) > ($1.deadline ?? $1.createdDate)
+        }
+        let subjects = Array(Set(results.map(\.subject))).sorted()
+        let visible = results.filter { resultSubject.isEmpty || $0.subject == resultSubject }
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text(String(localized: "ManageBac Result")).font(.title2.bold())
+                Spacer()
+                Picker(String(localized: "Subject"), selection: $resultSubject) {
+                    Text(String(localized: "All Subjects")).tag("")
+                    ForEach(subjects, id: \.self) { subject in
+                        Text(PlanoraFormat.subjectDisplayName(subject)).tag(subject)
+                    }
+                }
+                .pickerStyle(.menu)
+                .fixedSize()
+            }
+            if visible.isEmpty {
+                Text(String(localized: "No ManageBac results yet"))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 12)
+            }
+            ForEach(visible) { task in
+                NavigationLink {
+                    TaskDetailView(store: store, task: task)
+                } label: {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(task.title).font(.headline).foregroundStyle(.primary)
+                        Text(PlanoraFormat.subjectDisplayName(task.subject))
+                            .font(.callout).foregroundStyle(.secondary)
+                        ManageBacTaskResultPanel(task: task)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                Divider()
             }
         }
     }
