@@ -9,9 +9,7 @@ struct MacHomeView: View {
     var body: some View {
         NavigationStack {
             HomeDashboardView(store: store, onCreateRequested: createTask)
-                .frame(maxWidth: 1040)
-                .frame(maxWidth: .infinity)
-                .background(Color(nsColor: .windowBackgroundColor))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }

@@ -101,8 +101,8 @@ struct HomeDashboardView: View {
                     EmptyTasksCard(action: onCreateRequested)
                 }
                 learningProgressSection(snapshot: snapshot)
-                resultsSection
                 calendarPreviewSection(snapshot: snapshot)
+                resultsSection
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
@@ -119,8 +119,8 @@ struct HomeDashboardView: View {
 
             taskOverviewSection(snapshot: snapshot)
             learningProgressSection(snapshot: snapshot)
-            resultsSection
             calendarPreviewSection(snapshot: snapshot)
+            resultsSection
         }
         .padding(.top, 18)
         .padding(.bottom, 32)
@@ -310,13 +310,13 @@ private struct HomeDashboardSnapshot {
         var upcomingProgressTasks: [PlanoraTask] = []
         var upcomingTimelineItems: [PlanoraTask] = []
         for task in sortedIncompleteTasks {
-            if task.tracksProgress, upcomingProgressTasks.count < 4 {
+            if task.tracksProgress, upcomingProgressTasks.count < 2 {
                 upcomingProgressTasks.append(task)
             } else if !task.tracksProgress, upcomingTimelineItems.count < 4 {
                 upcomingTimelineItems.append(task)
             }
 
-            if upcomingProgressTasks.count == 4, upcomingTimelineItems.count == 4 {
+            if upcomingProgressTasks.count == 2, upcomingTimelineItems.count == 4 {
                 break
             }
         }
@@ -460,8 +460,9 @@ private struct HomeHeader: View {
                 Spacer(minLength: 12)
 #if os(macOS)
                 curriculumMenu
-#endif
+#else
                 ProfileHeaderActions(store: store)
+#endif
             }
 #if !os(macOS)
             curriculumMenu

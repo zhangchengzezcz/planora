@@ -4,6 +4,8 @@
 
 ### 中文
 
+- 首页即将到来的任务限制为两项，Mac 与 iPhone 的日历预览统一置于成绩区域上方。
+- Mac 消息与头像移至右上工具栏常显，侧栏与新建组合移至侧栏上方；首页使用完整内容宽度，并增强深浅模式面板边界。
 - 保留现有页面布局，恢复学习概览的彩色玻璃层次，强化课程切换、任务状态和搜索筛选的选中效果。
 - Mac 任务状态采用蓝、绿、琥珀和粉色玻璃胶囊，保留拖动切换和键盘操作。
 - 修复任务详情的归档按钮显示为方块，改为单层原生玻璃胶囊。
@@ -13,6 +15,8 @@
 
 ### English
 
+- Limit upcoming tasks to two and place the calendar preview above results on both Mac and iPhone.
+- Keep messages and profile in the top-right Mac toolbar, move sidebar/create controls above the sidebar, and use the full home content width with clearer light/dark panel boundaries.
 - Restore tinted glass hierarchy without changing page layout, including learning insights, curriculum selection, task status and search filters.
 - Use distinct blue, green, amber and pink Mac status capsules with drag and keyboard interaction.
 - Fix the archive action's rectangular appearance with a single native glass capsule.

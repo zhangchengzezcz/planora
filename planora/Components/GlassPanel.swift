@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct GlassPanel<Content: View>: View {
+    @Environment(\.colorScheme) private var colorScheme
     let padding: CGFloat
     let cornerRadius: CGFloat
     let tint: Color
@@ -31,8 +32,8 @@ struct GlassPanel<Content: View>: View {
 #else
         content
             .padding(padding)
-            .background(Color(nsColor: .controlBackgroundColor), in: shape)
-            .overlay(shape.stroke(.separator.opacity(0.35), lineWidth: 0.5))
+            .background(colorScheme == .dark ? Color.white.opacity(0.065) : Color(nsColor: .controlBackgroundColor), in: shape)
+            .overlay(shape.stroke(colorScheme == .dark ? Color.white.opacity(0.16) : Color.black.opacity(0.09), lineWidth: 0.75))
 #endif
     }
 }

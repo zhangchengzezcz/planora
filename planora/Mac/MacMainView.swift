@@ -14,6 +14,7 @@ struct MacMainView: View {
     @State private var isShowingCreateFlow = false
     @State private var searchText = ""
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @Query(filter: #Predicate<PlanoraMessage> { $0.isUnread }) private var unreadMessages: [PlanoraMessage]
 
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
@@ -24,6 +25,7 @@ struct MacMainView: View {
                 searchText: $searchText
             )
                 .toolbar(removing: .sidebarToggle)
+                .toolbar { navigationControls }
                 .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
         } detail: {
             destinationView
@@ -37,27 +39,30 @@ struct MacMainView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .navigation) {
-                ControlGroup {
-                    Button {
-                        withAnimation(.snappy) {
-                            columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
-                        }
-                    } label: {
-                        Image(systemName: "sidebar.leading")
-                    }
-                    .help(String(localized: "Toggle Sidebar"))
-
-                    Button {
-                        isShowingCreateFlow = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .help(String(localized: "New Task"))
-                }
-                .controlGroupStyle(.navigation)
+            if columnVisibility == .detailOnly {
+                navigationControls
             }
-            ToolbarSpacer(.fixed, placement: .navigation)
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    selection = .messages
+                } label: {
+                    Image(systemName: "bell")
+                        .overlay(alignment: .topTrailing) {
+                            if !unreadMessages.isEmpty {
+                                Circle().fill(.red).frame(width: 6, height: 6).offset(x: 3, y: -3)
+                            }
+                        }
+                }
+                .help(String(localized: "Messages"))
+                .accessibilityLabel(String(localized: "Messages"))
+                .accessibilityValue(Text(unreadMessages.count, format: .number))
+                Button { selection = .profile } label: {
+                    ProfileAvatarView(name: store.userName, size: 30)
+                        .contentShape(Circle())
+                }
+                .help(String(localized: "Profile"))
+                .accessibilityLabel(String(localized: "Profile"))
+            }
         }
         .sheet(isPresented: $isShowingCreateFlow) {
             NavigationStack {
@@ -87,6 +92,31 @@ struct MacMainView: View {
             if tab == .tasks { selection = .tasks }
         }
         .background { ManageBacAutomaticSyncHost(store: store) }
+    }
+
+    @ToolbarContentBuilder
+    private var navigationControls: some ToolbarContent {
+            ToolbarItem(placement: .navigation) {
+                ControlGroup {
+                    Button {
+                        withAnimation(.snappy) {
+                            columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
+                        }
+                    } label: {
+                        Image(systemName: "sidebar.leading")
+                    }
+                    .help(String(localized: "Toggle Sidebar"))
+
+                    Button {
+                        isShowingCreateFlow = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .help(String(localized: "New Task"))
+                }
+                .controlGroupStyle(.navigation)
+            }
+            ToolbarSpacer(.fixed, placement: .navigation)
     }
 
     @ViewBuilder
