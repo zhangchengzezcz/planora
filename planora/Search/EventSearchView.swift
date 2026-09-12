@@ -224,7 +224,7 @@ struct EventSearchView: View {
                     .font(.subheadline.weight(.medium))
                     .frame(minHeight: 44)
                     .padding(.horizontal, 16)
-                    .glassEffect(.regular.interactive(), in: Capsule())
+                    .glassEffect(.regular.tint(Color.planoraBlue.opacity(hasActiveFilters ? 0.35 : 0.14)).interactive(), in: Capsule())
                     .contentShape(Capsule())
             }
             .buttonStyle(.plain)

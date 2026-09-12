@@ -247,15 +247,33 @@ private struct MacLiquidGlassStatusPicker: View {
 
     var body: some View {
         GeometryReader { geometry in
-            Picker(String(localized: "Status"), selection: $selection) {
-                ForEach(MacTaskStatus.allCases) { value in
-                    Text(value.title).tag(value)
+            GlassEffectContainer(spacing: 6) {
+                HStack(spacing: 6) {
+                    ForEach(MacTaskStatus.allCases) { value in
+                        Button {
+                            withAnimation(.snappy) { selection = value }
+                        } label: {
+                            Text(value.title)
+                                .font(.system(size: 13, weight: selection == value ? .bold : .medium))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
+                                .frame(maxWidth: .infinity, minHeight: 34)
+                                .foregroundStyle(Color.planoraInk)
+                                .glassEffect(.regular.tint(value.tint.opacity(selection == value ? 0.4 : 0.08)).interactive(), in: Capsule())
+                                .contentShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(selection == value ? [.isSelected] : [])
+                    }
                 }
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .controlSize(.large)
             .accessibilityLabel(String(localized: "Status"))
+            .onMoveCommand { direction in
+                let values = MacTaskStatus.allCases
+                guard let index = values.firstIndex(of: selection) else { return }
+                if direction == .left { selection = values[max(0, index - 1)] }
+                if direction == .right { selection = values[min(values.count - 1, index + 1)] }
+            }
             .simultaneousGesture(
                 DragGesture(minimumDistance: 4)
                     .onChanged { gesture in
@@ -295,6 +313,14 @@ private enum MacTaskSource: String, CaseIterable, Identifiable {
 private enum MacTaskStatus: String, CaseIterable, Identifiable {
     case active, completed, archived, deleted
     var id: String { rawValue }
+    var tint: Color {
+        switch self {
+        case .active: .planoraBlue
+        case .completed: .planoraGreen
+        case .archived: .planoraAmber
+        case .deleted: .pink
+        }
+    }
     var title: String {
         switch self {
         case .active: String(localized: "Active")

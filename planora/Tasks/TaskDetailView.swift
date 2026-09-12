@@ -367,8 +367,11 @@ struct TaskDetailView: View {
             )
             .font(.headline.weight(.semibold))
             .frame(maxWidth: .infinity, minHeight: 50)
+            .foregroundStyle(Color.planoraInk)
+            .glassEffect(.regular.tint(Color.planoraAmber.opacity(0.22)).interactive(), in: Capsule())
+            .contentShape(Capsule())
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(.plain)
     }
 
     private var recentlyDeletedActions: some View {

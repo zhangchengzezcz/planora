@@ -1,5 +1,25 @@
 # Changelog / 更新说明
 
+## 1.7.1 - 2026-09-12
+
+### 中文
+
+- 保留现有页面布局，恢复学习概览的彩色玻璃层次，强化课程切换、任务状态和搜索筛选的选中效果。
+- Mac 任务状态采用蓝、绿、琥珀和粉色玻璃胶囊，保留拖动切换和键盘操作。
+- 修复任务详情的归档按钮显示为方块，改为单层原生玻璃胶囊。
+- ManageBac 有效成绩作为任务完成依据，保留暂时漏读的成绩并优先采用课程页结果。
+- 同步失败可重试或跳过当前项目，保留已有数据并记录跳过项目；补充 Mac WebKit 调度、超时和进程退出恢复处理。
+- macOS 26 的实际同步表现仍需在该系统上验证。
+
+### English
+
+- Restore tinted glass hierarchy without changing page layout, including learning insights, curriculum selection, task status and search filters.
+- Use distinct blue, green, amber and pink Mac status capsules with drag and keyboard interaction.
+- Fix the archive action's rectangular appearance with a single native glass capsule.
+- Treat valid ManageBac assessments as completion evidence, preserve temporarily missing results and prefer course-page grades.
+- Add per-item retry/skip, retained-data safeguards, skipped-item reporting and bounded Mac WebKit scheduling and recovery.
+- Actual synchronization on macOS 26 still requires validation on that OS.
+
 ## 1.6.7 - 2026-09-03
 
 ### 中文

@@ -489,7 +489,7 @@ private struct HomeHeader: View {
                 .foregroundStyle(store.curriculum.tint)
                 .frame(minHeight: 44)
                 .padding(.horizontal, 16)
-                .glassEffect(.regular.interactive(), in: Capsule())
+                .glassEffect(.regular.tint(store.curriculum.tint.opacity(0.22)).interactive(), in: Capsule())
                 .contentShape(Capsule())
             }
             .buttonStyle(.plain)
@@ -986,6 +986,8 @@ private struct LearningInsight: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, minHeight: 82, alignment: .topLeading)
+        .padding(16)
+        .glassEffect(.regular.tint(tint.opacity(0.16)), in: RoundedRectangle(cornerRadius: 16))
     }
 }
 

@@ -196,7 +196,7 @@ struct TaskListView: View {
                         .font(.subheadline.weight(.medium))
                         .frame(minHeight: 44)
                         .padding(.horizontal, 16)
-                        .glassEffect(.regular.interactive(), in: Capsule())
+                        .glassEffect(.regular.tint(Color.planoraBlue.opacity(0.22)).interactive(), in: Capsule())
                         .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -213,7 +213,7 @@ struct TaskListView: View {
                             .font(.subheadline.weight(.medium))
                             .frame(minWidth: 44, minHeight: 44)
                             .padding(.horizontal, 16)
-                            .glassEffect(.regular.interactive(), in: Capsule())
+                            .glassEffect(.regular.tint(Color.planoraBlue.opacity(isSelecting ? 0.35 : 0.1)).interactive(), in: Capsule())
                             .contentShape(Capsule())
                     }
                     .buttonStyle(.plain)
