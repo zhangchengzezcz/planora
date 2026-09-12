@@ -421,6 +421,77 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(summary.reviewCount, 1)
     }
 
+    func testScoredTaskCompletesAndMissingResultDoesNotEraseIt() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        var scored = record(title: "Graded homework", deadline: "2026-09-10", identifier: "graded-task")
+        scored.remoteGradeText = "6"
+        scored.remoteScoreEarned = 0
+        scored.remoteScorePossible = 10
+        _ = try ManageBacTaskImporter.importRecords([scored], courses: [], existingTasks: [], into: context)
+        let task = try XCTUnwrap(try context.fetch(FetchDescriptor<PlanoraTask>()).first)
+        XCTAssertTrue(task.isCompleted)
+        XCTAssertTrue(task.isManageBacCompleted)
+        var missing = scored
+        missing.remoteGradeText = "N/A"
+        missing.remoteScoreEarned = nil
+        missing.remoteScorePossible = nil
+        _ = try ManageBacTaskImporter.importRecords([missing], courses: [], existingTasks: [task], into: context)
+        XCTAssertEqual(task.remoteGradeText, "6")
+        XCTAssertEqual(task.remoteScoreEarned, 0)
+        XCTAssertTrue(task.isCompleted)
+        XCTAssertTrue(task.isManageBacCompleted)
+        task.setCompleted(false)
+        try context.save()
+        try ManageBacTaskImporter.reconcileStoredAssessmentCompletion(in: context)
+        XCTAssertTrue(task.isCompleted)
+    }
+
+    func testAssessmentPlaceholdersDoNotMeanCompletion() {
+        for value in ["", "N/A", "Not Assessed Yet", "Incomplete", "Submitted", "Pending"] {
+            XCTAssertFalse(ManageBacAssessment.hasResult(grade: value, earned: nil, possible: nil))
+        }
+        XCTAssertFalse(ManageBacAssessment.hasResult(grade: nil, earned: 0, possible: 0))
+        XCTAssertTrue(ManageBacAssessment.hasResult(grade: nil, earned: 0, possible: 10))
+    }
+
+    func testCourseScoreWinsOverStaleGlobalScoreRegardlessOfOrder() throws {
+        for reverse in [false, true] {
+            let container = try makeContainer()
+            let context = container.mainContext
+            var global = record(title: "Homework", deadline: "2026-09-10", identifier: "score-source")
+            global.remoteGradeText = "3"
+            global.remoteScoreEarned = 4
+            global.remoteScorePossible = 10
+            var course = global
+            course.sourceView = "course"
+            course.remoteGradeText = "6"
+            course.remoteScoreEarned = 8
+            let records = reverse ? [course, global] : [global, course]
+            _ = try ManageBacTaskImporter.importRecords(records, courses: [], existingTasks: [], into: context)
+            let task = try XCTUnwrap(try context.fetch(FetchDescriptor<PlanoraTask>()).first)
+            XCTAssertEqual(task.remoteGradeText, "6")
+            XCTAssertEqual(task.remoteScoreEarned, 8)
+        }
+    }
+
+    func testWebKitFailureOffersSpecificRecoveryAndCancelClearsIt() {
+        let session = ManageBacWebSession()
+        session.phase = .loadingTasks
+        session.webView(session.webView, didFail: nil, withError: URLError(.timedOut))
+        XCTAssertEqual(session.recoveryPhase, .loadingTasks)
+        XCTAssertEqual(session.failedItemTitle, "upcoming")
+        session.skipFailedStep()
+        XCTAssertEqual(session.skippedItems, ["upcoming"])
+        XCTAssertNil(session.recoveryPhase)
+        session.phase = .loadingUnits
+        session.webViewWebContentProcessDidTerminate(session.webView)
+        XCTAssertEqual(session.recoveryPhase, .loadingUnits)
+        session.cancel()
+        XCTAssertNil(session.recoveryPhase)
+        session.teardown()
+    }
+
     func testCurrentNotificationRowsAreReadFromDedicatedPage() async throws {
         let html = #"""
         <!doctype html><html><body><main>

@@ -20,13 +20,16 @@ struct ManageBacAutomaticSyncHost: View {
         Group {
             if let session, isSyncing {
                 ManageBacWebView(session: session)
+                    .frame(width: 1024, height: 768)
                     .frame(width: 1, height: 1)
+                    .clipped()
                     .opacity(0.001)
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
             }
         }
         .task {
+            try? ManageBacTaskImporter.reconcileStoredAssessmentCompletion(in: modelContext)
             refreshStoredCourseMetadata()
             synchronizeIfNeeded()
         }

@@ -51,7 +51,9 @@ enum ManageBacTaskImporter {
                 course.canonicalSubject = normalized.canonicalSubject
                 course.level = normalized.level
                 course.curriculum = normalized.curriculum
-                course.teacherNames = normalizedTeacherNames(record.teacherNames)
+                if !record.teacherNames.isEmpty {
+                    course.teacherNames = normalizedTeacherNames(record.teacherNames)
+                }
                 course.externalURLString = record.detailURL
                 course.isArchived = false
                 course.needsRemoteReview = normalized.requiresReview
@@ -204,7 +206,7 @@ enum ManageBacTaskImporter {
                 if let unitIdentifier = record.unitIdentifier {
                     task.unitID = unitsByRemoteID[unitIdentifier]?.id
                 }
-                if record.remoteStatus == .completed, !task.isCompleted {
+                if task.isManageBacCompleted, !task.isCompleted {
                     task.setCompleted(true)
                     completedCount += 1
                 }
@@ -255,6 +257,20 @@ enum ManageBacTaskImporter {
             existingTasks: existingTasks,
             into: modelContext
         )
+    }
+
+    static func reconcileStoredAssessmentCompletion(in modelContext: ModelContext) throws {
+        let tasks = try modelContext.fetch(FetchDescriptor<PlanoraTask>())
+        let changed = tasks.filter { !$0.isDeleted && !$0.isCompleted && $0.isManageBacCompleted }
+        guard !changed.isEmpty else { return }
+        do {
+            for task in changed { task.setCompleted(true) }
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
+        PlanoraTaskPersistence.reconcile(tasks: tasks)
     }
 
     @discardableResult
@@ -324,9 +340,12 @@ enum ManageBacTaskImporter {
         }
         task.externalURLString = record.detailURL
         task.externalUpdatedAt = Date()
-        task.remoteStatusRawValue = record.remoteStatus.rawValue
-        if let grade = record.remoteGradeText { task.remoteGradeText = grade }
-        if let earned = record.remoteScoreEarned, let possible = record.remoteScorePossible {
+        if record.remoteStatus == .completed || task.remoteStatusRawValue != ManageBacRemoteTaskStatus.completed.rawValue {
+            task.remoteStatusRawValue = record.remoteStatus.rawValue
+        }
+        if let grade = ManageBacAssessment.grade(record.remoteGradeText) { task.remoteGradeText = grade }
+        if let earned = record.remoteScoreEarned, let possible = record.remoteScorePossible,
+           earned.isFinite, possible.isFinite, earned >= 0, possible > 0 {
             task.remoteScoreEarned = earned
             task.remoteScorePossible = possible
         }
@@ -347,14 +366,15 @@ enum ManageBacTaskImporter {
                 if result[index].unitIdentifier == nil {
                     result[index].unitIdentifier = record.unitIdentifier
                 }
-                if result[index].remoteGradeText == nil {
-                    result[index].remoteGradeText = record.remoteGradeText
+                if let grade = ManageBacAssessment.grade(record.remoteGradeText),
+                   record.sourceView == "course" || ManageBacAssessment.grade(result[index].remoteGradeText) == nil {
+                    result[index].remoteGradeText = grade
                 }
-                if result[index].remoteScoreEarned == nil {
-                    result[index].remoteScoreEarned = record.remoteScoreEarned
-                }
-                if result[index].remoteScorePossible == nil {
-                    result[index].remoteScorePossible = record.remoteScorePossible
+                if let earned = record.remoteScoreEarned, let possible = record.remoteScorePossible,
+                   earned.isFinite, possible.isFinite, earned >= 0, possible > 0,
+                   record.sourceView == "course" || result[index].remoteScoreEarned == nil {
+                    result[index].remoteScoreEarned = earned
+                    result[index].remoteScorePossible = possible
                 }
             } else {
                 indices[record.stableIdentifier] = result.count

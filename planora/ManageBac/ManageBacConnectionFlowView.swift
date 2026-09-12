@@ -271,9 +271,35 @@ struct ManageBacConnectionFlowView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
         } else if case .failed = session.phase {
-            Button(String(localized: "Try Again"), action: start)
-                .buttonStyle(.borderedProminent)
+            VStack(alignment: .leading, spacing: 12) {
+                if let title = session.failedItemTitle {
+                    Text(title).font(.headline)
+                    Text(String(localized: "Skipping keeps existing data for this item."))
+                        .foregroundStyle(.secondary)
+                }
+                HStack {
+                    Button(String(localized: "Try Again")) {
+                        if session.recoveryPhase != nil { session.retryFailedStep() }
+                        else { start() }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    if session.recoveryPhase != nil {
+                        Button(String(localized: "Skip This Item")) { session.skipFailedStep() }
+                            .buttonStyle(.bordered)
+                    }
+                }
                 .controlSize(.large)
+            }
+        }
+        if !session.skippedItems.isEmpty {
+            VStack(alignment: .leading, spacing: 6) {
+                Label(String(localized: "Skipped Items"), systemImage: "exclamationmark.triangle")
+                    .font(.headline)
+                ForEach(Array(session.skippedItems.enumerated()), id: \.offset) { _, title in
+                    Text(title)
+                }
+            }
+            .foregroundStyle(.secondary)
         }
     }
 

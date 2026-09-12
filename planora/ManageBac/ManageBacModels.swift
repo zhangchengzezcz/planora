@@ -12,6 +12,7 @@ struct ManageBacConnectionSnapshot: Codable, Equatable {
     var taskCount: Int
     var detectedCurriculumRawValue: String?
     var detectionConfidenceRawValue: String?
+    var skippedItems: [String]? = nil
 
     var isConnected: Bool { !schoolHost.isEmpty }
 
@@ -41,6 +42,22 @@ enum ManageBacConnectionStorage {
     static func clear() {
         UserDefaults.standard.removeObject(forKey: key)
         NotificationCenter.default.post(name: .manageBacConnectionDidChange, object: nil)
+    }
+}
+
+enum ManageBacAssessment {
+    static func grade(_ value: String?) -> String? {
+        guard let value = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !value.isEmpty,
+              !["n/a", "na", "—", "-", "not assessed yet", "not assessed", "pending", "ungraded",
+                "complete", "completed", "incomplete", "submitted", "not submitted", "missing", "overdue"].contains(value.lowercased()) else { return nil }
+        return value
+    }
+
+    static func hasResult(grade value: String?, earned: Double?, possible: Double?) -> Bool {
+        if grade(value) != nil { return true }
+        guard let earned, let possible else { return false }
+        return earned.isFinite && possible.isFinite && earned >= 0 && possible > 0
     }
 }
 

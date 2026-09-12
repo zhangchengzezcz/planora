@@ -186,6 +186,11 @@ final class PlanoraTask {
     }
 
     var isArchived: Bool { archivedDate != nil }
+    var isManageBacCompleted: Bool {
+        isManageBacTask && (remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue ||
+            ManageBacAssessment.hasResult(grade: remoteGradeText, earned: remoteScoreEarned, possible: remoteScorePossible))
+    }
+
     var isDeleted: Bool { deletedDate != nil }
 
     var timeline: [AcademicMilestone] {

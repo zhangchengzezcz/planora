@@ -28,7 +28,21 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         var showsOfficialLogin: Bool { self == .authenticating }
     }
 
-    var phase: Phase = .idle
+    var phase: Phase = .idle {
+        didSet {
+            #if os(macOS)
+            // Hidden WebKit views may suspend JavaScript on macOS 26. Keep
+            // scheduling active only for the bounded, in-progress scan.
+            switch phase {
+            case .authenticating, .verifying, .loadingCourses, .identifyingCurriculum,
+                 .loadingUnits, .loadingTasks, .loadingWorkspace:
+                webView.configuration.preferences.inactiveSchedulingPolicy = .none
+            default:
+                webView.configuration.preferences.inactiveSchedulingPolicy = .suspend
+            }
+            #endif
+        }
+    }
     var courses: [ManageBacCourseRecord] = []
     var units: [ManageBacUnitRecord] = []
     var records: [ManageBacTaskRecord] = []
@@ -36,6 +50,63 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     var schedule: [ManageBacScheduleRecord] = []
     var programmeText: String?
     var completedStepCount = 0
+    private(set) var recoveryPhase: Phase?
+    private(set) var skippedItems: [String] = []
+    private var currentCourseIndex = 0
+
+    var failedItemTitle: String? {
+        switch recoveryPhase {
+        case .loadingUnits:
+            return courses.indices.contains(currentCourseIndex) ? courses[currentCourseIndex].name : nil
+        case .loadingTasks:
+            let index = currentTaskViewIndex - taskViews.count
+            return courses.indices.contains(index) ? courses[index].name : taskViews[currentTaskViewIndex]
+        case .loadingWorkspace:
+            return currentWorkspacePathIndex == 0 ? String(localized: "Messages") : String(localized: "Timetable")
+        default: return nil
+        }
+    }
+
+    func retryFailedStep() {
+        guard let resume = recoveryPhase else { return }
+        recoveryPhase = nil
+        phase = resume
+        switch resume {
+        case .loadingUnits:
+            pageCheckTask = Task { await continueCourseDetails() }
+        case .loadingTasks: loadStudentPath(taskPaths[currentTaskViewIndex])
+        case .loadingWorkspace: loadStudentPath(workspacePaths[currentWorkspacePathIndex])
+        default: break
+        }
+    }
+
+    func skipFailedStep() {
+        guard let resume = recoveryPhase else { return }
+        if let title = failedItemTitle { skippedItems.append(title) }
+        recoveryPhase = nil
+        phase = resume
+        switch resume {
+        case .loadingUnits:
+            currentCourseIndex += 1
+            pageCheckTask = Task { await continueCourseDetails() }
+        case .loadingTasks: advanceTaskPage()
+        case .loadingWorkspace: advancePastWorkspacePage()
+        default: break
+        }
+    }
+
+    private func pause(_ error: ManageBacConnectionError) {
+        let interruptedPhase = phase
+        pageLoadGeneration += 1
+        cancelPageCheck()
+        pageLoadWatchdogTask?.cancel()
+        webView.stopLoading()
+        switch interruptedPhase {
+        case .loadingUnits, .loadingTasks, .loadingWorkspace: recoveryPhase = interruptedPhase
+        default: recoveryPhase = nil
+        }
+        phase = .failed(error)
+    }
 
     @ObservationIgnored var onSnapshotReady: ((ManageBacSyncSnapshot) throws -> ManageBacImportSummary)?
     @ObservationIgnored private(set) lazy var webView: WKWebView = makeWebView()
@@ -79,6 +150,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     func cancel() {
+        recoveryPhase = nil
         pageLoadGeneration += 1
         cancelPageCheck()
         authenticationProbeTask?.cancel()
@@ -88,6 +160,9 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     func teardown() {
+        #if os(macOS)
+        webView.configuration.preferences.inactiveSchedulingPolicy = .suspend
+        #endif
         pageLoadGeneration += 1
         cancelPageCheck()
         authenticationProbeTask?.cancel()
@@ -132,6 +207,14 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         handleNavigationFailure(error)
+    }
+
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        switch phase {
+        case .loadingCourses, .loadingUnits, .loadingTasks, .loadingWorkspace, .verifying:
+            pause(.invalidResponse)
+        default: break
+        }
     }
 
     func webView(
@@ -205,6 +288,9 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         currentTaskViewIndex = 0
         currentWorkspacePathIndex = 0
         completedStepCount = 0
+        recoveryPhase = nil
+        skippedItems = []
+        currentCourseIndex = 0
         isHandlingPage = false
         needsAnotherPageCheck = false
         authenticationProbeTask?.cancel()
@@ -299,12 +385,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 phase = .identifyingCurriculum
                 completedStepCount = 3
                 phase = .loadingUnits
-                await readCourseDetails()
-                guard generation == pageLoadGeneration else { return }
-                completedStepCount = 4
-                currentTaskViewIndex = 0
-                phase = .loadingTasks
-                loadStudentPath(taskPaths[0])
+                await continueCourseDetails()
             } catch {
                 guard generation == pageLoadGeneration else { return }
                 phase = .failed(.pageStructureChanged)
@@ -322,22 +403,14 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 )
                 guard generation == pageLoadGeneration else { return }
                 guard payload.pageRecognized else {
-                    phase = .failed(.pageStructureChanged)
+                    pause(.pageStructureChanged)
                     return
                 }
                 records.append(contentsOf: payload.records)
-                currentTaskViewIndex += 1
-                if currentTaskViewIndex < taskPaths.count {
-                    loadStudentPath(taskPaths[currentTaskViewIndex])
-                } else {
-                    completedStepCount = 5
-                    currentWorkspacePathIndex = 0
-                    phase = .loadingWorkspace
-                    loadStudentPath(workspacePaths[0])
-                }
+                advanceTaskPage()
             } catch {
                 guard generation == pageLoadGeneration else { return }
-                phase = .failed(.pageStructureChanged)
+                pause(.pageStructureChanged)
             }
         case .loadingWorkspace:
             do {
@@ -361,52 +434,60 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 }
             } catch {
                 guard generation == pageLoadGeneration else { return }
-                if workspacePaths[currentWorkspacePathIndex] == "/student/notifications" {
-                    phase = .failed(.pageStructureChanged)
-                } else {
-                    advancePastWorkspacePage()
-                }
+                pause(.pageStructureChanged)
             }
         default:
             break
         }
     }
 
-    private func readCourseDetails() async {
-        let generation = pageLoadGeneration
-        let requests = courses.compactMap { course -> [String: String]? in
-            guard let detailURL = course.detailURL, !detailURL.isEmpty else { return nil }
-            return [
-                "courseIdentifier": course.remoteIdentifier,
-                "detailURL": detailURL
-            ]
+    private func advanceTaskPage() {
+        currentTaskViewIndex += 1
+        if currentTaskViewIndex < taskPaths.count {
+            loadStudentPath(taskPaths[currentTaskViewIndex])
+        } else {
+            completedStepCount = 5
+            currentWorkspacePathIndex = 0
+            phase = .loadingWorkspace
+            loadStudentPath(workspacePaths[0])
         }
-        guard !requests.isEmpty else { return }
+    }
 
-        do {
-            let payloads: [CourseDetailPayload] = try await decodeJavaScript(
-                Self.courseDetailsScript,
-                arguments: ["courseRequests": requests]
-            )
-            guard generation == pageLoadGeneration else { return }
-            let detailsByCourse = Dictionary(
-                payloads.map { ($0.courseIdentifier, $0) },
-                uniquingKeysWith: { first, _ in first }
-            )
-            for index in courses.indices {
-                guard let detail = detailsByCourse[courses[index].remoteIdentifier] else { continue }
-                courses[index].teacherNames = Array(
-                    Set(courses[index].teacherNames + detail.teacherNames)
-                ).sorted()
-                if courses[index].programmeText == nil {
-                    courses[index].programmeText = detail.programmeText
+    private func continueCourseDetails() async {
+        let generation = pageLoadGeneration
+        while currentCourseIndex < courses.count {
+            let course = courses[currentCourseIndex]
+            guard let detailURL = course.detailURL, !detailURL.isEmpty else {
+                currentCourseIndex += 1
+                continue
+            }
+            do {
+                let payloads: [CourseDetailPayload] = try await decodeJavaScript(
+                    Self.courseDetailsScript,
+                    arguments: ["courseRequests": [["courseIdentifier": course.remoteIdentifier, "detailURL": detailURL]]]
+                )
+                guard generation == pageLoadGeneration, !Task.isCancelled else { return }
+                guard let detail = payloads.first(where: { $0.courseIdentifier == course.remoteIdentifier }) else {
+                    pause(.invalidResponse)
+                    return
+                }
+                courses[currentCourseIndex].teacherNames = Array(Set(course.teacherNames + detail.teacherNames)).sorted()
+                if course.programmeText == nil {
+                    courses[currentCourseIndex].programmeText = detail.programmeText
                 }
                 units.append(contentsOf: detail.units)
+            } catch {
+                guard generation == pageLoadGeneration else { return }
+                pause(.pageStructureChanged)
+                return
             }
-        } catch {
-            // Teacher and unit metadata is optional. A ManageBac layout update
-            // must never block task and deadline synchronization.
+            currentCourseIndex += 1
         }
+        guard generation == pageLoadGeneration, !Task.isCancelled else { return }
+        completedStepCount = 4
+        currentTaskViewIndex = 0
+        phase = .loadingTasks
+        loadStudentPath(taskPaths[0])
     }
 
     private var encodedCourseArguments: [[String: Any]] {
@@ -462,7 +543,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                     courseCount: summary.courseCount,
                     taskCount: records.count,
                     detectedCurriculumRawValue: detection.curriculum?.rawValue,
-                    detectionConfidenceRawValue: detection.confidence.rawValue
+                    detectionConfidenceRawValue: detection.confidence.rawValue,
+                    skippedItems: skippedItems
                 )
             )
             phase = .completed(summary)
@@ -497,20 +579,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     private func handlePageLoadTimeout() {
         pageLoadWatchdogTask = nil
-        webView.stopLoading()
-        switch phase {
-        case .loadingWorkspace:
-            if workspacePaths[currentWorkspacePathIndex] == "/student/notifications" {
-                phase = .failed(.invalidResponse)
-            } else {
-                advancePastWorkspacePage()
-            }
-        case .loadingTasks:
-            // A missing task page is not an empty page. Keep the existing store intact.
-            phase = .failed(.invalidResponse)
-        default:
-            phase = .failed(.invalidResponse)
-        }
+        pause(.invalidResponse)
     }
 
     private func isAuthenticatedStudentPage() async -> Bool {
@@ -534,6 +603,17 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         _ script: String,
         arguments: [String: Any] = [:]
     ) async throws -> T {
+        let generation = pageLoadGeneration
+        pageLoadWatchdogTask?.cancel()
+        pageLoadWatchdogTask = Task { [weak self] in
+            do { try await Task.sleep(for: .seconds(script == Self.notificationHistoryScript ? 135 : 30)) }
+            catch { return }
+            guard let self, self.pageLoadGeneration == generation else { return }
+            self.handlePageLoadTimeout()
+        }
+        defer {
+            if generation == pageLoadGeneration { pageLoadWatchdogTask?.cancel() }
+        }
         let result = try await webView.callAsyncJavaScript(
             script,
             arguments: arguments,
@@ -557,7 +637,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     private func handleNavigationFailure(_ error: Error) {
         guard (error as NSError).code != NSURLErrorCancelled else { return }
-        phase = .failed(.invalidResponse)
+        pause(.invalidResponse)
     }
 
     private struct CourseScanPayload: Codable {
@@ -667,6 +747,9 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     const readPage = (html, pageURL, courseID) => {
       const doc = new DOMParser().parseFromString(html, 'text/html');
+      if (doc.querySelector('input[type="password"]') || !new URL(pageURL).pathname.startsWith('/student/')) {
+        throw new Error('Course session expired');
+      }
       const teacherSelectors = [
         '[class*=teacher]', '[data-role=teacher]', '[data-testid*=teacher]',
         '[aria-label*=teacher]', 'a[href*="/users/"]', 'a[href*="/teachers/"]'
@@ -764,6 +847,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         for (const result of extraResults) {
           if (result.status === 'fulfilled') {
             pages.push(readPage(result.value.html, result.value.url, courseIdentifier));
+          } else {
+            throw new Error('Course unit page could not be read');
           }
         }
         const teacherNames = [...new Set(pages.flatMap(page => page.teacherNames))];
@@ -777,8 +862,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
           teacherNames,
           units: [...unitMap.values()]
         };
-      } catch (_) {
-        return empty;
+      } catch (error) {
+        throw error;
       }
     };
 
@@ -793,6 +878,17 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     const main = document.querySelector('main, #main-content');
     if (!main || document.querySelector('input[type="password"]')) {
       return JSON.stringify({ records: [], pageRecognized: false });
+    }
+    // didFinish can precede responsive result rendering on older WebKit.
+    let previousResults = '';
+    let stableResults = 0;
+    for (let attempt = 0; attempt < 10; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 250));
+      const currentResults = Array.from(main.querySelectorAll('.task-score,.f-task-score'))
+        .map(node => normalize(node.textContent)).join('|');
+      stableResults = currentResults === previousResults ? stableResults + 1 : 0;
+      previousResults = currentResults;
+      if (stableResults >= 3) break;
     }
     const taskPath = /\/student\/classes\/([^/?#]+)\/core_tasks\/([^/?#]+)/i;
     const candidates = [];

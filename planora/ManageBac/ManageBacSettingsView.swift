@@ -41,6 +41,9 @@ struct ManageBacSettingsView: View {
                     )
                     LabeledContent(String(localized: "Courses"), value: "\(snapshot.courseCount)")
                     LabeledContent(String(localized: "Tasks Read"), value: "\(snapshot.taskCount)")
+                    if let skipped = snapshot.skippedItems, !skipped.isEmpty {
+                        LabeledContent(String(localized: "Skipped Items"), value: skipped.joined(separator: ", "))
+                    }
                 }
             }
         }
@@ -205,6 +208,11 @@ struct ManageBacSettingsView: View {
 
     private func syncDetails(_ snapshot: ManageBacConnectionSnapshot) -> some View {
         DashboardSection(title: String(localized: "Last Sync")) {
+            if let skipped = snapshot.skippedItems, !skipped.isEmpty {
+                Label(String(localized: "Skipped Items") + ": " + skipped.joined(separator: ", "), systemImage: "exclamationmark.triangle")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
             VStack(spacing: 0) {
                 SettingsRow(
                     icon: "clock.arrow.circlepath",

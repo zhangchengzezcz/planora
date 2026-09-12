@@ -90,7 +90,7 @@ struct MacTaskWorkspaceView: View {
                     .width(min: 110, ideal: 150)
 
                     TableColumn("ManageBac · " + String(localized: "Status")) { task in
-                        if task.remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue {
+                        if task.isManageBacCompleted {
                             Label(String(localized: "Completed"), systemImage: "checkmark.seal")
                                 .foregroundStyle(Color.planoraDeepGreen)
                         } else {

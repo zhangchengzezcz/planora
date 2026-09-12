@@ -10082,6 +10082,27 @@
         "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无 ManageBac 成绩" } }
       }
     },
+    "Skip This Item" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Skip This Item" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "この項目をスキップ" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "跳过此项" } }
+      }
+    },
+    "Skipped Items" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Skipped Items" } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "スキップした項目" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已跳过的项目" } }
+      }
+    },
+    "Skipping keeps existing data for this item." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Skipping keeps existing data for this item." } },
+        "ja" : { "stringUnit" : { "state" : "translated", "value" : "スキップしても、この項目の既存データは保持されます。" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "跳过后保留此项的已有数据，继续读取其他项目。" } }
+      }
+    },
     "Score" : {
       "localizations" : {
         "en" : {

@@ -169,7 +169,7 @@ struct TaskDetailView: View {
                     tint: .planoraAmber
                 )
                 if task.isManageBacTask {
-                    if task.remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue {
+                    if task.isManageBacCompleted {
                         Divider().padding(.leading, 50)
                         DetailRow(icon: "checkmark.seal", title: "ManageBac",
                                   value: String(localized: "Completed"), tint: .planoraGreen)

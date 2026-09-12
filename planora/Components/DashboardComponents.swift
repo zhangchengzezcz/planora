@@ -10,7 +10,7 @@ struct ManageBacTaskResultLabel: View {
                     Label(result, systemImage: "chart.bar.doc.horizontal")
                         .accessibilityLabel(String(localized: "ManageBac Result") + ": " + result)
                 }
-                if task.remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue {
+                if task.isManageBacCompleted {
                     Label("ManageBac · " + String(localized: "Completed"), systemImage: "checkmark.seal")
                 }
             }
@@ -26,7 +26,7 @@ struct ManageBacTaskResultPanel: View {
 
     var body: some View {
         if task.isManageBacTask,
-           task.manageBacAssessmentSummary != nil || task.remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue {
+           task.manageBacAssessmentSummary != nil || task.isManageBacCompleted {
             VStack(alignment: .leading, spacing: 12) {
                 Text(String(localized: "ManageBac Result"))
                     .font(.headline)
