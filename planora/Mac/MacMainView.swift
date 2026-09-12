@@ -25,13 +25,13 @@ struct MacMainView: View {
                 searchText: $searchText
             )
                 .toolbar(removing: .sidebarToggle)
-                .toolbar { navigationControls }
                 .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
         } detail: {
             destinationView
                 .navigationTitle((selection ?? .home).title)
         }
         .navigationSplitViewStyle(.balanced)
+        .toolbar(removing: .sidebarToggle)
         .onChange(of: searchText) { _, value in
             if !value.isEmpty {
                 selectedTaskID = nil
@@ -39,9 +39,6 @@ struct MacMainView: View {
             }
         }
         .toolbar {
-            if columnVisibility == .detailOnly {
-                navigationControls
-            }
             ToolbarItemGroup(placement: .primaryAction) {
                 Button {
                     selection = .messages
@@ -92,31 +89,16 @@ struct MacMainView: View {
             if tab == .tasks { selection = .tasks }
         }
         .background { ManageBacAutomaticSyncHost(store: store) }
-    }
-
-    @ToolbarContentBuilder
-    private var navigationControls: some ToolbarContent {
-            ToolbarItem(placement: .navigation) {
-                ControlGroup {
-                    Button {
-                        withAnimation(.snappy) {
-                            columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
-                        }
-                    } label: {
-                        Image(systemName: "sidebar.leading")
+        .background {
+            MacWindowNavigationControls(
+                toggleSidebar: {
+                    withAnimation(.snappy) {
+                        columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
                     }
-                    .help(String(localized: "Toggle Sidebar"))
-
-                    Button {
-                        isShowingCreateFlow = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .help(String(localized: "New Task"))
-                }
-                .controlGroupStyle(.navigation)
-            }
-            ToolbarSpacer(.fixed, placement: .navigation)
+                },
+                createTask: { isShowingCreateFlow = true }
+            )
+        }
     }
 
     @ViewBuilder
