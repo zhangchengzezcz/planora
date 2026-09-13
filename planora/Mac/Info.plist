@@ -39,5 +39,19 @@
 	<string>Copyright © 2026 Planora</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/zhangchengzezcz/planora/main/updates/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>GJXXJo7pMwydoeh34wHIgXr/G1F1CdWkQNuvH45nlSM=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUAutomaticallyUpdate</key>
+	<false/>
+	<key>SUSendProfileInfo</key>
+	<false/>
+	<key>SUVerifyUpdateBeforeExtraction</key>
+	<true/>
+	<key>SURequireSignedFeed</key>
+	<true/>
 </dict>
 </plist>

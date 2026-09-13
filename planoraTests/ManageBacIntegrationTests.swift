@@ -258,7 +258,7 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(Calendar.current.component(.day, from: deadline), 8)
     }
 
-    func testClassTasksReadScoresAndExplicitCompletionWithoutUsingSectionHeading() async throws {
+    func testClassTasksReadCompletedSectionIndependentlyOfAssessment() async throws {
         let html = #"""
         <html><body><main><h1>Chemistry</h1><h2>All Tasks</h2><h3>Completed</h3>
         <div class="fusion-card-item short-assignment section hstack flex-wrap">
@@ -272,6 +272,9 @@ final class ManageBacIntegrationTests: XCTestCase {
         </div>
         <div class="short-assignment"><a href="/student/classes/42/core_tasks/3">Complete the exercises</a>
           <div class="assessment task-score"><span class="not-assessed">Not Assessed Yet</span></div>
+        </div><h3>Upcoming</h3>
+        <div class="short-assignment"><a href="/student/classes/42/core_tasks/4">Next task</a>
+          <div class="task-score">Not Assessed Yet</div>
         </div></main></body></html>
         """#
         let webView = try await loadedWebView(html: html, url: "https://school.managebac.cn/student/classes/42/core_tasks")
@@ -280,16 +283,17 @@ final class ManageBacIntegrationTests: XCTestCase {
         let payload = try JSONDecoder().decode(ManageBacScanPayload.self,
             from: Data(try XCTUnwrap(raw as? String).utf8))
         XCTAssertTrue(payload.pageRecognized)
-        XCTAssertEqual(payload.records.count, 3)
+        XCTAssertEqual(payload.records.count, 4)
         XCTAssertEqual(payload.records[0].remoteGradeText, "7")
         XCTAssertEqual(payload.records[0].remoteScoreEarned, 3)
         XCTAssertEqual(payload.records[0].remoteScorePossible, 3)
         XCTAssertNotNil(payload.records[0].deadline)
-        XCTAssertEqual(payload.records[0].remoteStatus, .unknown)
+        XCTAssertEqual(payload.records[0].remoteStatus, .completed)
         XCTAssertEqual(payload.records[1].remoteStatus, .completed)
         XCTAssertNil(payload.records[1].remoteScoreEarned)
-        XCTAssertEqual(payload.records[2].remoteStatus, .unknown)
+        XCTAssertEqual(payload.records[2].remoteStatus, .completed)
         XCTAssertNil(payload.records[2].remoteGradeText)
+        XCTAssertEqual(payload.records[3].remoteStatus, .unknown)
     }
 
     func testResponsiveResultCopiesAndNestedCompletion() async throws {

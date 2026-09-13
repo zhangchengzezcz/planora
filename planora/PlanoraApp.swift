@@ -11,6 +11,8 @@ struct PlanoraApp: App {
     @State private var store = PlanoraStore()
 
 #if os(macOS)
+    @StateObject private var softwareUpdater = MacSoftwareUpdater.shared
+
     var body: some Scene {
         WindowGroup {
             ContentView(store: store)
@@ -19,6 +21,12 @@ struct PlanoraApp: App {
         .defaultSize(width: 1180, height: 760)
         .commands {
             ToolbarCommands()
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") {
+                    softwareUpdater.checkForUpdates()
+                }
+                .disabled(!softwareUpdater.canCheckForUpdates)
+            }
             CommandGroup(replacing: .newItem) {
                 Button(String(localized: "New Task")) {
                     NotificationCenter.default.post(name: .planoraCreateTask, object: nil)

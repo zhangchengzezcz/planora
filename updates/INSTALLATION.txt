@@ -1,0 +1,25 @@
+Planora for Mac / 安装说明
+
+1. 将 planora 拖入 Applications，然后从「应用程序」打开。
+2. 首次安装含更新器的版本后，可在 Planora 菜单或设置中检查更新。
+3. 已有 1.7.1 及更早版本不含更新器，需要手动安装此次版本一次。
+
+此版本未经过 Apple Developer ID 公证。Sparkle 更新签名不是 Apple 公证。
+请只使用本项目官方 GitHub Release，并核对 SHA256SUMS 中的校验值。
+如果 macOS 阻止打开，优先使用「系统设置 > 隐私与安全性」中的「仍要打开」。
+不要关闭 Gatekeeper，也不要对未知来源的程序使用下面的命令。
+
+仅在确认下载来源和校验值、并理解隔离属性用途后，可手动在终端执行：
+
+/usr/bin/xattr -dr com.apple.quarantine "/Applications/planora.app"
+
+这条命令只移除指定 Planora 应用的下载隔离属性，不修复损坏或签名错误。
+本安装包不会自动执行它，不需要 sudo，也不会更改系统全局安全策略。
+
+English
+Drag planora to Applications, then open it there. Older builds without the
+updater need this first manual installation. This build is not notarized by
+Apple. Verify the official release and SHA256SUMS first. Prefer the Open Anyway
+option in System Settings > Privacy & Security when appropriate.
+The optional xattr command above removes quarantine only from Planora. It does
+not repair corrupted files or invalid signatures. Never disable Gatekeeper.

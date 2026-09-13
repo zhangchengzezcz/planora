@@ -433,6 +433,15 @@ private struct SettingsHomeView: View {
 
                 DashboardSection(title: String(localized: "Preferences")) {
                     VStack(spacing: 0) {
+#if os(macOS)
+                        NavigationLink {
+                            MacSoftwareUpdateSettings()
+                        } label: {
+                            SettingsRow(icon: "arrow.triangle.2.circlepath", title: String(localized: "Software Update"), value: "", showsChevron: true)
+                        }
+                        .buttonStyle(.plain)
+                        Divider().padding(.leading, 52)
+#endif
                         NavigationLink {
                             AppearanceSettingsView(store: store)
                         } label: {

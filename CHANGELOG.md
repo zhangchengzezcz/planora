@@ -1,5 +1,16 @@
 # Changelog / 更新说明
 
+## 1.7.2 - 2026-09-13
+
+- Mac 软件更新：签名清单与归档、手动及自动检查、可选自动下载；iPhone 不包含更新框架。
+- 首页增加可切周的日历预览，保留月历；精简重点/即将到来及成绩区域。
+- 修复 ManageBac Completed 分组中未评分任务的完成状态。
+- 新增 DMG 安装示意背景、中英文安装说明及签名发布脚本。
+- 首个含更新器的版本需要手动安装；本版未经 Apple Developer ID 公证。
+- Mac updater with signed feeds and archives; independent iPhone builds; weekly calendar and completion fixes.
+
+完整说明见 [1.7.2](updates/1.7.2.md)。
+
 ## 1.7.1 - 2026-09-12
 
 ### 中文

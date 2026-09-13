@@ -1,7 +1,123 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+"Software Update" : {
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Software Update"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "软件更新"
+      }
+    },
+    "ja": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "ソフトウェアアップデート"
+      }
+    }
+  }
+},
+"Check for Updates…" : {
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Check for Updates…"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "检查更新…"
+      }
+    },
+    "ja": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "アップデートを確認…"
+      }
+    }
+  }
+},
+"Last Checked" : {
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Last Checked"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "上次检查"
+      }
+    },
+    "ja": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "前回の確認"
+      }
+    }
+  }
+},
+"Automatically Check for Updates" : {
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Automatically Check for Updates"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "自动检查更新"
+      }
+    },
+    "ja": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "アップデートを自動確認"
+      }
+    }
+  }
+},
+"Download Updates Automatically" : {
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Download Updates Automatically"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "自动下载更新"
+      }
+    },
+    "ja": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "アップデートを自動ダウンロード"
+      }
+    }
+  }
+},
     "" : {
+
+    },
+    "–" : {
+
+    },
+    "—" : {
 
     },
     "%@ · %@" : {
@@ -6063,6 +6179,28 @@
         }
       }
     },
+    "ManageBac Grade" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grade"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "評定"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等级"
+          }
+        }
+      }
+    },
     "ManageBac progress" : {
       "localizations" : {
         "en" : {
@@ -6635,6 +6773,28 @@
         }
       }
     },
+    "Month" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Month"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月"
+          }
+        }
+      }
+    },
     "Monthly" : {
       "localizations" : {
         "en" : {
@@ -6965,6 +7125,28 @@
         }
       }
     },
+    "Next Week" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next Week"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次の週"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一周"
+          }
+        }
+      }
+    },
     "No assessments yet" : {
       "localizations" : {
         "en" : {
@@ -7071,6 +7253,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "暂无导入课程"
+          }
+        }
+      }
+    },
+    "No ManageBac results yet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No ManageBac results yet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ManageBac の成績はまだありません"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无 ManageBac 成绩"
           }
         }
       }
@@ -8769,6 +8973,28 @@
         }
       }
     },
+    "Previous Week" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous Week"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前の週"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上一周"
+          }
+        }
+      }
+    },
     "Priority" : {
       "localizations" : {
         "en" : {
@@ -9827,6 +10053,7 @@
       }
     },
     "Review seven days" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10066,41 +10293,6 @@
             "value" : "学校"
           }
         }
-      }
-    },
-    "ManageBac Grade" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Grade" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "評定" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "等级" } }
-      }
-    },
-    "No ManageBac results yet" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "No ManageBac results yet" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ManageBac の成績はまだありません" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无 ManageBac 成绩" } }
-      }
-    },
-    "Skip This Item" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Skip This Item" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "この項目をスキップ" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "跳过此项" } }
-      }
-    },
-    "Skipped Items" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Skipped Items" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "スキップした項目" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "已跳过的项目" } }
-      }
-    },
-    "Skipping keeps existing data for this item." : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Skipping keeps existing data for this item." } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "スキップしても、この項目の既存データは保持されます。" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "跳过后保留此项的已有数据，继续读取其他项目。" } }
       }
     },
     "Score" : {
@@ -10478,6 +10670,28 @@
         }
       }
     },
+    "Show Less" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Less"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "折りたたむ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收起"
+          }
+        }
+      }
+    },
     "Show Progress Percentage" : {
       "localizations" : {
         "en" : {
@@ -10584,6 +10798,72 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "跳过重复任务"
+          }
+        }
+      }
+    },
+    "Skip This Item" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip This Item"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この項目をスキップ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳过此项"
+          }
+        }
+      }
+    },
+    "Skipped Items" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skipped Items"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキップした項目"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已跳过的项目"
+          }
+        }
+      }
+    },
+    "Skipping keeps existing data for this item." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skipping keeps existing data for this item."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキップしても、この項目の既存データは保持されます。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳过后保留此项的已有数据，继续读取其他项目。"
           }
         }
       }
@@ -13079,6 +13359,28 @@
         }
       }
     },
+    "View All" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View All"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべて表示"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看全部"
+          }
+        }
+      }
+    },
     "Visible Content" : {
       "localizations" : {
         "en" : {
@@ -13119,6 +13421,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "薄弱环节"
+          }
+        }
+      }
+    },
+    "Week" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Week"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "週"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "周"
           }
         }
       }
@@ -13257,6 +13581,7 @@
       }
     },
     "Work today's plan" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		519684FA304EDECB00D5A704 /* Planora Full.icon in Resources */ = {isa = PBXBuildFile; fileRef = 519684F9304EDECB00D5A704 /* Planora Full.icon */; };
+		E10000000000000000000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; fileRef = E10000000000000000000002 /* Sparkle.framework */; platformFilters = (macos, ); };
+		E10000000000000000000004 /* Sparkle in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E10000000000000000000002 /* Sparkle.framework */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -21,10 +23,23 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E10000000000000000000002 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Vendor/Sparkle/Sparkle.framework; sourceTree = SOURCE_ROOT; };
 		000000000000000000000120 /* planora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = planora.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		519684F9304EDECB00D5A704 /* Planora Full.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Planora Full.icon"; sourceTree = "<group>"; };
 		D00000000000000000000001 /* planoraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = planoraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E10000000000000000000005 /* Embed Mac Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (E10000000000000000000004 /* Sparkle in Embed Frameworks */, );
+			name = "Embed Mac Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		51CCC46730401F7700D004E9 /* Exceptions for "planora" folder in "planora" target */ = {
@@ -58,6 +73,7 @@
 		000000000000000130000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				E10000000000000000000001 /* Sparkle in Frameworks */,
 			);
 		};
 		D00000000000000000000003 /* Frameworks */ = {
@@ -71,6 +87,7 @@
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+				E10000000000000000000002 /* Sparkle.framework */,
 				519684F9304EDECB00D5A704 /* Planora Full.icon */,
 				51CCC42930401F7600D004E9 /* planora */,
 				51CCC46D3040210100D004E9 /* planoraTests */,
@@ -97,6 +114,7 @@
 				000000000000000120000000 /* Sources */,
 				000000000000000130000000 /* Frameworks */,
 				000000000000000140000000 /* Resources */,
+				E10000000000000000000005 /* Embed Mac Frameworks */,
 			);
 			buildRules = (
 			);
@@ -336,7 +354,7 @@
 				AUTOMATION_APPLE_EVENTS = NO;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = TK2NMDS7ZC;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -362,8 +380,10 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				"FRAMEWORK_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) $(PROJECT_DIR)/Vendor/Sparkle";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.7.1;
+				MARKETING_VERSION = 1.7.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
@@ -399,7 +419,7 @@
 				AUTOMATION_APPLE_EVENTS = NO;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = TK2NMDS7ZC;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -425,8 +445,10 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				"FRAMEWORK_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) $(PROJECT_DIR)/Vendor/Sparkle";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.7.1;
+				MARKETING_VERSION = 1.7.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
@@ -540,6 +562,7 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
 	};
 	rootObject = 000000000000000000000000 /* Project object */;
 }

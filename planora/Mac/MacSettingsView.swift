@@ -163,6 +163,10 @@ struct MacSettingsView: View {
                 .formStyle(.grouped)
                 .padding()
             }
+            Tab(String(localized: "Software Update"), systemImage: "arrow.triangle.2.circlepath") {
+                MacSoftwareUpdateSettings()
+                    .padding()
+            }
         }
         .padding(.top, 8)
         .frame(minWidth: 620, minHeight: 480)

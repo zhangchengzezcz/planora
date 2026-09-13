@@ -3,6 +3,7 @@ import SwiftUI
 
 struct PlanningDestinationStrip: View {
     let store: PlanoraStore
+    var tasks: [PlanoraTask] = []
 
     var body: some View {
         HStack(spacing: 12) {
@@ -11,7 +12,7 @@ struct PlanningDestinationStrip: View {
             } label: {
                 PlanningDestinationLabel(
                     title: String(localized: "Today"),
-                    subtitle: String(localized: "Work today's plan"),
+                    subtitle: summary(isToday: true),
                     symbol: "sun.max.fill",
                     tint: .planoraAmber
                 )
@@ -22,13 +23,31 @@ struct PlanningDestinationStrip: View {
             } label: {
                 PlanningDestinationLabel(
                     title: String(localized: "This Week"),
-                    subtitle: String(localized: "Review seven days"),
+                    subtitle: summary(isToday: false),
                     symbol: "calendar.badge.clock",
                     tint: .planoraBlue
                 )
             }
         }
         .buttonStyle(.plain)
+    }
+
+    private func summary(isToday: Bool) -> String {
+        let calendar = Calendar.current
+        let now = Date()
+        let matching: [PlanoraTask]
+        if isToday {
+            let snapshot = TodayPlanningSnapshot(tasks: tasks, now: now, calendar: calendar)
+            matching = snapshot.dueToday + snapshot.plannedToday
+        } else {
+            let snapshot = WeekPlanningSnapshot(tasks: tasks, now: now, calendar: calendar)
+            matching = snapshot.days.flatMap { snapshot.tasks(on: $0) }
+        }
+        let count = PlanoraLocalization.format(String(localized: "task_count_short_format"), matching.count)
+        guard let deadline = matching.compactMap({ $0.hasDeadline ? $0.deadline : nil }).min() else { return count }
+        let date = isToday ? deadline.formatted(date: .omitted, time: .shortened)
+            : deadline.formatted(.dateTime.weekday(.abbreviated).hour().minute())
+        return "\(count) · \(date)"
     }
 }
 
@@ -54,7 +73,7 @@ private struct PlanningDestinationLabel: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
-            .frame(maxWidth: .infinity, minHeight: 90, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
         }
     }
 }

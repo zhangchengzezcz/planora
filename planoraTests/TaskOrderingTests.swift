@@ -6,6 +6,57 @@ import XCTest
 
 @MainActor
 final class TaskOrderingTests: XCTestCase {
+    func testHomeWeekCalendarStartsMondayAcrossYearBoundary() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Shanghai"))
+        let sunday = try XCTUnwrap(calendar.date(from: DateComponents(year: 2027, month: 1, day: 3)))
+        let days = HomeWeekCalendarSchedule.days(containing: sunday, calendar: calendar)
+        XCTAssertEqual(days.count, 7)
+        XCTAssertEqual(calendar.component(.weekday, from: days[0]), 2)
+        XCTAssertEqual(calendar.component(.year, from: days[0]), 2026)
+        XCTAssertEqual(calendar.component(.day, from: days[0]), 28)
+        XCTAssertEqual(days.last, sunday)
+    }
+
+    func testHomeWeekCalendarUsesCalendarDaysAcrossDST() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "America/New_York"))
+        let date = try XCTUnwrap(calendar.date(from: DateComponents(year: 2026, month: 3, day: 8)))
+        let nextWeek = try XCTUnwrap(calendar.date(byAdding: .weekOfYear, value: 1, to: date))
+        let days = HomeWeekCalendarSchedule.days(containing: nextWeek, calendar: calendar)
+        XCTAssertEqual(days.map { calendar.component(.day, from: $0) }, Array(9...15))
+        XCTAssertTrue(days.allSatisfy { calendar.component(.hour, from: $0) == 0 })
+    }
+
+    func testHomeWeekCalendarKeepsDeadlineAndCompletedTasksInTimeOrder() throws {
+        let early = makeTask(title: "Early", priority: .low, deadlineOffset: 0, createdOffset: 1, completed: true)
+        let later = makeTask(title: "Later", priority: .high, deadlineOffset: 0, createdOffset: 2)
+        let calendar = Calendar.current
+        let day = calendar.startOfDay(for: try XCTUnwrap(early.deadline))
+        early.deadline = try XCTUnwrap(calendar.date(byAdding: .hour, value: 8, to: day))
+        later.deadline = try XCTUnwrap(calendar.date(byAdding: .hour, value: 16, to: day))
+        early.setPlannedDate(calendar.date(byAdding: .day, value: -3, to: day))
+        XCTAssertEqual(HomeWeekCalendarSchedule.date(for: early), early.deadline)
+        XCTAssertEqual(HomeWeekCalendarSchedule.tasks([later, early], on: day, calendar: calendar).map(\.title), ["Early", "Later"])
+        later.archivedDate = Date()
+        XCTAssertEqual(HomeWeekCalendarSchedule.tasks([later, early], on: day, calendar: calendar).map(\.title), ["Early"])
+    }
+
+    func testHomeWeekCalendarRendersInChineseAndEnglishOnCompactScreens() throws {
+        let task = makeTask(title: "Review forces and motion", priority: .medium, deadlineOffset: 0, createdOffset: 1)
+        let date = try XCTUnwrap(task.deadline)
+        for language in ["zh-Hans", "en"] {
+            let rootView = NavigationStack {
+                ScrollView {
+                    HomeWeekCalendar(store: .previewDashboard, tasks: [task], selectedDate: .constant(date))
+                        .padding(18)
+                }
+            }
+            .environment(\.locale, Locale(identifier: language))
+            XCTAssertLessThan(try render(rootView, width: 320, attachmentName: "Weekly calendar \(language)"), 3)
+        }
+    }
+
     func testListSmartOrderKeepsOpenTasksFirstThenPriorityDeadlineAndNewestFallback() {
         let highLater = makeTask(title: "High Later", priority: .high, deadlineOffset: 3, createdOffset: 1)
         let highSooner = makeTask(title: "High Sooner", priority: .high, deadlineOffset: 1, createdOffset: 2)
@@ -248,9 +299,9 @@ final class TaskOrderingTests: XCTestCase {
         return container
     }
 
-    private func render<Content: View>(_ rootView: Content) throws -> TimeInterval {
+    private func render<Content: View>(_ rootView: Content, width: CGFloat = 393, attachmentName: String? = nil) throws -> TimeInterval {
         let controller = UIHostingController(rootView: rootView)
-        let frame = CGRect(x: 0, y: 0, width: 393, height: 852)
+        let frame = CGRect(x: 0, y: 0, width: width, height: 852)
         let windowScene = try XCTUnwrap(
             UIApplication.shared.connectedScenes
                 .compactMap { $0 as? UIWindowScene }
@@ -270,6 +321,15 @@ final class TaskOrderingTests: XCTestCase {
         let duration = CFAbsoluteTimeGetCurrent() - start
 
         XCTAssertNotNil(controller.view.window)
+        if let attachmentName {
+            let image = UIGraphicsImageRenderer(bounds: controller.view.bounds).image { _ in
+                controller.view.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
+            }
+            let attachment = XCTAttachment(image: image)
+            attachment.name = attachmentName
+            attachment.lifetime = .keepAlways
+            add(attachment)
+        }
         return duration
     }
 

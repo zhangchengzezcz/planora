@@ -13,8 +13,10 @@ struct HomeDashboardView: View {
     @State private var pendingCurriculum: Curriculum?
     @State private var isShowingCurriculumSwitchConfirmation = false
     @State private var calendarMonthDate = Date()
+    @State private var showsMonthCalendar = false
     @State private var hasRefreshedScheduledWork = false
     @State private var resultSubject = ""
+    @State private var showsAllResults = false
 
     // MARK: - View
 
@@ -89,7 +91,7 @@ struct HomeDashboardView: View {
         } else {
             List {
                 HomeHeader(store: store) { requestCurriculumSwitch(to: $0) }
-                PlanningDestinationStrip(store: store)
+                PlanningDestinationStrip(store: store, tasks: tasks)
                 if let focusTask = snapshot.focusTask {
                     TodayFocusCard(store: store, task: focusTask)
                     if !snapshot.upcomingProgressTasks.isEmpty {
@@ -111,9 +113,9 @@ struct HomeDashboardView: View {
                 } else {
                     EmptyTasksCard(action: onCreateRequested)
                 }
-                learningProgressSection(snapshot: snapshot)
                 calendarPreviewSection(snapshot: snapshot)
                 resultsSection
+                learningProgressSection(snapshot: snapshot)
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
@@ -126,12 +128,12 @@ struct HomeDashboardView: View {
                 requestCurriculumSwitch(to: curriculum)
             }
 
-            PlanningDestinationStrip(store: store)
+            PlanningDestinationStrip(store: store, tasks: tasks)
 
             taskOverviewSection(snapshot: snapshot)
-            learningProgressSection(snapshot: snapshot)
             calendarPreviewSection(snapshot: snapshot)
             resultsSection
+            learningProgressSection(snapshot: snapshot)
         }
         .padding(.top, 18)
         .padding(.bottom, 32)
@@ -229,7 +231,7 @@ struct HomeDashboardView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 12)
             }
-            ForEach(visible) { task in
+            ForEach(showsAllResults ? visible : Array(visible.prefix(3))) { task in
                 NavigationLink {
                     TaskDetailView(store: store, task: task)
                 } label: {
@@ -245,19 +247,38 @@ struct HomeDashboardView: View {
                 .buttonStyle(.plain)
                 Divider()
             }
+            if visible.count > 3 {
+                Button {
+                    withAnimation(.snappy) { showsAllResults.toggle() }
+                } label: {
+                    Label(showsAllResults ? String(localized: "Show Less") : String(localized: "View All"),
+                          systemImage: showsAllResults ? "chevron.up" : "chevron.down")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color.accentColor)
+            }
         }
+        .onChange(of: resultSubject) { _, _ in showsAllResults = false }
     }
 
     @ViewBuilder
     private func calendarPreviewSection(snapshot: HomeDashboardSnapshot) -> some View {
-        if !snapshot.deadlineTasks.isEmpty {
+        if snapshot.hasTasks {
             DashboardSection(title: String(localized: "Calendar Preview")) {
-                CalendarPreview(
-                    store: store,
-                    tasks: snapshot.deadlineTasks,
-                    monthDate: $calendarMonthDate
-                )
-                    .padding(18)
+                VStack(alignment: .leading, spacing: 16) {
+                    Picker(String(localized: "Calendar Preview"), selection: $showsMonthCalendar) {
+                        Text(String(localized: "Week")).tag(false)
+                        Text(String(localized: "Month")).tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 220)
+                    if showsMonthCalendar {
+                        CalendarPreview(store: store, tasks: snapshot.deadlineTasks, monthDate: $calendarMonthDate)
+                    } else {
+                        HomeWeekCalendar(store: store, tasks: tasks, selectedDate: $calendarMonthDate)
+                    }
+                }
+                .padding(18)
             }
         }
     }
@@ -321,6 +342,7 @@ private struct HomeDashboardSnapshot {
         var upcomingProgressTasks: [PlanoraTask] = []
         var upcomingTimelineItems: [PlanoraTask] = []
         for task in sortedIncompleteTasks {
+            guard task.id != sortedIncompleteTasks.first?.id else { continue }
             if task.tracksProgress, upcomingProgressTasks.count < 2 {
                 upcomingProgressTasks.append(task)
             } else if !task.tracksProgress, upcomingTimelineItems.count < 4 {
@@ -743,12 +765,24 @@ private struct TaskRow: View {
                     }
                 }
 
-                TaskStatusGrid(task: task)
-
-                if task.tracksProgress, let progress = task.progressState.percentageValue {
-                    ProgressView(value: progress)
-                        .tint(task.type.tint)
+                HStack(spacing: 12) {
+                    Label {
+                        if task.hasDeadline, let deadline = task.deadline {
+                            Text(deadline, format: .dateTime.month(.abbreviated).day().hour().minute())
+                        } else {
+                            Text(String(localized: "No deadline"))
+                        }
+                    } icon: {
+                        Image(systemName: "calendar")
+                    }
+                    Spacer(minLength: 0)
+                    if task.tracksProgress {
+                        Text(task.progressState.valueText)
+                            .foregroundStyle(task.type.tint)
+                    }
                 }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
             }
             .padding(18)
         }
@@ -1023,19 +1057,37 @@ private struct CalendarPreview: View {
 
         VStack(alignment: .leading, spacing: 16) {
             calendarHeader(snapshot: snapshot)
-
-            LazyVGrid(columns: columns, spacing: 8) {
-                weekdayHeaders
-                calendarCells(snapshot: snapshot)
+#if os(macOS)
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .top, spacing: 24) {
+                    calendarGrid(snapshot: snapshot).frame(minWidth: 320, maxWidth: 460)
+                    Divider()
+                    selectedDaySection(snapshot: snapshot).frame(minWidth: 320, maxWidth: .infinity)
+                }
+                verticalCalendar(snapshot: snapshot)
             }
-
-            Divider()
-
-            selectedDaySection(snapshot: snapshot)
+#else
+            verticalCalendar(snapshot: snapshot)
+#endif
         }
         .onAppear(perform: selectInitialDate)
         .onChange(of: monthDate) { _, _ in
             selectInitialDate()
+        }
+    }
+
+    private func calendarGrid(snapshot: CalendarPreviewSnapshot) -> some View {
+        LazyVGrid(columns: columns, spacing: 8) {
+            weekdayHeaders
+            calendarCells(snapshot: snapshot)
+        }
+    }
+
+    private func verticalCalendar(snapshot: CalendarPreviewSnapshot) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            calendarGrid(snapshot: snapshot)
+            Divider()
+            selectedDaySection(snapshot: snapshot)
         }
     }
 

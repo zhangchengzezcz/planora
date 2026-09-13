@@ -893,6 +893,21 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     const taskPath = /\/student\/classes\/([^/?#]+)\/core_tasks\/([^/?#]+)/i;
     const candidates = [];
     const seen = new Set();
+    const isCourseTaskList = currentSourceView === 'course'
+      && /\/student\/classes\/[^/]+\/core_tasks\/?$/.test(location.pathname);
+    const sectionHeadings = isCourseTaskList
+      ? Array.from(main.querySelectorAll('h2,h3,[role="heading"]')).filter(node =>
+          !node.closest('.short-assignment,.f-task-tile,[data-task-id],article,tr,li,nav,aside'))
+      : [];
+    const isInCompletedSection = container => {
+      if (!container) return false;
+      let heading = null;
+      for (const candidate of sectionHeadings) {
+        if (container.contains(candidate)) continue;
+        if (candidate.compareDocumentPosition(container) & Node.DOCUMENT_POSITION_FOLLOWING) heading = candidate;
+      }
+      return !!heading && /^completed(?:\s*\(\d+\))?$/i.test(normalize(heading.textContent));
+    };
 
     const readableContainer = link => {
       const preferred = link.closest('.short-assignment,.f-task-tile,[data-task-id],[data-deadline-id],article,tr,li,[class*=task-card],[class*=deadline-card]');
@@ -975,8 +990,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         .map(node => normalize(node.textContent)).find(text => text && !/^(N\/A|not assessed yet)$/i.test(text)) || null;
       const pointsMatch = results.flatMap(result => Array.from(result.querySelectorAll('.points,p,[class*=points],[class*=score-value]')))
         .map(node => normalize(node.textContent).match(/(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)/)).find(Boolean);
-      // Only ManageBac's submitted result or an exact standalone result label
-      // is evidence of binary completion. A score or "Submitted" alone is not.
+      // Completion and assessment are separate: a completed task may be unassessed.
+      // Only course-list section headings qualify; workspace Past is not completion.
       const binaryComplete = results.some(result => Array.from([result, ...result.querySelectorAll('span,div,p,strong')]).some(node =>
         !node.closest('a,button,h1,h2,h3,h4,h5,h6') &&
         /^(complete|completed)$/i.test(normalize(node.textContent))
@@ -993,7 +1008,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         sourceView: currentSourceView,
         courseIdentifier,
         unitIdentifier: unitMatch?.[1] || null,
-        remoteStatus: binaryComplete ? 'completed' : (['upcoming','past','overdue'].includes(currentSourceView) ? currentSourceView : 'unknown'),
+        remoteStatus: (binaryComplete || isInCompletedSection(container)) ? 'completed' : (['upcoming','past','overdue'].includes(currentSourceView) ? currentSourceView : 'unknown'),
         remoteGradeText: gradeText,
         remoteScoreEarned: pointsMatch ? Number(pointsMatch[1]) : null,
         remoteScorePossible: pointsMatch ? Number(pointsMatch[2]) : null
