@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct HomeDashboardView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     let store: PlanoraStore
@@ -23,7 +24,17 @@ struct HomeDashboardView: View {
         dashboardContent(snapshot: snapshot)
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
         .planoraHiddenNavigationBar()
-        .background(PlanoraBackground())
+        .background {
+#if os(macOS)
+            if colorScheme == .light {
+                Color(white: 0.96).ignoresSafeArea()
+            } else {
+                PlanoraBackground()
+            }
+#else
+            PlanoraBackground()
+#endif
+        }
         .task(priority: .utility) {
             refreshScheduledWorkIfNeeded()
         }
