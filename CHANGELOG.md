@@ -6,7 +6,7 @@
 - 显式数据路径与无损旧库迁移，主窗口和设置共用容器。
 - Mac 通知/头像分组与周历自适应布局调整。
 - Duplicate-safe imports, consistent legacy-store migration and shared persistence; Mac toolbar and calendar layout fixes.
-- 本次提供签名更新 ZIP，不制作 DMG；macOS 26 实机和在线安装由用户继续验收。
+- 提供签名更新 ZIP 及内嵌中英文安装背景的 DMG；macOS 26 实机和在线安装由用户继续验收。
 
 完整中英文说明见 [1.7.3](updates/1.7.3.md)。
 
