@@ -9,15 +9,30 @@ struct PlanoraApp: App {
     @NSApplicationDelegateAdaptor(PlanoraAppDelegate.self) private var appDelegate
 #endif
     @State private var store = PlanoraStore()
+    private let persistence = Result { try PlanoraPersistence.makeContainer() }
+
+    @ViewBuilder
+    private func storedContent<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        switch persistence {
+        case .success(let container):
+            content().modelContainer(container)
+        case .failure(let error):
+            ContentUnavailableView {
+                Label("Unable to Open Local Data", systemImage: "externaldrive.badge.exclamationmark")
+            } description: {
+                Text("Your existing data has not been deleted. Quit Planora and check your backup before trying again.")
+                Text(error.localizedDescription)
+            }
+        }
+    }
 
 #if os(macOS)
     @StateObject private var softwareUpdater = MacSoftwareUpdater.shared
 
     var body: some Scene {
         WindowGroup {
-            ContentView(store: store)
+            storedContent { ContentView(store: store) }
         }
-        .modelContainer(for: PlanoraSchema.models)
         .defaultSize(width: 1180, height: 760)
         .commands {
             ToolbarCommands()
@@ -36,34 +51,17 @@ struct PlanoraApp: App {
         }
 
         Settings {
-            MacSettingsView(store: store)
+            storedContent { MacSettingsView(store: store) }
                 .frame(width: 620, height: 520)
         }
-        .modelContainer(for: PlanoraSchema.models)
     }
 #else
     var body: some Scene {
         WindowGroup {
-            ContentView(store: store)
+            storedContent { ContentView(store: store) }
         }
-        .modelContainer(for: PlanoraSchema.models)
     }
 #endif
-}
-
-private enum PlanoraSchema {
-    static let models: [any PersistentModel.Type] = [
-        PlanoraTask.self,
-        PlanoraCourse.self,
-        PlanoraUnit.self,
-        PlanoraTeacher.self,
-        PlanoraMessage.self,
-        PlanoraScheduleEvent.self,
-        PlanoraSubtask.self,
-        PlanoraResourceLink.self,
-        PlanoraTopic.self,
-        PlanoraAssessment.self
-    ]
 }
 
 #if os(macOS)

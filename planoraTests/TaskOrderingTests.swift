@@ -1,6 +1,8 @@
 import SwiftData
 import SwiftUI
+#if os(iOS)
 import UIKit
+#endif
 import XCTest
 @testable import planora
 
@@ -300,6 +302,7 @@ final class TaskOrderingTests: XCTestCase {
     }
 
     private func render<Content: View>(_ rootView: Content, width: CGFloat = 393, attachmentName: String? = nil) throws -> TimeInterval {
+#if os(iOS)
         let controller = UIHostingController(rootView: rootView)
         let frame = CGRect(x: 0, y: 0, width: width, height: 852)
         let windowScene = try XCTUnwrap(
@@ -331,6 +334,9 @@ final class TaskOrderingTests: XCTestCase {
             add(attachment)
         }
         return duration
+#else
+        throw XCTSkip("This rendering test exercises UIKit on iOS.")
+#endif
     }
 
     private func makeTask(

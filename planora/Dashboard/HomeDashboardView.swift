@@ -264,21 +264,25 @@ struct HomeDashboardView: View {
     @ViewBuilder
     private func calendarPreviewSection(snapshot: HomeDashboardSnapshot) -> some View {
         if snapshot.hasTasks {
-            DashboardSection(title: String(localized: "Calendar Preview")) {
+            GlassPanel(padding: 18) {
                 VStack(alignment: .leading, spacing: 16) {
+                    HStack(spacing: 12) {
+                    Text("Calendar Preview").font(.headline)
                     Picker(String(localized: "Calendar Preview"), selection: $showsMonthCalendar) {
                         Text(String(localized: "Week")).tag(false)
                         Text(String(localized: "Month")).tag(true)
                     }
                     .pickerStyle(.segmented)
-                    .frame(maxWidth: 220)
+                    .labelsHidden()
+                    .frame(width: 100)
+                    Spacer(minLength: 0)
+                    }
                     if showsMonthCalendar {
                         CalendarPreview(store: store, tasks: snapshot.deadlineTasks, monthDate: $calendarMonthDate)
                     } else {
                         HomeWeekCalendar(store: store, tasks: tasks, selectedDate: $calendarMonthDate)
                     }
                 }
-                .padding(18)
             }
         }
     }

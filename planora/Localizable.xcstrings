@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "Unable to Open Local Data" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unable to Open Local Data" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法打开本地数据" } }
+      }
+    },
+    "Your existing data has not been deleted. Quit Planora and check your backup before trying again." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your existing data has not been deleted. Quit Planora and check your backup before trying again." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "现有数据未被删除。请退出 Planora，检查备份后重试。" } }
+      }
+    },
 "Software Update" : {
   "localizations": {
     "en": {

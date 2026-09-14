@@ -11,23 +11,26 @@ enum ManageBacTaskImporter {
     ) throws -> ManageBacImportSummary {
         let detection = ManageBacProgrammeDetector.detect(programmeText: snapshot.programmeText, courses: snapshot.courses)
         let curriculum = detection.curriculum ?? currentCurriculum
-        let existingCourses = (try? modelContext.fetch(FetchDescriptor<PlanoraCourse>())) ?? []
-        let existingUnits = (try? modelContext.fetch(FetchDescriptor<PlanoraUnit>())) ?? []
-        let existingTeachers = (try? modelContext.fetch(FetchDescriptor<PlanoraTeacher>())) ?? []
-        let existingMessages = (try? modelContext.fetch(FetchDescriptor<PlanoraMessage>())) ?? []
-        let existingSchedule = (try? modelContext.fetch(FetchDescriptor<PlanoraScheduleEvent>())) ?? []
-        var coursesByRemoteID = Dictionary(uniqueKeysWithValues: existingCourses.compactMap { course -> (String, PlanoraCourse)? in
+        // Read the store, not a potentially stale UI query. A failed fetch must not look like an empty database.
+        let existingTasks = try modelContext.fetch(FetchDescriptor<PlanoraTask>()).sorted { $0.id.uuidString < $1.id.uuidString }
+        let existingCourses = try modelContext.fetch(FetchDescriptor<PlanoraCourse>()).sorted { $0.id.uuidString < $1.id.uuidString }
+        let existingUnits = try modelContext.fetch(FetchDescriptor<PlanoraUnit>()).sorted { $0.id.uuidString < $1.id.uuidString }
+        let existingTeachers = try modelContext.fetch(FetchDescriptor<PlanoraTeacher>()).sorted { $0.id.uuidString < $1.id.uuidString }
+        let existingMessages = try modelContext.fetch(FetchDescriptor<PlanoraMessage>()).sorted { $0.id.uuidString < $1.id.uuidString }
+        let existingSchedule = try modelContext.fetch(FetchDescriptor<PlanoraScheduleEvent>()).sorted { $0.id.uuidString < $1.id.uuidString }
+        // Older stores can contain repeated remote IDs. Keep a stable representative without deleting user data.
+        var coursesByRemoteID = Dictionary(existingCourses.compactMap { course -> (String, PlanoraCourse)? in
             guard course.externalSource == .manageBac, let identifier = course.externalIdentifier else { return nil }
             return (identifier, course)
-        })
-        var unitsByRemoteID = Dictionary(uniqueKeysWithValues: existingUnits.compactMap { unit -> (String, PlanoraUnit)? in
+        }, uniquingKeysWith: { first, _ in first })
+        var unitsByRemoteID = Dictionary(existingUnits.compactMap { unit -> (String, PlanoraUnit)? in
             guard unit.externalSource == .manageBac, let identifier = unit.externalIdentifier else { return nil }
             return (identifier, unit)
-        })
+        }, uniquingKeysWith: { first, _ in first })
         var courseIDsByOriginalName: [String: UUID] = [:]
-        var teachersByIdentifier = Dictionary(uniqueKeysWithValues: existingTeachers.map { ($0.externalIdentifier ?? normalizedKey($0.name), $0) })
-        var messagesByIdentifier = Dictionary(uniqueKeysWithValues: existingMessages.map { ($0.externalIdentifier, $0) })
-        var scheduleByIdentifier = Dictionary(uniqueKeysWithValues: existingSchedule.map { ($0.externalIdentifier, $0) })
+        var teachersByIdentifier = Dictionary(existingTeachers.map { ($0.externalIdentifier ?? normalizedKey($0.name), $0) }, uniquingKeysWith: { first, _ in first })
+        var messagesByIdentifier = Dictionary(existingMessages.map { ($0.externalIdentifier, $0) }, uniquingKeysWith: { first, _ in first })
+        var scheduleByIdentifier = Dictionary(existingSchedule.map { ($0.externalIdentifier, $0) }, uniquingKeysWith: { first, _ in first })
         var reviewCount = 0
 
         do {
@@ -115,7 +118,7 @@ enum ManageBacTaskImporter {
             var tasksByIdentifier: [String: PlanoraTask] = [:]
             for task in existingTasks where task.externalSource == .manageBac {
                 guard let identifier = task.externalIdentifier else { continue }
-                tasksByIdentifier[identifier] = task
+                if tasksByIdentifier[identifier] == nil { tasksByIdentifier[identifier] = task }
             }
 
 

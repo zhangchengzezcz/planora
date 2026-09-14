@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		519684FA304EDECB00D5A704 /* Planora Full.icon in Resources */ = {isa = PBXBuildFile; fileRef = 519684F9304EDECB00D5A704 /* Planora Full.icon */; };
-		E10000000000000000000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; fileRef = E10000000000000000000002 /* Sparkle.framework */; platformFilters = (macos, ); };
-		E10000000000000000000004 /* Sparkle in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = E10000000000000000000002 /* Sparkle.framework */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		E10000000000000000000001 /* Vendor/Sparkle/Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E10000000000000000000002 /* Vendor/Sparkle/Sparkle.framework */; platformFilters = (macos, ); };
+		E10000000000000000000004 /* Vendor/Sparkle/Sparkle.framework in Embed Mac Frameworks */ = {isa = PBXBuildFile; fileRef = E10000000000000000000002 /* Vendor/Sparkle/Sparkle.framework */; platformFilters = (macos, ); settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -22,24 +22,24 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXFileReference section */
-		E10000000000000000000002 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Vendor/Sparkle/Sparkle.framework; sourceTree = SOURCE_ROOT; };
-		000000000000000000000120 /* planora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = planora.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		519684F9304EDECB00D5A704 /* Planora Full.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Planora Full.icon"; sourceTree = "<group>"; };
-		D00000000000000000000001 /* planoraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = planoraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-/* End PBXFileReference section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		E10000000000000000000005 /* Embed Mac Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
 			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (E10000000000000000000004 /* Sparkle in Embed Frameworks */, );
+			dstSubfolder = Frameworks;
+			files = (
+				E10000000000000000000004 /* Vendor/Sparkle/Sparkle.framework in Embed Mac Frameworks */,
+			);
 			name = "Embed Mac Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		000000000000000000000120 /* planora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = planora.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		519684F9304EDECB00D5A704 /* Planora Full.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = "Planora Full.icon"; sourceTree = "<group>"; };
+		D00000000000000000000001 /* planoraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = planoraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E10000000000000000000002 /* Vendor/Sparkle/Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Vendor/Sparkle/Sparkle.framework; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		51CCC46730401F7700D004E9 /* Exceptions for "planora" folder in "planora" target */ = {
@@ -73,7 +73,7 @@
 		000000000000000130000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				E10000000000000000000001 /* Sparkle in Frameworks */,
+				E10000000000000000000001 /* Vendor/Sparkle/Sparkle.framework in Frameworks */,
 			);
 		};
 		D00000000000000000000003 /* Frameworks */ = {
@@ -87,7 +87,7 @@
 		000000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				E10000000000000000000002 /* Sparkle.framework */,
+				E10000000000000000000002 /* Vendor/Sparkle/Sparkle.framework */,
 				519684F9304EDECB00D5A704 /* Planora Full.icon */,
 				51CCC42930401F7600D004E9 /* planora */,
 				51CCC46D3040210100D004E9 /* planoraTests */,
@@ -354,7 +354,7 @@
 				AUTOMATION_APPLE_EVENTS = NO;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = TK2NMDS7ZC;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -364,6 +364,10 @@
 				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
+				"FRAMEWORK_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor/Sparkle",
+				);
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = planora/Info.plist;
 				"INFOPLIST_FILE[sdk=macosx*]" = planora/Mac/Info.plist;
@@ -381,9 +385,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				"FRAMEWORK_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) $(PROJECT_DIR)/Vendor/Sparkle";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.7.2;
+				MARKETING_VERSION = 1.7.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
@@ -419,7 +422,7 @@
 				AUTOMATION_APPLE_EVENTS = NO;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = TK2NMDS7ZC;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -429,6 +432,10 @@
 				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
+				"FRAMEWORK_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Vendor/Sparkle",
+				);
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = planora/Info.plist;
 				"INFOPLIST_FILE[sdk=macosx*]" = planora/Mac/Info.plist;
@@ -446,9 +453,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				"FRAMEWORK_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) $(PROJECT_DIR)/Vendor/Sparkle";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.7.2;
+				MARKETING_VERSION = 1.7.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-framework",
@@ -480,6 +486,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"FRAMEWORK_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) $(PROJECT_DIR)/Vendor/Sparkle";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = T75ZC285FP;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -497,7 +504,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchengze.planora.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				"TEST_HOST[sdk=macosx*]" = "$(BUILT_PRODUCTS_DIR)/planora.app/Contents/MacOS/planora";
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -509,6 +518,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				"FRAMEWORK_SEARCH_PATHS[sdk=macosx*]" = "$(inherited) $(PROJECT_DIR)/Vendor/Sparkle";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = T75ZC285FP;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -526,7 +536,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhangchengze.planora.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				"TEST_HOST[sdk=macosx*]" = "$(BUILT_PRODUCTS_DIR)/planora.app/Contents/MacOS/planora";
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -562,7 +574,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = 000000000000000000000000 /* Project object */;
 }

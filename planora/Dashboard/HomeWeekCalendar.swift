@@ -50,13 +50,10 @@ struct HomeWeekCalendar: View {
             .buttonStyle(.glass)
 
 #if os(macOS)
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .top, spacing: 12) {
-                    ForEach(days, id: \.self) { day in
-                        dayContent(day).frame(minWidth: 110, maxWidth: .infinity, alignment: .topLeading)
-                    }
+            WeekColumnsLayout {
+                ForEach(days, id: \.self) { day in
+                    dayContent(day)
                 }
-                agenda
             }
 #else
             agenda
@@ -120,6 +117,31 @@ struct HomeWeekCalendar: View {
     private func moveWeek(_ offset: Int) {
         guard let date = calendar.date(byAdding: .weekOfYear, value: offset, to: selectedDate) else { return }
         selectedDate = date
+    }
+}
+
+// Choose by available width, not by the intrinsic width of long task titles.
+private struct WeekColumnsLayout: Layout {
+    private let spacing: CGFloat = 12
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 900
+        let horizontal = width >= 820
+        let column = horizontal ? (width - spacing * CGFloat(max(0, subviews.count - 1))) / CGFloat(max(1, subviews.count)) : width
+        let heights = subviews.map { $0.sizeThatFits(.init(width: column, height: nil)).height }
+        let height = horizontal ? heights.max() ?? 0 : heights.reduce(0, +) + spacing * CGFloat(max(0, subviews.count - 1))
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let horizontal = bounds.width >= 820
+        let width = horizontal ? (bounds.width - spacing * CGFloat(max(0, subviews.count - 1))) / CGFloat(max(1, subviews.count)) : bounds.width
+        var position = bounds.origin
+        for view in subviews {
+            let size = view.sizeThatFits(.init(width: width, height: nil))
+            view.place(at: position, anchor: .topLeading, proposal: .init(width: width, height: size.height))
+            if horizontal { position.x += width + spacing } else { position.y += size.height + spacing }
+        }
     }
 }
 
