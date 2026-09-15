@@ -1,5 +1,34 @@
 # Changelog / 更新说明
 
+## 1.7.4 - 2026-09-15
+
+### 中文
+
+- 修复 iOS / iPadOS 26 首页 List 白底、错误跳转箭头、标题挤压和内容边距问题。
+- 优化 iPad 首页周历响应式布局。
+- 增加 iPhone / iPad 的 iOS 26 首页兼容性回归测试，同时保留 iOS / iPadOS 27 原有界面逻辑。
+- 重新验证 ManageBac 新用户连接和任务导入，当前导入正常。
+- ManageBac 导入继续使用重复安全的数据处理方式。
+- Mac 保持现有 SwiftData 数据、迁移、DMG 和签名更新机制。
+- Vendor 继续使用仅 Mac 的 Sparkle 2.9.6。
+- DMG 保持内嵌中英文安装背景，并包含独立的 `INSTALLATION.txt`。
+- 已知问题：移动端点击主页周历中的日期或周区域可能导致界面卡住并崩溃。
+
+### English
+
+- Fixed iOS / iPadOS 26 Home List white backgrounds, incorrect disclosure arrows, compressed headings, and content margins.
+- Improved the responsive iPad Home weekly calendar layout.
+- Added iPhone / iPad iOS 26 Home compatibility regression coverage while preserving the existing iOS / iPadOS 27 interface.
+- Re-verified first-time ManageBac connection and task import successfully.
+- ManageBac import continues to use duplicate-safe data handling.
+- Mac retains its existing SwiftData storage, migration, DMG, and signed-update workflow.
+- Vendor continues to use Mac-only Sparkle 2.9.6.
+- The DMG retains its embedded bilingual installation background and standalone `INSTALLATION.txt`.
+- Known issue: tapping a date or week area in the mobile Home weekly calendar may cause the interface to become unresponsive and crash.
+
+完整说明 / Full notes: `updates/1.7.4.md`
+
+
 ## 1.7.3 - 2026-09-14
 
 - 修复 ManageBac 重复键导入崩溃，改用数据库实时索引，保留已有数据。

@@ -21,7 +21,6 @@
         {
           "fill" : "none",
           "glass" : false,
-          "hidden" : false,
           "image-name" : "Edges.svg",
           "name" : "Controlled 3px edge"
         }

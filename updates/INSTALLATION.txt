@@ -1,25 +1,83 @@
-Planora for Mac / 安装说明
+Planora for Mac / Planora Mac 安装说明
+=====================================
 
-1. 将 planora 拖入 Applications，然后从「应用程序」打开。
-2. 首次安装含更新器的版本后，可在 Planora 菜单或设置中检查更新。
-3. 已有 1.7.1 及更早版本不含更新器，需要手动安装此次版本一次。
+中文
+----
 
-此版本未经过 Apple Developer ID 公证。Sparkle 更新签名不是 Apple 公证。
-请只使用本项目官方 GitHub Release，并核对 SHA256SUMS 中的校验值。
-如果 macOS 阻止打开，优先使用「系统设置 > 隐私与安全性」中的「仍要打开」。
-不要关闭 Gatekeeper，也不要对未知来源的程序使用下面的命令。
+1. 将 Planora 拖入 Applications（应用程序）文件夹。
 
-仅在确认下载来源和校验值、并理解隔离属性用途后，可手动在终端执行：
+2. 等待复制完成。
+
+3. 请从「应用程序」文件夹打开 Planora，不要直接从 DMG 中长期运行。
+
+4. 安装包含更新器的版本后，后续版本可以通过 Planora 内的软件更新功能进行检查。
+
+安全说明
+--------
+
+Planora 的 Sparkle 更新签名与 Apple Developer ID / notarization 是不同的验证机制。
+
+如果当前构建未经 Apple Developer ID 公证，macOS 在首次打开时可能显示安全提示。
+
+请只从 Planora 官方 GitHub Release 下载应用，并在提供 SHA256SUMS 时核对 SHA-256 校验值。
+
+如果 macOS 阻止应用打开，请优先进入：
+
+系统设置 → 隐私与安全性 → 仍要打开
+
+不要关闭系统全局 Gatekeeper。
+
+只有在确认下载来源和 SHA-256 校验值正确，并理解 macOS quarantine 属性用途后，才可选择手动执行：
 
 /usr/bin/xattr -dr com.apple.quarantine "/Applications/planora.app"
 
-这条命令只移除指定 Planora 应用的下载隔离属性，不修复损坏或签名错误。
-本安装包不会自动执行它，不需要 sudo，也不会更改系统全局安全策略。
+此命令只移除指定 Planora 应用的下载隔离属性。
+
+它不会：
+- 修复损坏的应用；
+- 修复无效代码签名；
+- 关闭系统全局 Gatekeeper；
+- 修改其他应用。
+
+Planora 安装包不会自动执行该命令。
+
 
 English
-Drag planora to Applications, then open it there. Older builds without the
-updater need this first manual installation. This build is not notarized by
-Apple. Verify the official release and SHA256SUMS first. Prefer the Open Anyway
-option in System Settings > Privacy & Security when appropriate.
-The optional xattr command above removes quarantine only from Planora. It does
-not repair corrupted files or invalid signatures. Never disable Gatekeeper.
+-------
+
+1. Drag Planora into Applications.
+
+2. Wait for the copy to finish.
+
+3. Open Planora from the Applications folder instead of running it permanently from the DMG.
+
+4. After installing a version containing the updater, future releases can be checked through Planora's software update feature.
+
+Security
+--------
+
+Sparkle update signing is separate from Apple Developer ID signing and Apple notarization.
+
+If the current build is not notarized with Apple Developer ID, macOS may display a security warning on first launch.
+
+Download Planora only from the official GitHub Release and verify the SHA-256 checksum against SHA256SUMS when provided.
+
+If macOS blocks the application, prefer:
+
+System Settings → Privacy & Security → Open Anyway
+
+Do not disable the system-wide Gatekeeper.
+
+Only after verifying the download source and SHA-256 checksum, and understanding the macOS quarantine attribute, you may optionally run:
+
+/usr/bin/xattr -dr com.apple.quarantine "/Applications/planora.app"
+
+This command removes the download quarantine attribute only from the specified Planora application.
+
+It does not:
+- repair a corrupted application;
+- repair an invalid code signature;
+- disable the system-wide Gatekeeper;
+- modify other applications.
+
+The Planora installer never runs this command automatically.

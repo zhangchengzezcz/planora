@@ -49,27 +49,14 @@ struct HomeWeekCalendar: View {
             }
             .buttonStyle(.glass)
 
-#if os(macOS)
             WeekColumnsLayout {
                 ForEach(days, id: \.self) { day in
                     dayContent(day)
                 }
             }
-#else
-            agenda
-#endif
             Button("This Week") { selectedDate = Date() }
                 .buttonStyle(.plain)
                 .foregroundStyle(Color.accentColor)
-        }
-    }
-
-    private var agenda: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            ForEach(days, id: \.self) { day in
-                dayContent(day)
-                if day != days.last { Divider() }
-            }
         }
     }
 

@@ -1,5 +1,32 @@
 # Planora
 
+<!-- PLANORA-1.7.4-STATUS-START -->
+## Planora 1.7.4
+
+### 中文
+
+Planora 不是 ManageBac 的替代品。
+
+Planora 的目标是帮助学生更清楚地整理 ManageBac 中分散的课程、任务、截止日期、成绩和学习安排，并在 Planora 中完成自己的规划。除 Planora 自身提供的整理和规划功能外，需要查看完整课程内容或原始信息时，仍默认回到 ManageBac。
+
+1.7.4 主要改善 iPhone 与 iPad 在 iOS / iPadOS 26 下的首页兼容性，并继续保留 iOS / iPadOS 27 与 Mac 的现有原生界面逻辑。
+
+**已知问题：** 在 iPhone 或 iPad 上点击主页周历中的日期或周区域时，可能导致界面卡住并崩溃。在后续版本修复前，请暂时避免点击该区域。
+
+### English
+
+Planora is not a replacement for ManageBac.
+
+Planora is designed to help students organize courses, tasks, deadlines, results, and study plans that may otherwise be distributed across ManageBac. Planora provides its own organization and planning tools, while full course content and original information continue to open in ManageBac when needed.
+
+Version 1.7.4 primarily improves Home compatibility on iPhone and iPad running iOS / iPadOS 26 while preserving the existing native iOS / iPadOS 27 and Mac interface architecture.
+
+**Known issue:** tapping a date or week area in the Home weekly calendar on iPhone or iPad may cause the interface to become unresponsive and crash. Until this is fixed, avoid tapping that area.
+
+完整更新说明 / Full release notes: `updates/1.7.4.md`
+<!-- PLANORA-1.7.4-STATUS-END -->
+
+
 **中文** | **English**
 
 Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。1.7.1 优化原生玻璃控件的视觉层次，并改进 ManageBac 成绩、完成状态及逐项重试和跳过流程。

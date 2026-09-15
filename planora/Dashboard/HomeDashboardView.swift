@@ -90,20 +90,27 @@ struct HomeDashboardView: View {
             .swipeActionsContainer()
         } else {
             List {
+                Group {
                 HomeHeader(store: store) { requestCurriculumSwitch(to: $0) }
                 PlanningDestinationStrip(store: store, tasks: tasks)
                 if let focusTask = snapshot.focusTask {
                     TodayFocusCard(store: store, task: focusTask)
                     if !snapshot.upcomingProgressTasks.isEmpty {
-                        Section(String(localized: "Upcoming Tasks")) {
-                            ForEach(snapshot.upcomingProgressTasks) { task in
+                        Text(String(localized: "Upcoming Tasks"))
+                            .font(.headline)
+                            .foregroundStyle(Color.planoraInk)
+                        ForEach(snapshot.upcomingProgressTasks) { task in
+                            GlassPanel(padding: 0) {
                                 TaskRow(store: store, task: task)
                             }
                         }
                     }
                     if !snapshot.upcomingTimelineItems.isEmpty {
-                        Section(String(localized: "Dates and Events")) {
-                            ForEach(snapshot.upcomingTimelineItems) { task in
+                        Text(String(localized: "Dates and Events"))
+                            .font(.headline)
+                            .foregroundStyle(Color.planoraInk)
+                        ForEach(snapshot.upcomingTimelineItems) { task in
+                            GlassPanel(padding: 0) {
                                 TaskRow(store: store, task: task)
                             }
                         }
@@ -116,8 +123,19 @@ struct HomeDashboardView: View {
                 calendarPreviewSection(snapshot: snapshot)
                 resultsSection
                 learningProgressSection(snapshot: snapshot)
+                }
+                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
             }
             .listStyle(.plain)
+            #if os(iOS)
+            .listRowSpacing(18)
+            #endif
+            .environment(\.defaultMinListRowHeight, 0)
+            .contentMargins(.vertical, 18, for: .scrollContent)
+            .buttonStyle(.plain)
+            .navigationLinkIndicatorVisibility(.hidden)
             .scrollContentBackground(.hidden)
         }
     }
@@ -213,17 +231,16 @@ struct HomeDashboardView: View {
         let subjects = Array(Set(results.map(\.subject))).sorted()
         let visible = results.filter { resultSubject.isEmpty || $0.subject == resultSubject }
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text(String(localized: "ManageBac Result")).font(.title2.bold())
-                Spacer()
-                Picker(String(localized: "Subject"), selection: $resultSubject) {
-                    Text(String(localized: "All Subjects")).tag("")
-                    ForEach(subjects, id: \.self) { subject in
-                        Text(PlanoraFormat.subjectDisplayName(subject)).tag(subject)
-                    }
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text(String(localized: "ManageBac Result")).font(.headline).fixedSize()
+                    Spacer(minLength: 12)
+                    resultsSubjectPicker(subjects: subjects)
                 }
-                .pickerStyle(.menu)
-                .fixedSize()
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(String(localized: "ManageBac Result")).font(.headline)
+                    resultsSubjectPicker(subjects: subjects)
+                    }
             }
             if visible.isEmpty {
                 Text(String(localized: "No ManageBac results yet"))
@@ -288,6 +305,17 @@ struct HomeDashboardView: View {
     }
 
     // MARK: - Curriculum Switching
+
+    private func resultsSubjectPicker(subjects: [String]) -> some View {
+        Picker(String(localized: "Subject"), selection: $resultSubject) {
+            Text(String(localized: "All Subjects")).tag("")
+            ForEach(subjects, id: \.self) { subject in
+                Text(PlanoraFormat.subjectDisplayName(subject)).tag(subject)
+            }
+        }
+        .pickerStyle(.menu)
+        .labelsHidden()
+    }
 
     private func requestCurriculumSwitch(to curriculum: Curriculum) {
         guard store.curriculum != curriculum else { return }
