@@ -9,6 +9,155 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.7.4</title>
+            <pubDate>Tue, 15 Sep 2026 19:42:57 +0800</pubDate>
+            <sparkle:version>19</sparkle:version>
+            <sparkle:shortVersionString>1.7.4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.4
+
+## 中文
+
+Planora 1.7.4 主要改善 iPhone 与 iPad 在 iOS / iPadOS 26 下的首页兼容性，同时继续保持新版系统和 Mac 原有的界面与数据逻辑。
+
+### iPhone 与 iPad
+
+- 修复 iOS / iPadOS 26 首页出现大面积系统 List 白色背景的问题。
+- 修复 iOS / iPadOS 26 首页头像和通知按钮旁错误出现跳转箭头的问题。
+- 修复窄屏下「成绩」「即将到来的任务」等首页标题被挤压、换行或贴边的问题。
+- 调整首页 List 的行背景、间距和内容边距，使旧系统兼容界面与 Planora 原有设计保持一致。
+- 优化 iPad 首页周历响应式布局，在空间充足时使用七列周视图，并在较窄宽度下自动调整。
+- 保留 iOS / iPadOS 27 的系统导航、TabView 与 Liquid Glass 界面逻辑，不使用旧系统兼容布局替换新版界面。
+- 增加 iOS / iPadOS 26 首页兼容性回归测试，覆盖 iPhone 与 iPad。
+- 重新验证 ManageBac 首次连接和任务导入流程，当前导入正常。
+- ManageBac 导入继续使用重复安全的数据处理方式，避免重复标识导致导入崩溃。
+- 不通过清空数据库解决重复数据问题，继续保留用户已有任务、课程、成绩、Unit、教师及其他本地数据。
+
+### Mac
+
+- 保持 Planora 1.7.3 已建立的原生 Mac 工作区和数据逻辑。
+- 保持主窗口与设置使用统一的数据容器。
+- 保持现有 SwiftData 存储和迁移逻辑。
+- 保持签名的软件更新 feed 与更新归档。
+- 保持带中英文安装背景的 DMG 发布方式。
+- DMG 继续提供独立的 `INSTALLATION.txt`。
+- 本次 iPhone / iPad 兼容性调整不改变 Mac 的主要工作流。
+
+### Vendor / 第三方组件
+
+- Mac 软件更新继续使用 Sparkle 2.9.6。
+- Sparkle 仅用于 macOS target。
+- iPhone 与 iPad 构建不包含 Sparkle 更新框架。
+- Sparkle 用于检查更新、更新说明、下载、签名验证、安装与重新启动。
+- Planora 更新归档继续使用 Ed25519 签名验证。
+- 更新 feed 继续使用签名 appcast。
+- Sparkle 私钥不提交至 Git 仓库，仅保存在发布环境的 Keychain 中。
+- Sparkle 更新签名不等同于 Apple Developer ID 签名或 Apple notarization。
+- `Vendor/Sparkle` 保持为 Mac 更新系统的本地 Vendor 依赖。
+
+### DMG
+
+- DMG 使用内嵌的中英文安装背景。
+- 背景位于磁盘映像内部，不依赖开发 Mac 的绝对文件路径。
+- DMG 包含 Planora、Applications 快捷方式和 `INSTALLATION.txt`。
+- Finder 默认使用图标视图显示安装界面。
+- 安装说明同时提供中文和英文。
+- 发布前检查 DMG 映像完整性、背景、应用和安装说明。
+- 发布文件生成 SHA-256 校验值。
+
+### 验证
+
+- 已在 iOS 26.5 iPhone Simulator 实际复现并修复首页兼容性布局。
+- 已检查 iPadOS 26.5 Simulator 首页布局。
+- 已检查首页白底、错误箭头、标题布局和周历响应式显示。
+- 已重新测试 ManageBac 新用户连接与任务导入，导入正常。
+- 保留 iOS / iPadOS 27 原有界面实现。
+- Xcode Version 与 Build Number 已在发布前完成设置，本次发布脚本不再次修改。
+
+## 已知问题
+
+Planora 1.7.4 当前有一个已知问题：
+
+**在 iPhone 或 iPad 上点击主页周历中的日期或周区域时，可能导致界面卡住并随后崩溃。**
+
+在后续版本修复前，建议移动端用户暂时不要点击主页周历中的日期或周区域。
+
+任务管理、ManageBac 导入、任务列表、创建任务及其他主要功能不受此问题影响。
+
+---
+
+## English
+
+Planora 1.7.4 primarily improves Home compatibility on iPhone and iPad running iOS / iPadOS 26 while preserving the existing newer-system and Mac interface and data architecture.
+
+### iPhone and iPad
+
+- Fixed the large system List white background appearing on Home under iOS / iPadOS 26.
+- Removed incorrect disclosure arrows beside the profile and notification controls.
+- Fixed compressed, wrapped, or edge-aligned Home section headings such as Grades and Upcoming Tasks on narrow displays.
+- Refined List row backgrounds, spacing, and content margins so the compatibility interface remains consistent with Planora's design.
+- Improved the responsive iPad Home weekly calendar, retaining a seven-column week when enough width is available and adapting at narrower widths.
+- Preserved the existing iOS / iPadOS 27 system navigation, TabView, and Liquid Glass implementation.
+- Added iOS / iPadOS 26 Home compatibility regression coverage for both iPhone and iPad.
+- Re-verified the first-time ManageBac connection and task import flow; importing currently completes successfully.
+- ManageBac import continues to use duplicate-safe data handling to prevent crashes caused by duplicate identifiers.
+- Existing tasks, courses, grades, units, teachers, and other local data remain intact rather than clearing the database to work around duplicates.
+
+### Mac
+
+- Retains the native Mac workspace and data behavior established in Planora 1.7.3.
+- Keeps the main window and Settings on the same data container.
+- Retains the existing SwiftData storage and migration behavior.
+- Retains signed software-update feeds and update archives.
+- Retains the bilingual drag-to-install DMG workflow.
+- The DMG continues to include a standalone `INSTALLATION.txt`.
+- The mobile compatibility changes do not alter the primary Mac workflow.
+
+### Vendor / Third-party Components
+
+- Mac software updates continue to use Sparkle 2.9.6.
+- Sparkle remains macOS-target only.
+- iPhone and iPad builds do not include the Sparkle updater.
+- Sparkle provides update checks, release notes, downloads, signature verification, installation, and relaunch.
+- Planora update archives continue to use Ed25519 signature verification.
+- The update feed continues to use a signed appcast.
+- The Sparkle private signing key is not committed to Git and remains in the release environment's Keychain.
+- Sparkle update signing is separate from Apple Developer ID signing and Apple notarization.
+- `Vendor/Sparkle` remains the local Vendor dependency for the Mac update system.
+
+### DMG
+
+- The DMG uses an embedded bilingual installation background.
+- The background is stored inside the disk image and does not depend on an absolute path on the development Mac.
+- The DMG contains Planora, an Applications shortcut, and `INSTALLATION.txt`.
+- Finder uses icon view for the installation window.
+- Installation guidance is provided in both Chinese and English.
+- The disk image, background, application, and installation guide are checked before release.
+- SHA-256 checksums are generated for distribution files.
+
+### Validation
+
+- Reproduced and corrected the Home compatibility layout on an iOS 26.5 iPhone Simulator.
+- Checked the Home layout on an iPadOS 26.5 Simulator.
+- Checked the white background, incorrect arrows, section-heading layout, and responsive weekly calendar.
+- Re-tested first-time ManageBac connection and task import successfully.
+- Preserved the existing iOS / iPadOS 27 interface implementation.
+- Xcode Version and Build Number were already configured before release and are not changed by this release script.
+
+## Known Issue
+
+Planora 1.7.4 currently has one known issue:
+
+**On iPhone or iPad, tapping a date or week area in the Home weekly calendar may cause the interface to become unresponsive and subsequently crash.**
+
+Until this is fixed in a later release, mobile users should avoid tapping dates or week areas in the Home weekly calendar.
+
+Task management, ManageBac import, task lists, task creation, and the other primary workflows are not affected.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.4/Planora-1.7.4-macOS.zip" length="5991565" type="application/octet-stream" sparkle:edSignature="jEIq0/oVzbq5cnf8EDNw4lHMoo3hXHOhrAzoeJY97HmWyTxgJpx1Q9I7XqaocnGMrAGYuSxxiLG7b0nNAhgHDg=="/>
+        </item>
+        <item>
             <title>1.7.3</title>
             <pubDate>Mon, 14 Sep 2026 19:31:33 +0800</pubDate>
             <sparkle:version>18</sparkle:version>
@@ -79,6 +228,6 @@ Requires macOS 26 or later. This build is not Apple Developer ID notarized.
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: gmXRYY1g2GdzygQ7ZJ/17owJgw7Js22f/zUS+s5FSF/9L2XKnjHKAP1QuQvs83OX1oiYfp4Xh/Jg6er7NvN5Bw==
-length: 6262
+edSignature: aUAmwvLnZpPGNB8LLBRxYp6gskuixgJr6zVJJLDtFtFwcKK007YrP1aLJ+vcjeo9Bv9VVlT2TQ5YEQSOVYFXAQ==
+length: 14692
 -->
