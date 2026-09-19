@@ -115,7 +115,8 @@ Planora 1.7.5 fixes several task interaction and layout issues across iPhone, iP
 - Sparkle remains macOS-only.
 - Update archives continue to use Ed25519 signature verification.
 - The Sparkle private key remains in the release environment's Keychain and is not committed to Git.
-- This release is still not Apple Developer ID notarized; Sparkle signing remains independent from Apple Developer ID signing and notarization.]]></description>
+- This release is still not Apple Developer ID notarized; Sparkle signing remains independent from Apple Developer ID signing and notarization.
+]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.5/Planora-1.7.5-macOS.zip" length="6007302" type="application/octet-stream" sparkle:edSignature="uS6P9te1UhUwXbLIdn7G/LGWyVD39Gqg+RO13FZWo5UC3fiQtWV1hvrcKrlePOfWTtvxs6wRavcN03v5rljaCg=="/>
         </item>
         <item>
@@ -338,6 +339,6 @@ Requires macOS 26 or later. This build is not Apple Developer ID notarized.
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: MTXSIyPF4a8aqtqO6LkNnK1g145mEGZyqCdnymOvxItTKgLTojSXsOhAmITMd7eQlVcDmP2jxrsMPLdguyzeDg==
-length: 18711
+edSignature: FqYzlYI+WHHfWvhqh9a1Zbe8wzVMkX/1WE8fvhmtT0DCcMsKx9/r0/wFN96yiKnIR8TZ9K6SAoqNA/Bw2lxIDg==
+length: 21673
 -->
