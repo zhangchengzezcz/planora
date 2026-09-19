@@ -55,7 +55,8 @@ final class TaskOrderingTests: XCTestCase {
                 }
             }
             .environment(\.locale, Locale(identifier: language))
-            XCTAssertLessThan(try render(rootView, width: 320, attachmentName: "Weekly calendar \(language)"), 3)
+            let elapsed = try render(rootView, width: 320, attachmentName: "Weekly calendar \(language)")
+            XCTAssertLessThan(elapsed, 3)
         }
     }
 

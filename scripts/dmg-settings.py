@@ -1,8 +1,8 @@
 import os
 
-format = "UDZO"
+format = defines.get("format", "UDZO")
 filesystem = "HFS+"
-files = [defines["app"], (defines["guide"], "Installation.txt")]
+files = [defines["app"], (defines["guide"], "INSTALLATION.txt")]
 symlinks = {"Applications": "/Applications"}
 background = defines["background"]
 window_rect = ((120, 120), (720, 460))
@@ -14,4 +14,4 @@ show_pathbar = False
 include_icon_view_settings = True
 icon_size = 96
 text_size = 14
-icon_locations = {os.path.basename(defines["app"]): (190, 210), "Applications": (530, 210), "Installation.txt": (650, 402)}
+icon_locations = {os.path.basename(defines["app"]): (190, 210), "Applications": (530, 210), "INSTALLATION.txt": (650, 402)}

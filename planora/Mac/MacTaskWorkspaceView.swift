@@ -150,9 +150,10 @@ struct MacTaskWorkspaceView: View {
                         detailTask = tasks.first { $0.id == id }
                     }
                 }
+                .frame(minWidth: 0, maxWidth: .infinity)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .windowBackgroundColor))
         .taskCompletionConfirmation(task: $taskPendingCompletion)
         .sheet(item: $detailTask) { task in
@@ -164,7 +165,7 @@ struct MacTaskWorkspaceView: View {
                         }
                     }
             }
-            .frame(minWidth: 620, idealWidth: 760, minHeight: 600, idealHeight: 800)
+            .frame(minWidth: 380, idealWidth: 700, minHeight: 420, idealHeight: 720)
         }
         .onChange(of: tableSelection) { _, ids in
             selection = ids.count == 1 ? ids.first : nil
@@ -195,13 +196,14 @@ struct MacTaskWorkspaceView: View {
                     TaskDetailView(store: store, task: selectedTask)
                         .id(selectedTask.id)
                 }
-                .inspectorColumnWidth(min: 420, ideal: 500, max: 700)
+                .inspectorColumnWidth(min: 300, ideal: 360, max: 520)
             }
         }
     }
 
     private func filters(taskCount: Int) -> some View {
-        HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
             Picker(String(localized: "Source"), selection: $source) {
                 ForEach(MacTaskSource.allCases) { value in
                     Label(value.title, systemImage: value.symbol).tag(value)
@@ -210,35 +212,52 @@ struct MacTaskWorkspaceView: View {
             .frame(width: 180)
             .buttonStyle(.glass)
 
-            Text(String(localized: "Status"))
-            MacLiquidGlassStatusPicker(selection: $status)
-                .frame(width: 330, height: 34)
-
+            Spacer(minLength: 0)
+            Text(PlanoraLocalization.format(String(localized: "task_count_format"), taskCount))
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+            }
             if source == .subject {
                 Picker(String(localized: "Subject"), selection: $selectedSubject) {
                     Text(String(localized: "All Subjects")).tag("")
                     ForEach(subjects, id: \.self) { Text(PlanoraFormat.subjectDisplayName($0)).tag($0) }
                 }
-                .frame(width: 210)
+                .frame(maxWidth: 260)
                 .buttonStyle(.glass)
             }
 
-            Spacer()
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    MacLiquidGlassStatusPicker(selection: $status)
+                        .frame(minWidth: 240, idealWidth: 330, maxWidth: 330, minHeight: 34, maxHeight: 34)
+                    taskActions
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    MacLiquidGlassStatusPicker(selection: $status)
+                        .frame(height: 34)
+                    taskActions
+                }
+            }
+        }
+        .padding(12)
+    }
+
+    private var taskActions: some View {
+        HStack(spacing: 10) {
             if let selectedTask {
                 Button(String(localized: "Task Details"), systemImage: "doc.text") {
                     detailTask = selectedTask
                 }
+                .help(String(localized: "Task Details"))
             }
             if !tableSelection.isEmpty && status != .deleted {
                 Button(String(localized: "Actions"), systemImage: "ellipsis.circle") {
                     isShowingBulkActions = true
                 }
+                .help(String(localized: "Actions"))
             }
-            Text(PlanoraLocalization.format(String(localized: "task_count_format"), taskCount))
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
         }
-        .padding(12)
+        .labelStyle(.iconOnly)
     }
 }
 

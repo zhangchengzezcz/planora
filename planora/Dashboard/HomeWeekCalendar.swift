@@ -4,7 +4,9 @@ struct HomeWeekCalendar: View {
     let store: PlanoraStore
     let tasks: [PlanoraTask]
     @Binding var selectedDate: Date
+    var onSelectTask: (PlanoraTask) -> Void = { _ in }
     @State private var showsDatePicker = false
+    @State private var availableWidth: CGFloat = 0
 
     private var calendar: Calendar {
         var calendar = Calendar.current
@@ -49,14 +51,24 @@ struct HomeWeekCalendar: View {
             }
             .buttonStyle(.glass)
 
-            WeekColumnsLayout {
+            let columns = availableWidth >= 820
+            let layout = columns ? AnyLayout(HStackLayout(alignment: .top, spacing: 12))
+                : AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+            layout {
                 ForEach(days, id: \.self) { day in
                     dayContent(day)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
                 }
             }
             Button("This Week") { selectedDate = Date() }
                 .buttonStyle(.plain)
                 .foregroundStyle(Color.accentColor)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .onGeometryChange(for: CGFloat.self) { geometry in
+            geometry.size.width
+        } action: { width in
+            if width.isFinite { availableWidth = width }
         }
     }
 
@@ -71,8 +83,8 @@ struct HomeWeekCalendar: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             ForEach(scheduled) { task in
-                NavigationLink {
-                    TaskDetailView(store: store, task: task)
+                Button {
+                    onSelectTask(task)
                 } label: {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(task.title).font(.subheadline.weight(.semibold)).lineLimit(3)
@@ -104,31 +116,6 @@ struct HomeWeekCalendar: View {
     private func moveWeek(_ offset: Int) {
         guard let date = calendar.date(byAdding: .weekOfYear, value: offset, to: selectedDate) else { return }
         selectedDate = date
-    }
-}
-
-// Choose by available width, not by the intrinsic width of long task titles.
-private struct WeekColumnsLayout: Layout {
-    private let spacing: CGFloat = 12
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? 900
-        let horizontal = width >= 820
-        let column = horizontal ? (width - spacing * CGFloat(max(0, subviews.count - 1))) / CGFloat(max(1, subviews.count)) : width
-        let heights = subviews.map { $0.sizeThatFits(.init(width: column, height: nil)).height }
-        let height = horizontal ? heights.max() ?? 0 : heights.reduce(0, +) + spacing * CGFloat(max(0, subviews.count - 1))
-        return CGSize(width: width, height: height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let horizontal = bounds.width >= 820
-        let width = horizontal ? (bounds.width - spacing * CGFloat(max(0, subviews.count - 1))) / CGFloat(max(1, subviews.count)) : bounds.width
-        var position = bounds.origin
-        for view in subviews {
-            let size = view.sizeThatFits(.init(width: width, height: nil))
-            view.place(at: position, anchor: .topLeading, proposal: .init(width: width, height: size.height))
-            if horizontal { position.x += width + spacing } else { position.y += size.height + spacing }
-        }
     }
 }
 

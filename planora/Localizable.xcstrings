@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "Unable to Delete Task" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unable to Delete Task" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法删除任务" } }
+      }
+    },
     "Unable to Open Local Data" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Unable to Open Local Data" } },

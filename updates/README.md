@@ -9,6 +9,7 @@ This directory contains Planora's public release notes, Mac software-update feed
 - `1.7.2.md` — Planora 1.7.2 release notes
 - `1.7.3.md` — Planora 1.7.3 release notes
 - `1.7.4.md` — Planora 1.7.4 release notes
+- `1.7.5.md` — Planora 1.7.5 release notes
 - `appcast.xml` — signed Sparkle update feed for Mac
 - `INSTALLATION.txt` — bilingual Mac installation and security guide
 - `assets/dmg-background.png` — embedded Finder background used by the Mac DMG
@@ -51,10 +52,10 @@ Before publication, verify:
 7. application code signing where applicable;
 8. SHA-256 checksums.
 
-## Planora 1.7.4
+## Planora 1.7.5
 
-Planora 1.7.4 primarily improves iPhone and iPad compatibility on iOS / iPadOS 26 while preserving the existing iOS / iPadOS 27 and Mac architecture.
+Planora 1.7.5 fixes the Home calendar interaction/layout regression reported in 1.7.4 and preserves the existing iPhone, iPad, and Mac architecture.
 
-Known issue: tapping a date or week area in the Home weekly calendar on iPhone or iPad may cause the interface to become unresponsive and crash.
+The Mac release also uses a portable DMG installation background embedded inside the disk image rather than depending on a path on the development Mac.
 
-See `1.7.4.md` for the complete bilingual release notes.
+See `1.7.5.md` for the complete bilingual release notes.

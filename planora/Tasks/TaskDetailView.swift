@@ -8,17 +8,17 @@ struct TaskDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \PlanoraTask.createdDate) private var allTasks: [PlanoraTask]
     @Query(sort: \PlanoraCourse.displayName) private var courses: [PlanoraCourse]
     @Query(sort: \PlanoraUnit.title) private var units: [PlanoraUnit]
     @Query(sort: \PlanoraTopic.title) private var topics: [PlanoraTopic]
     @State private var isShowingDeleteConfirmation = false
     @State private var isShowingEditor = false
     @State private var isShowingIncompleteSubtasksConfirmation = false
+    @State private var operationError: String?
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 18) {
+            LazyVStack(alignment: .leading, spacing: 18) {
                 detailHeader
                 ManageBacTaskResultPanel(task: task)
                 overviewPanel
@@ -47,8 +47,11 @@ struct TaskDetailView: View {
         .planoraDetailNavigationBar()
         .background(PlanoraBackground())
         .onAppear {
+            let previousTimeline = task.timelineData
             task.ensureTimeline()
-            PlanoraTaskPersistence.save(modelContext)
+            if task.timelineData != previousTimeline {
+                PlanoraTaskPersistence.save(modelContext)
+            }
         }
         .toolbar {
             if !task.isDeleted {
@@ -87,7 +90,7 @@ struct TaskDetailView: View {
                         }
                     }
             }
-            .frame(width: 640, height: 720)
+            .frame(minWidth: 380, idealWidth: 640, minHeight: 420, idealHeight: 720)
         }
         #endif
         .confirmationDialog(
@@ -114,6 +117,13 @@ struct TaskDetailView: View {
         } message: {
             Text(PlanoraLocalization.format(String(localized: "delete_task_confirmation_format"), task.title))
         }
+        .alert(String(localized: "Unable to Delete Task"), isPresented: Binding(
+            get: { operationError != nil }, set: { if !$0 { operationError = nil } }
+        )) {
+            Button(String(localized: "OK"), role: .cancel) { operationError = nil }
+        } message: {
+            Text(operationError ?? "")
+        }
     }
 
     private var detailHeader: some View {
@@ -126,7 +136,11 @@ struct TaskDetailView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(task.title)
+                    #if os(macOS)
+                    .font(.system(size: 24, weight: .bold))
+                    #else
                     .font(.system(size: 30, weight: .bold))
+                    #endif
                     .foregroundStyle(Color.planoraInk)
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -381,8 +395,10 @@ struct TaskDetailView: View {
                 dismiss()
             }
             Button(role: .destructive) {
-                PlanoraTaskOperations.permanentlyDelete([task], allTasks: allTasks, modelContext: modelContext)
-                dismiss()
+                withRelatedTasks { tasks in
+                    PlanoraTaskOperations.permanentlyDelete([task], allTasks: tasks, modelContext: modelContext)
+                    dismiss()
+                }
             } label: {
                 Label(String(localized: "Delete Permanently"), systemImage: "trash.fill")
                     .font(.headline.weight(.semibold))
@@ -405,6 +421,7 @@ struct TaskDetailView: View {
     }
 
     private func delete(scope: RecurrenceEditScope) {
+        withRelatedTasks { allTasks in
         PlanoraTaskOperations.delete(
             task,
             scope: scope,
@@ -413,6 +430,16 @@ struct TaskDetailView: View {
             store: store
         )
         dismiss()
+        }
+    }
+
+    // Related tasks are needed only for explicit deletion, not every detail presentation.
+    private func withRelatedTasks(_ action: ([PlanoraTask]) -> Void) {
+        do {
+            action(try modelContext.fetch(FetchDescriptor<PlanoraTask>()))
+        } catch {
+            operationError = error.localizedDescription
+        }
     }
 
     private func toggleCompletion() {

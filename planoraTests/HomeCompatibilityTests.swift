@@ -7,6 +7,43 @@ import XCTest
 
 @MainActor
 final class HomeCompatibilityTests: XCTestCase {
+    func testWeeklyCalendarSwitchingAndResizing() async throws {
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.first as? UIWindowScene)
+        let container = try ModelContainer(for: Schema(PlanoraPersistence.models), configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let store = PlanoraStore(storage: .preview, loadSavedProfile: false)
+        let state = CalendarTestState()
+        let tasks = (0..<28).map { index in
+            PlanoraTask(title: "Calendar task \(index)", subject: "Physics", type: .assignment,
+                        deadline: Calendar.current.date(byAdding: .day, value: index % 14, to: state.date), hasDeadline: true,
+                        progressState: .percentage(0.4), notes: "", isCompleted: index % 3 == 0)
+        }
+        tasks.forEach { container.mainContext.insert($0) }
+        try container.mainContext.save()
+        let controller = UIHostingController(rootView: CalendarTransitionHarness(state: state, store: store, tasks: tasks).modelContainer(container))
+        let window = UIWindow(windowScene: scene)
+        window.frame = scene.effectiveGeometry.coordinateSpace.bounds
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true; window.rootViewController = nil }
+        for width in [320.0, 834.0, 1194.0] {
+            window.frame.size.width = width
+            for iteration in 0..<6 {
+                state.week = iteration % 2 == 0
+                state.date = Calendar.current.date(byAdding: .weekOfYear, value: iteration % 2 == 0 ? 1 : -1, to: state.date)!
+                try await Task.sleep(for: .milliseconds(200))
+                controller.view.layoutIfNeeded()
+                for scroll in scrollViews(in: controller.view) {
+                    XCTAssertTrue(scroll.contentSize.height.isFinite)
+                    XCTAssertTrue(scroll.contentSize.width.isFinite)
+                    XCTAssertLessThanOrEqual(scroll.contentSize.width, scroll.bounds.width + 1)
+                }
+            }
+            state.week = true
+            try await Task.sleep(for: .milliseconds(200))
+            capture(controller.view, name: "week-transition-width-\(Int(width))")
+        }
+    }
+
     func testHomeEmptyAndPopulatedLayouts() async throws {
         let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.first as? UIWindowScene)
         let container = try ModelContainer(for: Schema(PlanoraPersistence.models), configurations: ModelConfiguration(isStoredInMemoryOnly: true))
@@ -27,7 +64,7 @@ final class HomeCompatibilityTests: XCTestCase {
                     HomeDashboardView(store: store, onCreateRequested: {})
                 }.modelContainer(container).preferredColorScheme(scheme))
                 let window = UIWindow(windowScene: scene)
-                window.frame = scene.coordinateSpace.bounds
+                window.frame = scene.effectiveGeometry.coordinateSpace.bounds
                 window.rootViewController = controller
                 window.makeKeyAndVisible()
                 defer { window.isHidden = true; window.rootViewController = nil }
@@ -57,6 +94,36 @@ final class HomeCompatibilityTests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+}
+
+@MainActor @Observable
+private final class CalendarTestState {
+    var week = false
+    var date = Date()
+}
+
+private struct CalendarTransitionHarness: View {
+    @Bindable var state: CalendarTestState
+    let store: PlanoraStore
+    let tasks: [PlanoraTask]
+
+    var body: some View {
+        NavigationStack {
+            List {
+                VStack {
+                    Picker("Calendar", selection: $state.week) {
+                        Text("Week").tag(true)
+                        Text("Month").tag(false)
+                    }.pickerStyle(.segmented)
+                    if state.week {
+                        HomeWeekCalendar(store: store, tasks: tasks, selectedDate: $state.date)
+                    } else {
+                        CalendarPreview(store: store, tasks: tasks, monthDate: $state.date)
+                    }
+                }
+            }
+        }
     }
 }
 #endif

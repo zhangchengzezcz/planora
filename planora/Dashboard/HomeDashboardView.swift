@@ -17,6 +17,7 @@ struct HomeDashboardView: View {
     @State private var hasRefreshedScheduledWork = false
     @State private var resultSubject = ""
     @State private var showsAllResults = false
+    @State private var selectedCalendarTaskID: UUID?
 
     // MARK: - View
 
@@ -26,6 +27,11 @@ struct HomeDashboardView: View {
         dashboardContent(snapshot: snapshot)
         .contentMargins(.horizontal, PlanoraTheme.pageHorizontalPadding, for: .scrollContent)
         .planoraHiddenNavigationBar()
+        .navigationDestination(item: $selectedCalendarTaskID) { id in
+            if let task = tasks.first(where: { $0.id == id }) {
+                TaskDetailView(store: store, task: task)
+            }
+        }
         .background {
 #if os(macOS)
             if colorScheme == .light {
@@ -100,9 +106,7 @@ struct HomeDashboardView: View {
                             .font(.headline)
                             .foregroundStyle(Color.planoraInk)
                         ForEach(snapshot.upcomingProgressTasks) { task in
-                            GlassPanel(padding: 0) {
-                                TaskRow(store: store, task: task)
-                            }
+                            TaskRow(store: store, task: task, framed: true)
                         }
                     }
                     if !snapshot.upcomingTimelineItems.isEmpty {
@@ -110,9 +114,7 @@ struct HomeDashboardView: View {
                             .font(.headline)
                             .foregroundStyle(Color.planoraInk)
                         ForEach(snapshot.upcomingTimelineItems) { task in
-                            GlassPanel(padding: 0) {
-                                TaskRow(store: store, task: task)
-                            }
+                            TaskRow(store: store, task: task, framed: true)
                         }
                     }
                 } else if snapshot.hasTasks {
@@ -297,7 +299,9 @@ struct HomeDashboardView: View {
                     if showsMonthCalendar {
                         CalendarPreview(store: store, tasks: snapshot.deadlineTasks, monthDate: $calendarMonthDate)
                     } else {
-                        HomeWeekCalendar(store: store, tasks: tasks, selectedDate: $calendarMonthDate)
+                        HomeWeekCalendar(store: store, tasks: tasks, selectedDate: $calendarMonthDate) {
+                            selectedCalendarTaskID = $0.id
+                        }
                     }
                 }
             }
@@ -569,8 +573,8 @@ private struct TodayFocusCard: View {
     let task: PlanoraTask
 
     var body: some View {
-        GlassPanel(padding: 0) {
-            DashboardTaskInteraction(store: store, task: task) {
+        DashboardTaskInteraction(store: store, task: task) {
+            GlassPanel(padding: 0) {
                 focusContent
                     .padding(20)
             }
@@ -763,9 +767,19 @@ private struct TaskList: View {
 private struct TaskRow: View {
     let store: PlanoraStore
     let task: PlanoraTask
+    var framed = false
 
     var body: some View {
         DashboardTaskInteraction(store: store, task: task) {
+            if framed {
+                GlassPanel(padding: 0) { rowContent }
+            } else {
+                rowContent
+            }
+        }
+    }
+
+    private var rowContent: some View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 14) {
                     Image(systemName: "doc.text.magnifyingglass")
@@ -817,7 +831,6 @@ private struct TaskRow: View {
                 .foregroundStyle(.secondary)
             }
             .padding(18)
-        }
     }
 }
 
@@ -1071,13 +1084,12 @@ private struct LearningInsight: View {
 
 // MARK: - Calendar
 
-private struct CalendarPreview: View {
+struct CalendarPreview: View {
     let store: PlanoraStore
     let tasks: [PlanoraTask]
     @Binding var monthDate: Date
     @State private var selectedDate: Date?
 
-    private let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 7)
     private var weekdays: [String] { PlanoraFormat.weekdays }
 
     var body: some View {
@@ -1109,9 +1121,19 @@ private struct CalendarPreview: View {
     }
 
     private func calendarGrid(snapshot: CalendarPreviewSnapshot) -> some View {
-        LazyVGrid(columns: columns, spacing: 8) {
-            weekdayHeaders
-            calendarCells(snapshot: snapshot)
+        // Calendar cells are a small, finite grid. Eager rows avoid estimated
+        // heights feeding back into the enclosing self-sizing List on iOS 26.
+        Grid(horizontalSpacing: 6, verticalSpacing: 8) {
+            GridRow { weekdayHeaders }
+            ForEach(0..<((snapshot.calendarDays.count + 6) / 7), id: \.self) { row in
+                GridRow {
+                    ForEach(0..<7, id: \.self) { column in
+                        let index = row * 7 + column
+                        calendarCell(index < snapshot.calendarDays.count ? snapshot.calendarDays[index] : nil, snapshot: snapshot)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+            }
         }
     }
 
@@ -1176,8 +1198,7 @@ private struct CalendarPreview: View {
     }
 
     @ViewBuilder
-    private func calendarCells(snapshot: CalendarPreviewSnapshot) -> some View {
-        ForEach(Array(snapshot.calendarDays.enumerated()), id: \.offset) { _, date in
+    private func calendarCell(_ date: Date?, snapshot: CalendarPreviewSnapshot) -> some View {
             if let date {
                 CalendarDateButton(
                     date: date,
@@ -1191,7 +1212,6 @@ private struct CalendarPreview: View {
                 Color.clear
                     .frame(height: 38)
             }
-        }
     }
 
     @ViewBuilder
