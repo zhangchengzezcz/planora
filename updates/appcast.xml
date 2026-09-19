@@ -17,76 +17,105 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
             <description sparkle:format="markdown"><![CDATA[# Planora 1.7.5
 
-## 中文
+Planora 1.7.5 修复 iPhone、iPad 和 Mac 上的多项任务交互与布局问题，并改进 Mac 安装包的可移植性。
 
-Planora 1.7.5 主要修复 iPhone 与 iPad 首页日历的稳定性问题，并进一步完善 Mac 发布与更新流程。
+## 中文
 
 ### iPhone / iPad
 
-- 修复首页周视图与月视图切换时可能触发的 UIKit 布局循环崩溃。
-- 修复系统 List 单元格高度在两种布局尺寸之间反复变化的问题。
-- 调整月历嵌套布局，避免周／月切换时形成循环尺寸反馈。
-- 保留现有首页结构、任务数据、SwiftData 数据和 iOS / iPadOS 27 界面逻辑。
-- 增加并重新运行首页兼容性回归测试。
-- 在 iPhone 与 iPad Simulator 上重新验证相关首页布局。
+- 修复在首页周历中点击日期、切换周历/月历或重新布局时可能出现界面卡住并最终闪退的问题。
+- 修复 iPad 上周历/月历切换过程中系统 `List` 单元格高度在不同值之间反复变化并触发 UIKit 布局循环的问题。
+- 调整周历与月历的嵌套布局，避免日历内容参与不稳定的尺寸反馈。
+- 改进不同 iPhone 与 iPad 宽度下的日历自适应布局，同时保留现有 iOS / iPadOS 导航与系统界面逻辑。
+
+### 任务交互
+
+- 修复任务左滑操作时只有文字和内容移动、白色任务卡片背景留在原位的问题。
+- 任务卡片背景现在与任务内容一起参与滑动，使左滑操作保持完整一致。
 
 ### Mac
 
-- 保留现有原生 Mac 工作区和 SwiftData 数据架构。
-- 保留 Sparkle 2.9.6 更新系统与 Ed25519 更新签名。
-- 继续使用独立的 macOS Release 构建。
+- 修复首次打开任务详情时明显卡顿、详情内容延迟出现的问题。
+- 减少打开任务详情过程中不必要的全任务查询和保存操作，使详情视图更快显示。
+- 改进任务详情区域的窗口缩放逻辑，降低不必要的最小宽度限制，使任务详情在较窄窗口下仍能正常使用。
+- 修复正常缩小 Mac 窗口时任务详情内容可能被挤出可用区域的问题。
+- 改进任务工作区筛选控件的响应式布局，使其能够根据可用宽度调整排列。
+- 保留现有 SwiftData 数据、任务关系、重复任务删除范围、Mac 原生工作区以及数据迁移逻辑。
 
 ### DMG
 
-- DMG 安装背景真正存储于磁盘映像内部的隐藏 `.background` 目录。
-- Finder 背景配置引用 DMG 卷内资源，不依赖开发 Mac 上的绝对路径。
-- DMG 包含 Planora、Applications 快捷方式与 `INSTALLATION.txt`。
-- 构建后重新挂载最终 DMG，检查隐藏背景、Finder 配置、应用签名和映像完整性。
-- 生成发布 ZIP、DMG 和 SHA-256 校验值。
+- 修复 DMG 安装背景依赖开发 Mac 本地路径的问题。
+- 安装背景现在真正存储在 DMG 内部隐藏的 `.background` 目录中。
+- Finder 的背景配置引用磁盘映像内部资源，不再依赖开发机器上的绝对文件路径。
+- DMG 继续包含 Planora、Applications 快捷方式和 `INSTALLATION.txt`。
+- 发布包继续提供 Sparkle 更新 ZIP、DMG 和 SHA-256 校验值。
 
-### 更新
+### 验证
 
-- Mac 更新继续通过 Sparkle signed appcast 发布。
+- iPhone 回归测试通过，包括周历反复切换、日期变化和窄屏布局。
+- 在 iPad 上复现并修复周历/月历切换导致的 UIKit 布局循环问题。
+- Mac Release 构建通过，并检查任务详情在多种窗口宽度下的布局与加载行为。
+- 最终 DMG 已重新挂载检查，确认隐藏背景资源、Finder 配置、Applications 快捷方式、安装说明、App 签名和磁盘映像完整性。
+- Planora 1.7.5 保持版本号 `1.7.5`、build `20`。
+
+### 更新系统
+
+- Mac 软件更新继续使用 Sparkle 2.9.6。
+- Sparkle 仍仅包含在 macOS 版本中。
 - 更新 ZIP 继续使用 Ed25519 签名验证。
-- Sparkle 私钥继续仅存储于发布 Mac 的 Keychain，不写入 Git 仓库。
-- 本版本仍不等同于 Apple Developer ID notarization。
+- Sparkle 私钥仍只保存在发布环境的 Keychain 中，不提交到 Git。
+- 本版本仍未使用 Apple Developer ID 公证；Sparkle 签名与 Apple Developer ID / notarization 相互独立。
 
 ---
 
 ## English
 
-Planora 1.7.5 primarily fixes the Home calendar stability issue on iPhone and iPad and further hardens the Mac distribution and update workflow.
+Planora 1.7.5 fixes several task interaction and layout issues across iPhone, iPad, and Mac, and improves the portability of the Mac installer.
 
 ### iPhone / iPad
 
-- Fixed a UIKit layout-loop crash that could occur while switching between the weekly and monthly Home calendar.
-- Fixed repeated system List row-height oscillation between competing layout sizes.
-- Adjusted the nested monthly-calendar layout to avoid cyclic size feedback.
-- Preserved the existing Home structure, task data, SwiftData storage, and iOS / iPadOS 27 interface behavior.
-- Added and re-ran Home compatibility regression coverage.
-- Re-verified the relevant Home layouts on both iPhone and iPad Simulators.
+- Fixed an issue where interacting with dates in the Home calendar, switching between week and month views, or relaying out the calendar could cause the interface to become unresponsive and eventually crash.
+- Fixed an iPad issue where the system `List` cell height could repeatedly oscillate between different values during week/month transitions and eventually trigger a UIKit layout-loop assertion.
+- Adjusted the nested week and month calendar layouts to avoid unstable size-feedback behavior.
+- Improved calendar adaptation across different iPhone and iPad widths while preserving the existing iOS / iPadOS navigation and system interface behavior.
+
+### Task Interaction
+
+- Fixed task swipe actions where the text and content moved while the white task-card background remained stationary.
+- The complete task card now moves consistently with the swipe interaction.
 
 ### Mac
 
-- Preserved the native Mac workspace and existing SwiftData architecture.
-- Preserved the Sparkle 2.9.6 update system and Ed25519 update signing.
-- Continued to use a dedicated macOS Release build.
+- Fixed noticeable delays and temporary loading stalls when opening a task detail view for the first time.
+- Reduced unnecessary full-task queries and save operations while opening task details so the detail view can appear more quickly.
+- Improved task-detail window resizing by reducing unnecessary minimum-width constraints, allowing the workspace to remain usable at narrower window sizes.
+- Fixed task-detail content being pushed outside the usable area during normal Mac window resizing.
+- Improved the responsive layout of task-workspace filter controls so they can adapt to the available width.
+- Preserved existing SwiftData content, task relationships, recurring-task deletion scopes, the native Mac workspace, and existing migration behavior.
 
 ### DMG
 
-- The installation background is stored inside the disk image under the hidden `.background` directory.
-- Finder references the background inside the mounted DMG rather than an absolute path on the development Mac.
-- The DMG contains Planora, an Applications shortcut, and `INSTALLATION.txt`.
-- The final compressed DMG is mounted again to verify the embedded background, Finder configuration, application signature, and disk-image integrity.
-- SHA-256 checksums are generated for the release ZIP and DMG.
+- Fixed the DMG installation background depending on a local path on the development Mac.
+- The installation background is now physically stored inside the disk image under the hidden `.background` directory.
+- Finder now references the background resource inside the mounted disk image instead of an absolute path on the development machine.
+- The DMG continues to contain Planora, an Applications shortcut, and `INSTALLATION.txt`.
+- The release continues to provide the Sparkle update ZIP, DMG, and SHA-256 checksums.
 
-### Updates
+### Validation
 
-- Mac updates continue to use a signed Sparkle appcast.
-- Update ZIP archives continue to use Ed25519 signature verification.
-- The Sparkle private key remains only in the release Mac Keychain and is never committed to Git.
-- This release is still separate from Apple Developer ID notarization.
-]]></description>
+- Passed iPhone regression coverage including repeated week-calendar switching, date changes, and narrow-width layouts.
+- Reproduced and fixed the UIKit layout loop triggered by week/month calendar transitions on iPad.
+- Passed the Mac Release build and checked task-detail loading and layout behavior at multiple window widths.
+- Remounted and verified the final DMG, including its hidden background resource, Finder configuration, Applications shortcut, installation guide, application signature, and disk-image integrity.
+- Planora remains version `1.7.5`, build `20`.
+
+### Update System
+
+- Mac software updates continue to use Sparkle 2.9.6.
+- Sparkle remains macOS-only.
+- Update archives continue to use Ed25519 signature verification.
+- The Sparkle private key remains in the release environment's Keychain and is not committed to Git.
+- This release is still not Apple Developer ID notarized; Sparkle signing remains independent from Apple Developer ID signing and notarization.]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.5/Planora-1.7.5-macOS.zip" length="6007302" type="application/octet-stream" sparkle:edSignature="uS6P9te1UhUwXbLIdn7G/LGWyVD39Gqg+RO13FZWo5UC3fiQtWV1hvrcKrlePOfWTtvxs6wRavcN03v5rljaCg=="/>
         </item>
         <item>
