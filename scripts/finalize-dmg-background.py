@@ -1,20 +1,30 @@
-"""Embed Finder's background inside the mounted image, independent of build paths."""
 import sys
 from pathlib import Path
 
-from ds_store import DSStore
-from mac_alias import Alias, Bookmark
+if len(sys.argv) != 2:
+    raise SystemExit("Usage: finalize-dmg-background.py MOUNT_POINT")
 
 volume = Path(sys.argv[1]).resolve()
+
 source = volume / ".background.png"
 folder = volume / ".background"
-folder.mkdir(exist_ok=True)
 destination = folder / "installation.png"
+
+if not source.is_file():
+    raise SystemExit(
+        f"ERROR: dmgbuild background source missing: {source}"
+    )
+
+folder.mkdir(exist_ok=True)
+
+if destination.exists():
+    destination.unlink()
+
 source.rename(destination)
-with DSStore.open(str(volume / ".DS_Store"), "r+") as store:
-    settings = store["."]["icvp"]
-    settings["backgroundType"] = 2
-    settings["backgroundImageAlias"] = Alias.for_file(str(destination)).to_bytes()
-    store["."]["icvp"] = settings
-    store["."]["pBBk"] = Bookmark.for_file(str(destination))
-    store["."]["icvl"] = ("type", b"icnv")
+
+if not destination.is_file():
+    raise SystemExit(
+        "ERROR: Could not move background into .background"
+    )
+
+print(destination)
