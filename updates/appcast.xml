@@ -9,6 +9,33 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.7.7</title>
+            <pubDate>Mon, 21 Sep 2026 06:42:07 +0800</pubDate>
+            <sparkle:version>22</sparkle:version>
+            <sparkle:shortVersionString>1.7.7</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.7
+
+## 中文
+- 新增课堂出勤：Mac 侧栏位于课程与消息之间，首页位于学习进度下方；iPhone、iPad 可从首页进入。
+- 同步 ManageBac 当前课表周的出勤状态，按已同步的周查看课程明细。区分出席、迟到、缺席和未记录，不将班主任点名统计混入课堂出勤。
+- 出勤率为（出席＋迟到）除以已记录课次，未记录不计入分母。更新后请同步一次 ManageBac。
+- 已通过 Mac、iOS 构建和课表读取、重复同步测试；真实学校页面的出勤读取结果尚待用户验证，不代表已导入全学期历史。
+- 保留 Vendor/Sparkle 和签名更新源；DMG 内置隐藏背景文件夹和 Finder 背景配置。
+
+## English
+- Added classroom attendance between Courses and Messages in the Mac sidebar, and below Learning Progress on the Home screen. Available from Home on iPhone and iPad too.
+- Reads attendance from the current ManageBac timetable week and displays previously synced weeks. Present, late, absent and unrecorded lessons remain distinct; homeroom totals are not mixed with classroom attendance.
+- Attendance rate is (present + late) / recorded lessons. Unrecorded lessons are excluded. Sync ManageBac once after updating.
+- Mac and iOS builds and focused timetable/import tests passed. Live school-page extraction still needs user validation; full-term history is not automatically imported.
+- Includes vendored Sparkle, a signed update feed, and an embedded hidden DMG background with Finder metadata.
+
+The macOS app is ad-hoc signed, not Developer ID signed or notarized.
+macOS 应用使用临时签名，未进行 Developer ID 签名或公证。
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.7/Planora-1.7.7-macOS.zip" length="8900899" type="application/octet-stream" sparkle:edSignature="+xC5DOWRJf0Wcg9PAFNjHCCM0tIcSdcZWfyfLXLyVo02Evvq6c6F4nbNs6yABSqXPnsK7DCmN/9MYB9N731ZDA=="/>
+        </item>
+        <item>
             <title>1.7.6</title>
             <pubDate>Sun, 20 Sep 2026 19:09:11 +0800</pubDate>
             <sparkle:version>21</sparkle:version>
@@ -337,42 +364,9 @@ Task management, ManageBac import, task lists, task creation, and the other prim
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.3/Planora-1.7.3-macOS.zip" length="8706339" type="application/octet-stream" sparkle:edSignature="NJxvaGmq0TuE6z593k4NBhbahgDIWwWwQEaVc79SpvAVvNb0xN7CIQyd9idgEBQvRV9+D0UAr9+W3jRQdXn7CA=="/>
         </item>
-        <item>
-            <title>1.7.2</title>
-            <pubDate>Sun, 13 Sep 2026 19:19:46 +0800</pubDate>
-            <sparkle:version>17</sparkle:version>
-            <sparkle:shortVersionString>1.7.2</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.2
-
-## 中文
-- Mac 新增检查更新、自动检查和可选自动下载；更新包与更新清单启用签名验证。
-- 更新框架仅用于 Mac，iPhone 构建不再解析或下载 Sparkle。
-- 首页增加周历，支持上一周、下一周、选择日期和周/月切换；日历位于成绩上方。
-- 即将到来的任务不再重复当前重点，成绩默认展示三项并支持展开。
-- 修复 ManageBac Completed 分组中尚未评分任务的完成状态漏读。
-- DMG 提供拖放安装示意背景和中英文安装说明，不修改应用图标。
-
-首次升级：1.7.1 及以前的版本没有更新器，需要手动安装本版一次。
-Mac 要求 macOS 26 或更新版本。本版没有 Apple Developer ID 公证。
-更新归档的 Ed25519 签名不等同于 Apple 公证。请阅读 DMG 安装说明。
-
-## English
-- Mac-only software updates with signed feeds and archives, automatic checks and optional automatic downloads.
-- iPhone builds no longer resolve or download Sparkle.
-- Home weekly calendar with week navigation, date selection and a month toggle, above grades.
-- Remove duplicate focus tasks from upcoming items; expand the three-result preview on demand.
-- Recognize ungraded tasks within ManageBac's Completed section.
-- Drag-to-install DMG with bilingual instructions and preserved app icons.
-
-Versions 1.7.1 and earlier need one manual installation to gain the updater.
-Requires macOS 26 or later. This build is not Apple Developer ID notarized.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.2/Planora-1.7.2-macOS.zip" length="8660273" type="application/octet-stream" sparkle:edSignature="9EnlCbsZ1fsPia1+8DgzqBAdN4lrRTK4oXop+F532gzt/tRME5T4cSdSqQdO2Io729MPfVjfARrb2uHghnhDAg=="/>
-        </item>
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: 6JxFuCT9yGsi2/ngfw1AkMpKiycLFiZDQuNMWtwoACdRNM7Mtb97nGaP4N+RjXMSGVPMUWPvaeaWm9yxgpElAQ==
-length: 24705
+edSignature: 55O4XSQq56DUwDT/CDGMIggtGkBct9VVQFep/cj+ObNweE+nrdQcHYWI7AQBSxA3kZSH+za9W7YrUL45EKY8Dg==
+length: 24887
 -->
