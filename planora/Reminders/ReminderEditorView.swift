@@ -109,6 +109,10 @@ private struct ReminderConfigurationView: View {
                 customReminderSection
             }
         }
+        #if os(macOS)
+        .formStyle(.grouped)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        #endif
         .scrollContentBackground(.hidden)
         .background(PlanoraBackground())
         .task {

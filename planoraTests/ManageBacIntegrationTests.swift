@@ -425,6 +425,26 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(summary.reviewCount, 1)
     }
 
+    func testManageBacDeadlineTimeSurvivesNormalizationAndResyncRepairsMidnight() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let remote = record(title: "Timed homework", deadline: "2026-09-24T09:25:00+08:00", identifier: "timed-task")
+        _ = try ManageBacTaskImporter.importRecords([remote], courses: [], existingTasks: [], into: context)
+        let task = try XCTUnwrap(try context.fetch(FetchDescriptor<PlanoraTask>()).first)
+        let expected = try XCTUnwrap(remote.deadline)
+        for zone in ["Asia/Shanghai", "America/Los_Angeles"] {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = try XCTUnwrap(TimeZone(identifier: zone))
+            task.normalizeCalendarDates(calendar: calendar)
+            XCTAssertEqual(task.deadline, expected)
+            XCTAssertFalse(task.normalizeCalendarDates(calendar: calendar))
+        }
+        task.deadline = Calendar.current.startOfDay(for: expected)
+        _ = try ManageBacTaskImporter.importRecords([remote], courses: [], existingTasks: [task], into: context)
+        task.normalizeCalendarDates()
+        XCTAssertEqual(task.deadline, expected)
+    }
+
     func testScoredTaskCompletesAndMissingResultDoesNotEraseIt() throws {
         let container = try makeContainer()
         let context = container.mainContext

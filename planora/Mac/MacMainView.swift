@@ -339,7 +339,16 @@ private struct MacSidebar: View {
     }
 
     private func link(_ destination: MacDestination) -> some View {
-        Label(destination.title, systemImage: destination.systemImage)
+        HStack(spacing: 9) {
+            Image(systemName: destination.systemImage)
+                .renderingMode(.template)
+                .font(.system(size: 18))
+                .frame(width: 22, height: 22)
+                .foregroundStyle(selection == destination ? Color.primary : Color.accentColor)
+                .accessibilityHidden(true)
+            Text(destination.title)
+            Spacer(minLength: 0)
+        }
             .badge(destination == .messages ? unreadMessages.count : 0)
             .tag(destination)
     }

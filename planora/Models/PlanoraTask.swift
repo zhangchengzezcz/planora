@@ -279,9 +279,11 @@ final class PlanoraTask {
         var didChange = false
 
         if hasDeadline, let deadline {
-            let day = deadlineDayIdentifier.flatMap { PlanoraCalendarDay(identifier: $0) }
+            let day = (isManageBacTask ? nil : deadlineDayIdentifier.flatMap { PlanoraCalendarDay(identifier: $0) })
                 ?? PlanoraCalendarDay(date: deadline, calendar: calendar)
-            let normalizedDate = day.date(calendar: calendar)
+            // School deadlines are timestamps. Day-only normalization must not
+            // discard the time returned by ManageBac or shift it across zones.
+            let normalizedDate = isManageBacTask ? deadline : day.date(calendar: calendar)
             if deadlineDayIdentifier != day.identifier {
                 deadlineDayIdentifier = day.identifier
                 didChange = true

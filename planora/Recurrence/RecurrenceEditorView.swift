@@ -78,6 +78,10 @@ struct RecurrenceDraftEditorView: View {
                 }
             }
         }
+        #if os(macOS)
+        .formStyle(.grouped)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        #endif
         .scrollContentBackground(.hidden)
         .background(PlanoraBackground())
         .navigationTitle(String(localized: "Repeat"))

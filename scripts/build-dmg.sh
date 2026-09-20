@@ -36,20 +36,21 @@ detach_point() {
     local point="$1"
 
     [[ -d "$point" ]] || return 0
+    mount | grep -Fq "on $point " || return 0
 
     local device
     device="$(df "$point" 2>/dev/null | tail -1 | awk '{print $1}' || true)"
 
     if [[ "$device" == /dev/* ]]; then
         hdiutil detach "$device" >/dev/null 2>&1 || \
-        hdiutil detach -force "$device" >/dev/null 2>&1 || true
+        hdiutil detach -force "$device" >/dev/null 2>&1
     fi
 }
 
 cleanup() {
     set +e
-    detach_point "$verify_point"
-    detach_point "$mount_point"
+    detach_point "$verify_point" || return
+    detach_point "$mount_point" || return
     rm -rf "$work"
 }
 

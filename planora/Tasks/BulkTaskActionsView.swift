@@ -87,6 +87,10 @@ struct BulkTaskActionsView: View {
 
                 actionOptions
             }
+            #if os(macOS)
+            .formStyle(.grouped)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            #endif
             .navigationTitle(String(localized: "Bulk Actions"))
             .planoraDetailNavigationBar()
             .toolbar {
