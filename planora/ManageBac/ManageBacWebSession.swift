@@ -1144,7 +1144,16 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     if (path.startsWith('/student/timetables')) {
-      const table = Array.from(document.querySelectorAll('table')).find(item => /\bPeriod\b/i.test(item.innerText) && /\bMon\b/i.test(item.innerText));
+      const findTable = () => Array.from(document.querySelectorAll('table')).find(item => /\bPeriod\b/i.test(item.innerText) && /\bMon\b/i.test(item.innerText));
+      if (!findTable()) {
+        await new Promise(resolve => {
+          const started = Date.now();
+          const timer = setInterval(() => {
+            if (findTable() || Date.now() - started > 8000) { clearInterval(timer); resolve(); }
+          }, 200);
+        });
+      }
+      const table = findTable();
       const rows = Array.from(table?.querySelectorAll('tr') || []);
       const headerCells = Array.from(rows[0]?.querySelectorAll('th,td') || []);
       const rangeText = normalize(document.querySelector('input[aria-label*=date i],input[value*=" - "]')?.value || document.querySelector('input[value*=" - "]')?.value);
@@ -1160,6 +1169,30 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         return date.toISOString().slice(0, 10);
       });
       const timePattern = /(\d{1,2}:\d{2}\s*(?:AM|PM))\s*-\s*(\d{1,2}:\d{2}\s*(?:AM|PM))/i;
+      const attendanceForCell = cell => {
+        // Inspect lesson containers, never coloured assignment-count badges.
+        const containers = [cell, ...cell.querySelectorAll('div,a,section')].filter(node =>
+          timePattern.test(normalize(node.textContent)) && node.getBoundingClientRect().height > 30);
+        const statusPattern = /\b(present|late|absent|unrecorded|not[-_ ]recorded)\b/i;
+        for (const node of containers) {
+          const semantic = [node.getAttribute('data-attendance-status'), node.getAttribute('data-status'),
+            node.getAttribute('aria-label'), node.getAttribute('title'), node.className].join(' ');
+          const match = semantic.match(statusPattern);
+          if (match) return /recorded/i.test(match[1]) ? 'unrecorded' : match[1].toLowerCase();
+        }
+        // ManageBac's timetable legend defines green/orange/red lesson backgrounds.
+        for (const node of containers.reverse()) {
+          const values = getComputedStyle(node).backgroundColor.match(/[\d.]+/g)?.map(Number);
+          if (!values || values.length < 3 || (values.length > 3 && values[3] < 0.1)) continue;
+          const [r, g, b] = values;
+          const spread = Math.max(r, g, b) - Math.min(r, g, b);
+          if (spread < 8) continue;
+          if (g > r + 5 && g > b + 5) return 'present';
+          if (r > b + 12 && g > b + 6 && Math.abs(r - g) < spread * 0.8) return 'late';
+          if (r > g + 5 && r > b + 5 && Math.abs(g - b) < spread * 0.6) return 'absent';
+        }
+        return 'unrecorded';
+      };
       const normalizedCourseName = value => normalize(value)
         .replace(/^HS\s+/i, '')
         .replace(/\s*\(Grade\s+\d+\)\s*$/i, '')
@@ -1202,7 +1235,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
             endDateText,
             location: details || null,
             teacherNames: teachers,
-            attendanceStatus: null,
+            attendanceStatus: attendanceForCell(cell),
             detailURL: null
           });
         }

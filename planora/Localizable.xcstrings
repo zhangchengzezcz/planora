@@ -1,134 +1,6 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
-    "Unable to Delete Task" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unable to Delete Task" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法删除任务" } }
-      }
-    },
-    "Unable to Open Local Data" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unable to Open Local Data" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法打开本地数据" } }
-      }
-    },
-    "Your existing data has not been deleted. Quit Planora and check your backup before trying again." : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Your existing data has not been deleted. Quit Planora and check your backup before trying again." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "现有数据未被删除。请退出 Planora，检查备份后重试。" } }
-      }
-    },
-"Software Update" : {
-  "localizations": {
-    "en": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "Software Update"
-      }
-    },
-    "zh-Hans": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "软件更新"
-      }
-    },
-    "ja": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "ソフトウェアアップデート"
-      }
-    }
-  }
-},
-"Check for Updates…" : {
-  "localizations": {
-    "en": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "Check for Updates…"
-      }
-    },
-    "zh-Hans": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "检查更新…"
-      }
-    },
-    "ja": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "アップデートを確認…"
-      }
-    }
-  }
-},
-"Last Checked" : {
-  "localizations": {
-    "en": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "Last Checked"
-      }
-    },
-    "zh-Hans": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "上次检查"
-      }
-    },
-    "ja": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "前回の確認"
-      }
-    }
-  }
-},
-"Automatically Check for Updates" : {
-  "localizations": {
-    "en": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "Automatically Check for Updates"
-      }
-    },
-    "zh-Hans": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "自动检查更新"
-      }
-    },
-    "ja": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "アップデートを自動確認"
-      }
-    }
-  }
-},
-"Download Updates Automatically" : {
-  "localizations": {
-    "en": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "Download Updates Automatically"
-      }
-    },
-    "zh-Hans": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "自动下载更新"
-      }
-    },
-    "ja": {
-      "stringUnit": {
-        "state": "translated",
-        "value": "アップデートを自動ダウンロード"
-      }
-    }
-  }
-},
     "" : {
 
     },
@@ -340,6 +212,12 @@
             "value" : "关于"
           }
         }
+      }
+    },
+    "Absent" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Absent" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "缺席" } }
       }
     },
     "Academic Planning" : {
@@ -1222,6 +1100,36 @@
         }
       }
     },
+    "Attendance" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Attendance" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "出勤" } }
+      }
+    },
+    "Attendance Details" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Attendance Details" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "出勤详情" } }
+      }
+    },
+    "Attendance includes late arrivals; unrecorded lessons are excluded." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Attendance includes late arrivals; unrecorded lessons are excluded." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "出勤包含迟到；未记录的课次不计入出勤率。" } }
+      }
+    },
+    "Attendance Not Recorded" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Attendance Not Recorded" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "未记录" } }
+      }
+    },
+    "Attendance Rate" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Attendance Rate" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "出勤率" } }
+      }
+    },
     "Aurora" : {
       "localizations" : {
         "en" : {
@@ -1240,6 +1148,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "极光"
+          }
+        }
+      }
+    },
+    "Automatically Check for Updates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatically Check for Updates"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートを自動確認"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动检查更新"
           }
         }
       }
@@ -1794,6 +1724,28 @@
         }
       }
     },
+    "Check for Updates…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートを確認…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查更新…"
+          }
+        }
+      }
+    },
     "Checking Account" : {
       "localizations" : {
         "en" : {
@@ -1968,6 +1920,12 @@
             "value" : "选择适合你的课程体系"
           }
         }
+      }
+    },
+    "Class Attendance" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Class Attendance" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "课堂出勤" } }
       }
     },
     "Classic" : {
@@ -3837,6 +3795,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完成"
+          }
+        }
+      }
+    },
+    "Download Updates Automatically" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download Updates Automatically"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アップデートを自動ダウンロード"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动下载更新"
           }
         }
       }
@@ -5845,6 +5825,28 @@
         }
       }
     },
+    "Last Checked" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Checked"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前回の確認"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上次检查"
+          }
+        }
+      }
+    },
     "Last Sync" : {
       "localizations" : {
         "en" : {
@@ -5865,6 +5867,18 @@
             "value" : "上次同步"
           }
         }
+      }
+    },
+    "Last Synced" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Last Synced" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "最近同步" } }
+      }
+    },
+    "Late" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Late" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "迟到" } }
       }
     },
     "Learning Overview" : {
@@ -7185,6 +7199,12 @@
             "value" : "暂无成绩记录"
           }
         }
+      }
+    },
+    "No Attendance Records" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No Attendance Records" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无出勤记录" } }
       }
     },
     "No deadline" : {
@@ -8967,6 +8987,12 @@
             "value" : "正在准备连接"
           }
         }
+      }
+    },
+    "Present" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Present" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "出席" } }
       }
     },
     "Previous Month" : {
@@ -10930,6 +10956,28 @@
         }
       }
     },
+    "Software Update" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Software Update"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ソフトウェアアップデート"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "软件更新"
+          }
+        }
+      }
+    },
     "Some subtasks are not finished." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -11479,6 +11527,12 @@
             "value" : "学校在 ManageBac 发布 Unit 后，请再次同步。"
           }
         }
+      }
+    },
+    "Sync ManageBac to read classroom attendance." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sync ManageBac to read classroom attendance." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "同步 ManageBac 后查看课堂出勤记录。" } }
       }
     },
     "Sync Now" : {
@@ -12915,6 +12969,38 @@
         }
       }
     },
+    "Unable to Delete Task" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to Delete Task"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法删除任务"
+          }
+        }
+      }
+    },
+    "Unable to Open Local Data" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to Open Local Data"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法打开本地数据"
+          }
+        }
+      }
+    },
     "Undo" : {
       "localizations" : {
         "en" : {
@@ -13727,6 +13813,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "可以按标题、科目、类型、备注或阶段查找。"
+          }
+        }
+      }
+    },
+    "Your existing data has not been deleted. Quit Planora and check your backup before trying again." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your existing data has not been deleted. Quit Planora and check your backup before trying again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "现有数据未被删除。请退出 Planora，检查备份后重试。"
           }
         }
       }

@@ -119,6 +119,8 @@ struct MacMainView: View {
             MacTaskWorkspaceView(store: store, searchText: searchText, selection: $selectedTaskID)
         case .courses:
             MacCoursesWorkspaceView(store: store)
+        case .attendance:
+            AttendanceView()
         case .messages:
             MacMessagesWorkspaceView()
         case .profile:
@@ -156,6 +158,7 @@ enum MacDestination: String, CaseIterable, Identifiable {
     case week
     case tasks
     case courses
+    case attendance
     case messages
     case profile
 
@@ -168,6 +171,7 @@ enum MacDestination: String, CaseIterable, Identifiable {
         case .week: String(localized: "This Week")
         case .tasks: String(localized: "Tasks")
         case .courses: String(localized: "Courses")
+        case .attendance: String(localized: "Attendance")
         case .messages: String(localized: "Messages")
         case .profile: String(localized: "Profile")
         }
@@ -180,6 +184,7 @@ enum MacDestination: String, CaseIterable, Identifiable {
         case .week: "calendar"
         case .tasks: "checklist"
         case .courses: "books.vertical"
+        case .attendance: "person.badge.clock"
         case .messages: "envelope"
         case .profile: "person.crop.circle"
         }
@@ -233,6 +238,7 @@ private struct MacSidebar: View {
                     link(.home)
                     link(.tasks)
                     link(.courses)
+                    link(.attendance)
                     link(.messages)
                 }
 

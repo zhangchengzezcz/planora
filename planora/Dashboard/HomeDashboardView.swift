@@ -125,6 +125,7 @@ struct HomeDashboardView: View {
                 calendarPreviewSection(snapshot: snapshot)
                 resultsSection
                 learningProgressSection(snapshot: snapshot)
+                HomeAttendanceSection()
                 }
                 .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                 .listRowSeparator(.hidden)
@@ -154,6 +155,7 @@ struct HomeDashboardView: View {
             calendarPreviewSection(snapshot: snapshot)
             resultsSection
             learningProgressSection(snapshot: snapshot)
+            HomeAttendanceSection()
         }
         .padding(.top, 18)
         .padding(.bottom, 32)

@@ -595,6 +595,38 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(stored.filter { !$0.isUnread }.count, 2)
     }
 
+    func testAttendanceColorsAndUnknownLessonsAreRead() async throws {
+        let html = #"""
+        <html><body><input aria-label="Select Date" value="Sep 14, 2026 - Sep 20, 2026">
+        <table><tr><th>Period</th><th>Sep 14, Mon</th><th>Sep 15, Tue</th><th>Sep 16, Wed</th><th>Sep 17, Thu</th><th>Sep 18, Fri</th></tr>
+        <tr><th>1</th>
+        <td><div style="height:100px;background:rgb(235,245,235)">7:30 AM - 8:10 AM History <span style="background:red">2</span></div></td>
+        <td><div style="height:100px;background:rgb(255,243,224)">7:30 AM - 8:10 AM History</div></td>
+        <td><div style="height:100px;background:rgb(255,230,230)">7:30 AM - 8:10 AM History</div></td>
+        <td><div style="height:100px;background:rgb(240,240,240)">7:30 AM - 8:10 AM History</div></td>
+        <td><div data-attendance-status="present" style="height:100px">7:30 AM - 8:10 AM History</div></td>
+        </tr></table></body></html>
+        """#
+        let webView = try await loadedWebView(html: html, url: "https://school.managebac.cn/student/timetables")
+        let result = try await webView.callAsyncJavaScript(ManageBacWebSession.workspaceScript,
+            arguments: ["courseRecords": []], in: nil, contentWorld: .page)
+        let json = try XCTUnwrap(result as? String)
+        let payload = try JSONDecoder().decode(WorkspaceFixturePayload.self, from: Data(json.utf8))
+        XCTAssertEqual(payload.schedule.map(\.attendanceStatus), ["present", "late", "absent", "unrecorded", "present"])
+        let container = try makeContainer()
+        let snapshot = ManageBacSyncSnapshot(schoolHost: "school.managebac.cn", courses: [], units: [], tasks: [], schedule: payload.schedule)
+        for _ in 0..<2 {
+            _ = try ManageBacTaskImporter.importSnapshot(snapshot, currentCurriculum: .ib, existingTasks: [], into: container.mainContext)
+        }
+        let events = try container.mainContext.fetch(FetchDescriptor<PlanoraScheduleEvent>())
+        XCTAssertEqual(events.count, 5)
+        let summary = AttendanceSummary(events: events)
+        XCTAssertEqual(summary.recorded, 4)
+        XCTAssertEqual(summary.rate, 0.75)
+        XCTAssertEqual(summary.count(.unrecorded), 1)
+        XCTAssertNil(AttendanceSummary(events: []).rate)
+    }
+
     func testCurrentWeeklyTimetableTableIsRead() async throws {
         let html = #"""
         <!doctype html><html><body><main>
