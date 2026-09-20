@@ -28,7 +28,7 @@ version=$(
 )
 
 volume_name="Planora $version"
-work="$(mktemp -d /tmp/planora-dmg.XXXXXX)"
+work="$(mktemp -d /private/tmp/planora-dmg.XXXXXX)"
 mount_point="$work/mount"
 verify_point="$work/verify"
 
