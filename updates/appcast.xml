@@ -9,6 +9,40 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.7.6</title>
+            <pubDate>Sun, 20 Sep 2026 19:09:11 +0800</pubDate>
+            <sparkle:version>21</sparkle:version>
+            <sparkle:shortVersionString>1.7.6</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.6
+
+## 中文
+
+- 修正 Mac 侧栏图标的布局方式，针对首次启动及台前调度切回应用时图标消失的问题，改为独立、固定尺寸的图标行。
+- 修复 ManageBac 截止时间被日期整理代码重置为凌晨 12:00 的问题，保留导入的时分和时区对应的时间点。更新后请同步一次 ManageBac，恢复此前已被重置的截止时间。
+- 提醒、重复和批量操作改用 Mac 原生分组表单，内容从顶部排列，修正大片空白和控件挤在中央的问题。
+- DMG 继续使用 Finder 原生背景设置，图片保存在映像内部的 `.background/installation.png`，并保留中英文安装说明。
+- 保留 Mac 专用的 Vendor/Sparkle 更新框架，提供签名更新归档和 appcast。iPhone/iPad 不包含 Sparkle。
+
+验证范围：Mac 通用版本及 iOS Simulator 构建、截止时间针对性回归测试、DMG 内容和更新签名检查。台前调度和新设备的最终显示效果由用户验证，本次不进行长时间真机测试。
+
+Mac 应用使用临时签名，未经过 Apple Developer ID 签名或公证；Sparkle 更新签名用于验证更新来源。
+
+## English
+
+- Replaced automatic sidebar label icons with independently laid-out, fixed-size symbols to address missing icons at first launch and when returning through Stage Manager.
+- Fixed date normalization resetting ManageBac deadlines to midnight. Imported times now retain their exact timestamp across time zones. Sync ManageBac once after updating to restore previously reset deadlines.
+- Switched reminder, recurrence, and bulk-action editors to native Mac grouped forms with top-aligned content.
+- Retained Finder-native DMG background settings and the embedded `.background/installation.png`, with bilingual installation instructions.
+- Retained the Mac-only vendored Sparkle framework, signed update archive, and appcast. Sparkle is not included in iPhone/iPad builds.
+
+Validation covers the universal Mac and iOS Simulator builds, focused deadline regression tests, DMG contents, and update signatures. Final Stage Manager and new-device appearance checks are left to the user; no extended physical-device testing was performed.
+
+The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization. Sparkle signatures verify the update source.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.6/Planora-1.7.6-macOS.zip" length="8788337" type="application/octet-stream" sparkle:edSignature="idiMQ4gLgueSlKiutIzsBUI6z9ug9tWnrBwVMHiShzERoVwq8FfLrpb+R2u1qhx3uA1dl2GhWxJgiwxSGz7rAw=="/>
+        </item>
+        <item>
             <title>1.7.5</title>
             <pubDate>Sat, 19 Sep 2026 21:09:32 +0800</pubDate>
             <sparkle:version>20</sparkle:version>
@@ -339,6 +373,6 @@ Requires macOS 26 or later. This build is not Apple Developer ID notarized.
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: FqYzlYI+WHHfWvhqh9a1Zbe8wzVMkX/1WE8fvhmtT0DCcMsKx9/r0/wFN96yiKnIR8TZ9K6SAoqNA/Bw2lxIDg==
-length: 21673
+edSignature: 6JxFuCT9yGsi2/ngfw1AkMpKiycLFiZDQuNMWtwoACdRNM7Mtb97nGaP4N+RjXMSGVPMUWPvaeaWm9yxgpElAQ==
+length: 24705
 -->
