@@ -48,6 +48,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     var records: [ManageBacTaskRecord] = []
     var messages: [ManageBacMessageRecord] = []
     var schedule: [ManageBacScheduleRecord] = []
+    var attendanceOverview: ManageBacAttendanceOverview?
     var programmeText: String?
     var completedStepCount = 0
     private(set) var recoveryPhase: Phase?
@@ -283,6 +284,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         records = []
         messages = []
         schedule = []
+        attendanceOverview = nil
         programmeText = nil
         schoolHost = nil
         currentTaskViewIndex = 0
@@ -425,6 +427,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 guard generation == pageLoadGeneration else { return }
                 messages.append(contentsOf: payload.messages)
                 schedule.append(contentsOf: payload.schedule)
+                if let overview = payload.attendanceOverview { attendanceOverview = overview }
                 currentWorkspacePathIndex += 1
                 if currentWorkspacePathIndex < workspacePaths.count {
                     loadStudentPath(workspacePaths[currentWorkspacePathIndex])
@@ -528,7 +531,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 units: units,
                 tasks: records,
                 messages: messages,
-                schedule: schedule
+                schedule: schedule,
+                attendanceOverview: attendanceOverview
             )
             let summary = try onSnapshotReady(snapshot)
             let detection = ManageBacProgrammeDetector.detect(
@@ -544,7 +548,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                     taskCount: records.count,
                     detectedCurriculumRawValue: detection.curriculum?.rawValue,
                     detectionConfidenceRawValue: detection.confidence.rawValue,
-                    skippedItems: skippedItems
+                    skippedItems: skippedItems,
+                    attendanceOverview: summary.attendanceOverview
                 )
             )
             phase = .completed(summary)
@@ -655,6 +660,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     private struct WorkspaceScanPayload: Codable {
         var messages: [ManageBacMessageRecord]
         var schedule: [ManageBacScheduleRecord]
+        var attendanceOverview: ManageBacAttendanceOverview?
     }
 
     static let courseScript = #"""
@@ -1241,6 +1247,24 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         }
       }
     }
-    return JSON.stringify({ messages, schedule });
+    let attendanceOverview = null;
+    if (path.startsWith('/student/timetables')) {
+      const title = 'Weekly Class Attendance';
+      const heading = Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6,strong,p,span,div'))
+        .find(node => normalize(node.textContent) === title);
+      if (heading) {
+        let node = heading;
+        for (let depth = 0; depth < 5 && node; depth += 1, node = node.parentElement) {
+          const text = normalize(node.textContent);
+          const tail = text.slice(text.indexOf(title) + title.length, text.indexOf(title) + title.length + 220);
+          const matches = Array.from(tail.matchAll(/(\d+)\s*(Present|Late|Absent|Unrecorded)\b/gi));
+          if (!matches.length) continue;
+          attendanceOverview = { present: 0, late: 0, absent: 0, unrecorded: 0 };
+          for (const match of matches) attendanceOverview[match[2].toLowerCase()] += Number(match[1]);
+          break;
+        }
+      }
+    }
+    return JSON.stringify({ messages, schedule, attendanceOverview });
     """#
 }

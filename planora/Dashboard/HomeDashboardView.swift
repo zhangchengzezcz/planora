@@ -16,6 +16,7 @@ struct HomeDashboardView: View {
     @State private var showsMonthCalendar = false
     @State private var hasRefreshedScheduledWork = false
     @State private var resultSubject = ""
+    @State private var resultMode = GradeDisplayMode.numbers
     @State private var showsAllResults = false
     @State private var selectedCalendarTaskID: UUID?
 
@@ -246,12 +247,21 @@ struct HomeDashboardView: View {
                     resultsSubjectPicker(subjects: subjects)
                     }
             }
+            if supportsHomeGradeCharts {
+                HStack {
+                    Spacer()
+                    GradeModePicker(selection: $resultMode, modes: [.numbers, .bars])
+                }
+            }
             if visible.isEmpty {
                 Text(String(localized: "No ManageBac results yet"))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 12)
             }
+            if resultMode == .bars && supportsHomeGradeCharts {
+                GradeVisualization(entries: visible.compactMap { GradeEntry(task: $0) }, mode: .bars)
+            } else {
             ForEach(showsAllResults ? visible : Array(visible.prefix(3))) { task in
                 NavigationLink {
                     TaskDetailView(store: store, task: task)
@@ -260,7 +270,7 @@ struct HomeDashboardView: View {
                         Text(task.title).font(.headline).foregroundStyle(.primary)
                         Text(PlanoraFormat.subjectDisplayName(task.subject))
                             .font(.callout).foregroundStyle(.secondary)
-                        ManageBacTaskResultPanel(task: task)
+                        ManageBacTaskResultPanel(task: task, tint: GradeEntry.tint(for: task.subject))
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
@@ -278,8 +288,17 @@ struct HomeDashboardView: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(Color.accentColor)
             }
+            }
         }
         .onChange(of: resultSubject) { _, _ in showsAllResults = false }
+    }
+
+    private var supportsHomeGradeCharts: Bool {
+#if os(macOS)
+        true
+#else
+        UIDevice.current.userInterfaceIdiom == .pad
+#endif
     }
 
     @ViewBuilder

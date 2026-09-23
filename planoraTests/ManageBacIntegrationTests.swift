@@ -598,6 +598,8 @@ final class ManageBacIntegrationTests: XCTestCase {
     func testAttendanceColorsAndUnknownLessonsAreRead() async throws {
         let html = #"""
         <html><body><input aria-label="Select Date" value="Sep 14, 2026 - Sep 20, 2026">
+        <aside><h3>Homeroom Attendance</h3><div>25/25 Present</div>
+        <h3>Weekly Class Attendance</h3><div>44 Present</div></aside>
         <table><tr><th>Period</th><th>Sep 14, Mon</th><th>Sep 15, Tue</th><th>Sep 16, Wed</th><th>Sep 17, Thu</th><th>Sep 18, Fri</th></tr>
         <tr><th>1</th>
         <td><div style="height:100px;background:rgb(235,245,235)">7:30 AM - 8:10 AM History <span style="background:red">2</span></div></td>
@@ -613,6 +615,7 @@ final class ManageBacIntegrationTests: XCTestCase {
         let json = try XCTUnwrap(result as? String)
         let payload = try JSONDecoder().decode(WorkspaceFixturePayload.self, from: Data(json.utf8))
         XCTAssertEqual(payload.schedule.map(\.attendanceStatus), ["present", "late", "absent", "unrecorded", "present"])
+        XCTAssertEqual(payload.attendanceOverview?.present, 44)
         let container = try makeContainer()
         let snapshot = ManageBacSyncSnapshot(schoolHost: "school.managebac.cn", courses: [], units: [], tasks: [], schedule: payload.schedule)
         for _ in 0..<2 {
@@ -624,6 +627,7 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(summary.recorded, 4)
         XCTAssertEqual(summary.rate, 0.75)
         XCTAssertEqual(summary.count(.unrecorded), 1)
+        XCTAssertEqual(AttendanceSummary(events: events, overview: payload.attendanceOverview).rate, 1)
         XCTAssertNil(AttendanceSummary(events: []).rate)
     }
 
@@ -1112,6 +1116,7 @@ final class ManageBacIntegrationTests: XCTestCase {
 private struct WorkspaceFixturePayload: Decodable {
     var messages: [ManageBacMessageRecord]
     var schedule: [ManageBacScheduleRecord]
+    var attendanceOverview: ManageBacAttendanceOverview?
 }
 
 private struct CourseListFixturePayload: Decodable {

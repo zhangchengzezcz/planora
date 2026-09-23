@@ -29,6 +29,30 @@ struct CoursesWorkspaceView: View {
                 }
                 .pickerStyle(.segmented)
 
+                NavigationLink {
+                    AttendanceView()
+                } label: {
+                    GlassPanel(interactive: true) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "person.badge.clock")
+                                .foregroundStyle(Color.planoraGreen)
+                            Text(String(localized: "Attendance"))
+                                .font(.headline)
+                                .foregroundStyle(Color.planoraInk)
+                            Spacer()
+                            if let rate = AttendanceSummary(events: schedule,
+                                overview: connection?.attendanceOverview).rate {
+                                Text(rate, format: .percent.precision(.fractionLength(0)))
+                                    .font(.headline).monospacedDigit()
+                                    .foregroundStyle(Color.planoraGreen)
+                            }
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+
                 switch section {
                 case .courses:
                     manageBacSection

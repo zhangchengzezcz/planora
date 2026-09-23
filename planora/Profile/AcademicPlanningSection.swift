@@ -5,12 +5,14 @@ struct AcademicPlanningSection: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \PlanoraTopic.title) private var allTopics: [PlanoraTopic]
     @Query(sort: \PlanoraAssessment.date, order: .reverse) private var allAssessments: [PlanoraAssessment]
+    @Query(sort: \PlanoraTask.createdDate, order: .reverse) private var allTasks: [PlanoraTask]
 
     let subject: String
     var courseID: UUID?
 
     @State private var topicEditor: TopicEditorState?
     @State private var assessmentEditor: AssessmentEditorState?
+    @State private var gradeMode = GradeDisplayMode.numbers
 
     private var topics: [PlanoraTopic] {
         allTopics.filter { $0.subject == subject || (courseID != nil && $0.courseID == courseID) }
@@ -20,9 +22,18 @@ struct AcademicPlanningSection: View {
         allAssessments.filter { $0.subject == subject || (courseID != nil && $0.courseID == courseID) }
     }
 
+    private var gradeEntries: [GradeEntry] {
+        let manual = assessments.map { GradeEntry(assessment: $0) }
+        let imported = allTasks
+            .filter { $0.subject == subject || (courseID != nil && $0.courseID == courseID) }
+            .compactMap { GradeEntry(task: $0) }
+        return (manual + imported).sorted { $0.date > $1.date }
+    }
+
     private var assessmentAverage: Double? {
-        guard !assessments.isEmpty else { return nil }
-        return assessments.map(\.percentage).reduce(0, +) / Double(assessments.count)
+        let scores = gradeEntries.compactMap(\.fraction)
+        guard !scores.isEmpty else { return nil }
+        return scores.reduce(0, +) / Double(scores.count)
     }
 
     var body: some View {
@@ -89,53 +100,64 @@ struct AcademicPlanningSection: View {
     private var assessmentSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionHeader(
-                title: String(localized: "Assessments"),
+                title: String(localized: "Grades"),
                 subtitle: assessmentAverage.map {
                     PlanoraLocalization.format(String(localized: "Current average: %@"), PlanoraFormat.percent($0))
                 } ?? String(localized: "Record results and follow the trend over time."),
                 action: { assessmentEditor = AssessmentEditorState(subject: subject, courseID: courseID) }
             )
 
-            if assessments.isEmpty {
-                AcademicEmptyRow(text: String(localized: "No assessments yet"))
+            HStack {
+                Spacer()
+                GradeModePicker(selection: $gradeMode, modes: GradeDisplayMode.allCases)
+            }
+
+            if gradeEntries.isEmpty {
+                AcademicEmptyRow(text: String(localized: "No grades yet"))
+            } else if gradeMode != .numbers {
+                GradeVisualization(entries: gradeEntries, mode: gradeMode)
+                    .padding(16)
+                    .planoraAcademicSurface()
             } else {
                 VStack(spacing: 0) {
-                    ForEach(Array(assessments.prefix(8).enumerated()), id: \.element.id) { index, assessment in
-                        Button {
-                            assessmentEditor = AssessmentEditorState(assessment: assessment)
-                        } label: {
-                            HStack(spacing: 12) {
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(assessment.title)
-                                        .font(.body.weight(.semibold))
-                                        .foregroundStyle(Color.planoraInk)
-                                    Text("\(assessment.type.title) · \(PlanoraFormat.monthDay(assessment.date))")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                    ForEach(Array(gradeEntries.prefix(8).enumerated()), id: \.element.id) { index, entry in
+                        if let assessment = assessments.first(where: { $0.id == entry.id }) {
+                            Button {
+                                assessmentEditor = AssessmentEditorState(assessment: assessment)
+                            } label: {
+                                gradeRow(entry)
+                            }
+                            .buttonStyle(.plain)
+                            .contextMenu {
+                                Button(String(localized: "Delete"), role: .destructive) {
+                                    modelContext.delete(assessment)
+                                    try? modelContext.save()
                                 }
-                                Spacer()
-                                Text(PlanoraFormat.percent(assessment.percentage))
-                                    .font(.headline.weight(.bold))
-                                    .foregroundStyle(Color.planoraGreen)
-                                    .monospacedDigit()
                             }
-                            .padding(.vertical, 11)
-                            .contentShape(Rectangle())
+                        } else {
+                            gradeRow(entry)
                         }
-                        .buttonStyle(.plain)
-                        .contextMenu {
-                            Button(String(localized: "Delete"), role: .destructive) {
-                                modelContext.delete(assessment)
-                                try? modelContext.save()
-                            }
-                        }
-                        if index < min(assessments.count, 8) - 1 { Divider() }
+                        if index < min(gradeEntries.count, 8) - 1 { Divider() }
                     }
                 }
                 .padding(.horizontal, 16)
                 .planoraAcademicSurface()
             }
         }
+    }
+
+    private func gradeRow(_ entry: GradeEntry) -> some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(entry.title).font(.body.weight(.semibold)).foregroundStyle(Color.planoraInk)
+                Text(PlanoraFormat.monthDay(entry.date)).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Text(entry.result).font(.headline.weight(.bold))
+                .foregroundStyle(entry.tint).monospacedDigit()
+        }
+        .padding(.vertical, 11)
+        .contentShape(Rectangle())
     }
 
     private func sectionHeader(title: String, subtitle: String, action: @escaping () -> Void) -> some View {

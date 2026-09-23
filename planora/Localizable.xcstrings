@@ -1372,6 +1372,22 @@
         }
       }
     },
+    "Bar Chart" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bar Chart"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "柱状图"
+          }
+        }
+      }
+    },
     "Before Changing Curriculum" : {
       "localizations" : {
         "en" : {
@@ -5185,6 +5201,54 @@
         }
       }
     },
+    "Grade Display" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grade Display"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "成绩显示"
+          }
+        }
+      }
+    },
+    "Grade Trend" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grade Trend"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "成绩趋势"
+          }
+        }
+      }
+    },
+    "Grades" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grades"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "成绩"
+          }
+        }
+      }
+    },
     "Green" : {
       "localizations" : {
         "en" : {
@@ -5987,6 +6051,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "浅色"
+          }
+        }
+      }
+    },
+    "Line Chart" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Line Chart"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "折线图"
           }
         }
       }
@@ -7203,8 +7283,34 @@
     },
     "No Attendance Records" : {
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "No Attendance Records" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无出勤记录" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Attendance Records"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无出勤记录"
+          }
+        }
+      }
+    },
+    "No comparable numeric scores yet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No comparable numeric scores yet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无可比较的数字成绩"
+          }
+        }
       }
     },
     "No deadline" : {
@@ -7269,6 +7375,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这一天没有截止任务。"
+          }
+        }
+      }
+    },
+    "No grades yet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No grades yet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无成绩"
           }
         }
       }
@@ -7885,6 +8007,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通知已启用"
+          }
+        }
+      }
+    },
+    "Numbers" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numbers"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数字"
           }
         }
       }

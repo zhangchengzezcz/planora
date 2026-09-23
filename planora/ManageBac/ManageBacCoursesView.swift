@@ -170,6 +170,8 @@ struct ManageBacCourseDetailView: View {
                     }
                 }
 
+                AcademicPlanningSection(subject: course.canonicalSubject, courseID: course.id)
+
                 DashboardSection(title: String(localized: "ManageBac Source")) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(course.originalName)

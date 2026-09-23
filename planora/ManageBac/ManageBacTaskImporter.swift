@@ -231,7 +231,17 @@ enum ManageBacTaskImporter {
                 reviewCount: reviewCount,
                 teacherCount: teachersByIdentifier.count,
                 messageCount: snapshot.messages.count,
-                scheduleCount: snapshot.schedule.count
+                scheduleCount: snapshot.schedule.count,
+                attendanceOverview: snapshot.attendanceOverview ?? {
+                    guard !snapshot.schedule.isEmpty else { return nil }
+                    let records = deduplicatedSchedule(snapshot.schedule)
+                    return ManageBacAttendanceOverview(
+                        present: records.filter { $0.attendanceStatus == "present" }.count,
+                        late: records.filter { $0.attendanceStatus == "late" }.count,
+                        absent: records.filter { $0.attendanceStatus == "absent" }.count,
+                        unrecorded: records.filter { $0.attendanceStatus == "unrecorded" }.count
+                    )
+                }()
             )
         } catch {
             modelContext.rollback()

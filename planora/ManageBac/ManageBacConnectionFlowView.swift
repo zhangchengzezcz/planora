@@ -205,6 +205,15 @@ struct ManageBacConnectionFlowView: View {
                     Divider().padding(.leading, 42)
                 }
             }
+            Divider().padding(.leading, 42)
+            HStack {
+                Label(String(localized: "Attendance"), systemImage: "person.badge.clock")
+                Spacer()
+                Text(attendanceText(session.attendanceOverview))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+            .padding(.vertical, 10)
         }
     }
 
@@ -233,6 +242,7 @@ struct ManageBacConnectionFlowView: View {
             LabeledContent(String(localized: "Updated Tasks"), value: "\(summary.updatedCount)")
             LabeledContent(String(localized: "Messages"), value: "\(summary.messageCount)")
             LabeledContent(String(localized: "Timetable"), value: "\(summary.scheduleCount)")
+            LabeledContent(String(localized: "Attendance"), value: attendanceText(summary.attendanceOverview))
             if summary.reviewCount > 0 {
                 LabeledContent(String(localized: "Needs Review"), value: "\(summary.reviewCount)")
             }
@@ -252,6 +262,9 @@ struct ManageBacConnectionFlowView: View {
                 LabeledContent(String(localized: "Messages"), value: "\(summary.messageCount)")
                 LabeledContent(String(localized: "Timetable"), value: "\(summary.scheduleCount)")
             }
+            GridRow {
+                LabeledContent(String(localized: "Attendance"), value: attendanceText(summary.attendanceOverview))
+            }
             if summary.reviewCount > 0 {
                 GridRow {
                     LabeledContent(String(localized: "Needs Review"), value: "\(summary.reviewCount)")
@@ -260,6 +273,11 @@ struct ManageBacConnectionFlowView: View {
         }
         .monospacedDigit()
 #endif
+    }
+
+    private func attendanceText(_ overview: ManageBacAttendanceOverview?) -> String {
+        guard let overview, let rate = overview.rate else { return "0" }
+        return "\(overview.recorded) · \(rate.formatted(.percent.precision(.fractionLength(0))))"
     }
 
     @ViewBuilder

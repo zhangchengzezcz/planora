@@ -41,7 +41,7 @@ enum AttendanceStatus: String, CaseIterable, Identifiable {
 struct AttendanceSummary {
     let counts: [AttendanceStatus: Int]
 
-    init(events: [PlanoraScheduleEvent]) {
+    init(events: [PlanoraScheduleEvent], overview: ManageBacAttendanceOverview? = nil) {
         // A lesson is counted once, even if an older store contains duplicate rows.
         var seen = Set<String>()
         var counts: [AttendanceStatus: Int] = [:]
@@ -49,7 +49,13 @@ struct AttendanceSummary {
             guard seen.insert(event.externalIdentifier).inserted else { continue }
             counts[AttendanceStatus(storedValue: event.attendanceStatus), default: 0] += 1
         }
-        self.counts = counts
+        let localRecorded = counts[.present, default: 0] + counts[.late, default: 0] + counts[.absent, default: 0]
+        if let overview, overview.recorded > localRecorded {
+            self.counts = [.present: overview.present, .late: overview.late,
+                           .absent: overview.absent, .unrecorded: overview.unrecorded]
+        } else {
+            self.counts = counts
+        }
     }
 
     var recorded: Int { count(.present) + count(.late) + count(.absent) }
@@ -60,6 +66,7 @@ struct AttendanceSummary {
 struct AttendanceView: View {
     @Query(sort: \PlanoraScheduleEvent.startDate) private var events: [PlanoraScheduleEvent]
     @State private var selectedWeek: Date?
+    @State private var connection = ManageBacConnectionStorage.load()
 
     private var calendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
@@ -82,10 +89,11 @@ struct AttendanceView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                if events.isEmpty {
+                if events.isEmpty && connection?.attendanceOverview == nil {
                     ContentUnavailableView(String(localized: "No Attendance Records"), systemImage: "person.badge.clock",
                         description: Text(String(localized: "Sync ManageBac to read classroom attendance.")))
                 } else {
+                    AttendanceMetrics(events: events, overview: connection?.attendanceOverview)
                     HStack {
                         Text(String(localized: "Class Attendance")).font(.title2.bold())
                         Spacer()
@@ -96,7 +104,6 @@ struct AttendanceView: View {
                         }
                         .labelsHidden().fixedSize()
                     }
-                    AttendanceMetrics(events: filtered)
                     ForEach(Array(Dictionary(grouping: filtered, by: \.title).keys.sorted()), id: \.self) { title in
                         let lessons = filtered.filter { $0.title == title }
                         VStack(alignment: .leading, spacing: 12) {
@@ -126,14 +133,18 @@ struct AttendanceView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle(String(localized: "Attendance"))
+        .onReceive(NotificationCenter.default.publisher(for: .manageBacConnectionDidChange)) { _ in
+            connection = ManageBacConnectionStorage.load()
+        }
     }
 }
 
 private struct AttendanceMetrics: View {
     let events: [PlanoraScheduleEvent]
+    var overview: ManageBacAttendanceOverview? = nil
 
     var body: some View {
-        let summary = AttendanceSummary(events: events)
+        let summary = AttendanceSummary(events: events, overview: overview)
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .firstTextBaseline) {
                 if let rate = summary.rate {
@@ -161,34 +172,30 @@ private struct AttendanceMetrics: View {
 
 struct HomeAttendanceSection: View {
     @Query(sort: \PlanoraScheduleEvent.startDate) private var events: [PlanoraScheduleEvent]
-
-    private var latestWeekEvents: [PlanoraScheduleEvent] {
-        guard let latest = events.last else { return [] }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.firstWeekday = 2
-        calendar.timeZone = TimeZone(identifier: "Asia/Shanghai") ?? .current
-        guard let interval = calendar.dateInterval(of: .weekOfYear, for: latest.startDate) else { return [] }
-        return events.filter { interval.contains($0.startDate) }
-    }
+    @State private var connection = ManageBacConnectionStorage.load()
 
     var body: some View {
-        DashboardSection(title: String(localized: "Attendance")) {
+        GlassPanel(padding: 20) {
             VStack(alignment: .leading, spacing: 16) {
-                if let first = latestWeekEvents.first, let last = latestWeekEvents.last {
-                    HStack {
-                        Text(first.startDate, format: .dateTime.month().day())
-                        Text("–")
-                        Text(last.startDate, format: .dateTime.month().day())
-                    }.font(.subheadline).foregroundStyle(.secondary)
-                    AttendanceMetrics(events: latestWeekEvents)
+                HStack {
+                    Text(String(localized: "Attendance")).font(.headline)
+                    Spacer()
+                    NavigationLink(destination: AttendanceView()) {
+                        Image(systemName: "chevron.right")
+                    }
+                    .accessibilityLabel(String(localized: "Attendance Details"))
+                }
+                if !events.isEmpty || connection?.attendanceOverview != nil {
+                    AttendanceMetrics(events: events, overview: connection?.attendanceOverview)
                 } else {
                     Text(String(localized: "Sync ManageBac to read classroom attendance."))
                         .foregroundStyle(.secondary)
                 }
-                NavigationLink(destination: AttendanceView()) {
-                    Label(String(localized: "Attendance Details"), systemImage: "chevron.right")
-                }
-            }.padding(20)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .manageBacConnectionDidChange)) { _ in
+            connection = ManageBacConnectionStorage.load()
         }
     }
 }

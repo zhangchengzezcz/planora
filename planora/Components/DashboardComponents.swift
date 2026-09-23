@@ -23,6 +23,7 @@ struct ManageBacTaskResultLabel: View {
 
 struct ManageBacTaskResultPanel: View {
     let task: PlanoraTask
+    var tint: Color = .planoraDeepGreen
 
     var body: some View {
         if task.isManageBacTask,
@@ -50,6 +51,7 @@ struct ManageBacTaskResultPanel: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(String(localized: "ManageBac Grade")).font(.subheadline).foregroundStyle(.secondary)
                 Text(grade).font(.system(size: 32, weight: .bold)).monospacedDigit()
+                    .foregroundStyle(tint)
             }
         }
         if let earned = task.remoteScoreEarned {
@@ -57,6 +59,7 @@ struct ManageBacTaskResultPanel: View {
                 Text(String(localized: "Score")).font(.subheadline).foregroundStyle(.secondary)
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(earned.formatted()).font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(tint)
                     if let possible = task.remoteScorePossible {
                         Text("/ " + possible.formatted()).font(.title3).foregroundStyle(.secondary)
                     }

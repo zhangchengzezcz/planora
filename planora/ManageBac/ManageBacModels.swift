@@ -13,6 +13,7 @@ struct ManageBacConnectionSnapshot: Codable, Equatable {
     var detectedCurriculumRawValue: String?
     var detectionConfidenceRawValue: String?
     var skippedItems: [String]? = nil
+    var attendanceOverview: ManageBacAttendanceOverview? = nil
 
     var isConnected: Bool { !schoolHost.isEmpty }
 
@@ -190,6 +191,23 @@ struct ManageBacScheduleRecord: Codable, Equatable, Sendable, Identifiable {
     var id: String { remoteIdentifier }
 }
 
+struct ManageBacAttendanceOverview: Codable, Equatable, Sendable {
+    var present: Int
+    var late: Int
+    var absent: Int
+    var unrecorded: Int
+
+    var recorded: Int { present + late + absent }
+    var rate: Double? { recorded > 0 ? Double(present + late) / Double(recorded) : nil }
+
+    init(present: Int = 0, late: Int = 0, absent: Int = 0, unrecorded: Int = 0) {
+        self.present = max(present, 0)
+        self.late = max(late, 0)
+        self.absent = max(absent, 0)
+        self.unrecorded = max(unrecorded, 0)
+    }
+}
+
 struct ManageBacSyncSnapshot: Codable, Equatable, Sendable {
     var schoolHost: String
     var programmeText: String?
@@ -198,6 +216,7 @@ struct ManageBacSyncSnapshot: Codable, Equatable, Sendable {
     var tasks: [ManageBacTaskRecord]
     var messages: [ManageBacMessageRecord] = []
     var schedule: [ManageBacScheduleRecord] = []
+    var attendanceOverview: ManageBacAttendanceOverview? = nil
 }
 
 enum ManageBacDetectionConfidence: String, Codable, Sendable {
@@ -228,6 +247,7 @@ struct ManageBacImportSummary: Equatable, Sendable {
     var teacherCount: Int = 0
     var messageCount: Int = 0
     var scheduleCount: Int = 0
+    var attendanceOverview: ManageBacAttendanceOverview? = nil
 
     var totalTaskCount: Int { importedCount + updatedCount }
 }
