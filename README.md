@@ -1,55 +1,45 @@
 # Planora
 
-<!-- PLANORA-1.7.4-STATUS-START -->
-## Planora 1.7.4
+## Planora 1.7.8
 
 ### 中文
 
 Planora 不是 ManageBac 的替代品。
 
-Planora 的目标是帮助学生更清楚地整理 ManageBac 中分散的课程、任务、截止日期、成绩和学习安排，并在 Planora 中完成自己的规划。除 Planora 自身提供的整理和规划功能外，需要查看完整课程内容或原始信息时，仍默认回到 ManageBac。
+Planora 帮助 IB 与 IGCSE 学生整理 ManageBac 中分散的课程、任务、截止日期、成绩与出勤信息，并在本机安排自己的学习。完整课程内容与原始记录仍以 ManageBac 为准。
 
-1.7.4 主要改善 iPhone 与 iPad 在 iOS / iPadOS 26 下的首页兼容性，并继续保留 iOS / iPadOS 27 与 Mac 的现有原生界面逻辑。
+1.7.8 在 Mac 与 iPad 首页加入按时间排列、可横向浏览的成绩柱状图；课程成绩可在数字、柱状图与折线图之间切换。成绩模式使用系统 Segmented Control，不改动主导航。ManageBac 同步增加独立出勤项目，首页和课程页可查看出勤率。
 
-**已知问题：** 在 iPhone 或 iPad 上点击主页周历中的日期或周区域时，可能导致界面卡住并崩溃。在后续版本修复前，请暂时避免点击该区域。
+**出勤说明：** 更新后需重新同步 ManageBac。课堂出勤优先读取时间表右侧的汇总，逐节课状态用于补充；真实学校页面的读取结果仍需使用者核对。iPhone 首页没有成绩模式切换。软件更新仅适用于 Mac。
 
 ### English
 
 Planora is not a replacement for ManageBac.
 
-Planora is designed to help students organize courses, tasks, deadlines, results, and study plans that may otherwise be distributed across ManageBac. Planora provides its own organization and planning tools, while full course content and original information continue to open in ManageBac when needed.
+Planora helps IB and IGCSE students organize courses, tasks, deadlines, grades, and attendance from ManageBac, then plan their own work locally. ManageBac remains the source for full course content and original records.
 
-Version 1.7.4 primarily improves Home compatibility on iPhone and iPad running iOS / iPadOS 26 while preserving the existing native iOS / iPadOS 27 and Mac interface architecture.
+Version 1.7.8 adds a chronological, horizontally scrolling grade chart to Home on Mac and iPad. Course grades switch between numbers, bars, and lines. These modes use a system Segmented Control without changing the main navigation. Attendance is a separate ManageBac sync item and is available from Home and Courses.
 
-**Known issue:** tapping a date or week area in the Home weekly calendar on iPhone or iPad may cause the interface to become unresponsive and crash. Until this is fixed, avoid tapping that area.
+**Attendance note:** sync ManageBac again after updating. Planora prefers the timetable Details overview and supplements it with per-lesson states; results from a live school account still need user verification. There is no Home grade-mode switch on iPhone. In-app software updates are Mac-only.
 
-完整更新说明 / Full release notes: `updates/1.7.4.md`
-<!-- PLANORA-1.7.4-STATUS-END -->
+**下载 / Download:** [Planora 1.7.8 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.8) · [更新说明 / Release notes](updates/1.7.8.md)
 
+## 当前版本 / Current Version
 
-**中文** | **English**
-
-Planora 是一款面向 IB 与 IGCSE 学生的学习规划 App。1.7.1 优化原生玻璃控件的视觉层次，并改进 ManageBac 成绩、完成状态及逐项重试和跳过流程。
-
-Planora is a study planning app for IB and IGCSE students. Version 1.7.1 refines native glass controls and improves ManageBac grades, completion detection, and per-item retry and skip recovery.
+- Version: **1.7.8** (build **23**)
+- Platforms: **iOS / iPadOS 26+**, **macOS 26+**
+- Built with SwiftUI, SwiftData, and platform-native navigation
+- Mac update channel: Sparkle; iPhone and iPad do not use Sparkle
 
 ## 交互式演示 / Interactive Demo
 
 [打开 Planora 交互式网页演示 / Open the interactive web demo](https://zhangchengzezcz.github.io/planora/)
 
-网页演示依据当前 SwiftUI App 的启动动画、系统式底栏、首页、任务、新建、搜索、今日/本周规划、任务详情和设置界面制作，并支持简体中文、英文、日文及 IB/IGCSE 即时切换。演示数据仅保存在当前浏览器，不会写入真实 App。
+网页演示展示 Planora 的部分交互；它与原生 App 的最新界面和功能可能不同。演示数据仅保存在当前浏览器，不会写入真实 App。
 
-The browser demo mirrors the current SwiftUI app's welcome animation, system-style tab bar, Home, Tasks, Create, Search, Today/Week planning, task details, and settings, with live Simplified Chinese, English, Japanese, and IB/IGCSE switching. Demo data stays in the current browser and does not modify the iOS app.
+The browser demo presents selected Planora interactions and may differ from the latest native app. Demo data stays in the current browser and does not modify the app.
 
 [![Planora interactive demo](https://zhangchengzezcz.github.io/planora/og.png)](https://zhangchengzezcz.github.io/planora/)
-
-## 当前版本 / Current Version
-
-- Version: **1.7.1**
-- Build: **16**
-- Platform: **iOS 26+ and native macOS 26+**
-- UI: SwiftUI, SwiftData, Observation, system navigation and platform-native surfaces
-- Status: Native desktop and mobile academic planning workflow
 
 ## 功能范围 / Scope
 
@@ -75,20 +65,23 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - JSON v9 备份、导入预览、重复识别、覆盖策略、事务回滚与自动本地备份
 - 主页从 SwiftData 读取真实任务，空状态不再显示假任务
 - Learning Progress 只基于真实任务显示，空任务时不展示静态学习进度
-- 主页包括 Current Focus、Upcoming Tasks、Learning Progress 和 Calendar Preview
+- 主页包括 Current Focus、最多两项 Upcoming Tasks、可翻周的 Calendar Preview、成绩、Learning Progress 和出勤
 - “我的”页面，包括个人信息、课程、科目、外观、任务显示与备份设置
 - iPhone 与 Mac 均支持仅保存在本机的个人头像和姓名缩写头像
 - 系统 TabView 底栏：首页、任务、我的、搜索和 prominent 新建
-- iOS 27 SDK 系统 Liquid Glass Tab Bar 外观，底部位置和按压反馈由系统管理
+- iPhone 与 iPad 保留系统导航控件；成绩显示模式使用原生 Segmented Control
 - 英文、简体中文与日文 String Catalog 完整本地化
-- 原生 macOS 27 侧栏工作区，直接访问首页、今日、本周、任务和课程
+- macOS 26+ 原生侧栏工作区，可访问首页、今日、本周、任务、课程、出勤和消息
 - Mac 使用系统工具栏搜索、系统任务表格、详情检查器与独立设置窗口
 - Mac 个人页支持仅保存在本机的自定义头像，并可随时恢复为姓名缩写
 - Mac 支持 `⌘N` 新建任务与 `⌘F` 搜索，隐藏工具栏后可通过系统命令重新显示
 - Xcode 文件系统同步目录自动管理源码归属，不再依赖手工维护的 Sources 文件列表
 - 共享模型、状态、存储与业务能力；iPhone 与 Mac 仅保留各自轻量、原生的界面壳层
 - ManageBac 课程工作区显示教师、Unit 与关联任务，并识别 PDP/PDP1/PDP2、GP/GPTPD 与 Global Perspectives
-- 科目与 ManageBac 课程工作区支持 Topic 掌握度、成绩记录和趋势平均值
+- 科目与 ManageBac 课程工作区支持 Topic 掌握度、成绩和趋势平均值；成绩可切换数字、柱状图及折线图
+- Mac 与 iPad 首页成绩可按时间横向浏览，并可按科目筛选；不同科目使用不同颜色
+- ManageBac 同步单独显示出勤项目；课程与时间表入口均可打开出勤明细
+- Mac 应用内通过 Sparkle 检查和安装更新；iPhone 与 iPad 不包含该更新器
 - Exam 与 Revision 任务支持关联 Topic、考试范围、目标成绩及 Past Paper 目标与完成量
 - JSON v9 备份完整保留 Topic、Assessment 与考试复习规划，并支持安全去重、覆盖和新副本导入
 - 本地 UserDefaults 保存学习空间与显示偏好，SwiftData 保存任务
@@ -115,19 +108,22 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 - JSON v9 backup with import previews, duplicate detection, overwrite strategies, transactional rollback, and automatic local backups
 - Dashboard reads real SwiftData tasks and shows an empty state instead of fake tasks
 - Learning Progress is shown only from real tasks, with no static progress when there are no tasks
-- Dashboard with Current Focus, Upcoming Tasks, Learning Progress, and Calendar Preview
+- Home with Current Focus, up to two Upcoming Tasks, a navigable Calendar Preview, grades, Learning Progress, and attendance
 - Profile screen with personal, curriculum, subject, appearance, task-display, and backup settings
 - Device-local profile avatars and generated initials on both iPhone and Mac
 - System TabView bar with Home, Tasks, Profile, Search, and prominent Create
-- iOS 27 SDK system Liquid Glass Tab Bar appearance, with placement and press feedback managed by the system
+- System navigation controls on iPhone and iPad, with a native Segmented Control for grade display modes
 - Complete String Catalog localization in English, Simplified Chinese, and Japanese
-- A native macOS 27 sidebar workspace with direct access to Home, Today, This Week, Tasks, and Courses
+- A native macOS 26+ sidebar workspace for Home, Today, This Week, Tasks, Courses, Attendance, and Messages
 - System toolbar search, a native task table, a task inspector, and a dedicated Settings window on Mac
 - Mac keyboard shortcuts for New Task (`⌘N`) and Search (`⌘F`), with the system command available to restore a hidden toolbar
 - Xcode file-system-synchronized folders manage source membership automatically instead of a manually maintained Sources list
 - Shared models, state, storage, and feature logic with lightweight platform-native presentation shells for iPhone and Mac
 - A ManageBac course workspace for teachers, units, and related tasks, including PDP/PDP1/PDP2, GP/GPTPD, and Global Perspectives recognition
-- Topic mastery, assessment results, and current averages in subject and ManageBac course workspaces
+- Topic mastery, grades, and current averages in subject and ManageBac course workspaces; switch grades between numbers, bars, and lines
+- Chronological, horizontally scrolling Home grade bars on Mac and iPad, with subject filtering and distinct subject colors
+- A separate attendance item during ManageBac sync, with attendance details reachable from both Courses and Timetable
+- Sparkle-based in-app updates on Mac only; iPhone and iPad do not include this updater
 - Topic links, exam scope, target score, and Past Paper goals for Exam and Revision tasks
 - JSON v9 backup support for topics, assessments, and exam planning with safe skip, overwrite, and import-as-new strategies
 - Local UserDefaults persistence for profile and display preferences, plus SwiftData task storage
@@ -136,11 +132,11 @@ The browser demo mirrors the current SwiftUI app's welcome animation, system-sty
 
 ```text
 planora/
-  Components/     Shared SwiftUI components and glass surfaces
+  Components/     Shared SwiftUI components, glass surfaces, and grade charts
   Create/         Task type selection and task creation form
   Dashboard/      Home dashboard and main app tab shell
-  Mac/            Conditionally compiled native macOS presentation shell
-  ManageBac/      Read-only account connection, courses, units, and task import
+  Mac/            Native macOS presentation shell and software updater
+  ManageBac/      Read-only connection, courses, attendance, and task import
   Models/         App phases, curriculum models, SwiftData task model, subject library
   Onboarding/     Welcome, feature intro, username, curriculum, and subject selection
   Profile/        Profile, subjects, appearance, task display, and backup settings
@@ -159,10 +155,11 @@ planora/
 1. 使用 Xcode 打开 `planora.xcodeproj`。
 2. 选择 `planora` scheme。
 3. 选择 iPhone 模拟器、真机，或 `My Mac` 运行。
-4. 如需无签名构建，可在终端运行：
+4. 命令行构建使用当前 `xcode-select` 选中的 Xcode；如需指定其他 Xcode，再设置 `DEVELOPER_DIR`。
+
+iOS Simulator 无签名构建：
 
 ```bash
-DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 xcodebuild -project planora.xcodeproj \
   -scheme planora \
   -destination 'generic/platform=iOS Simulator' \
@@ -173,7 +170,6 @@ xcodebuild -project planora.xcodeproj \
 原生 macOS 构建：
 
 ```bash
-DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 xcodebuild -project planora.xcodeproj \
   -scheme planora \
   -destination 'platform=macOS,arch=arm64' \
@@ -185,10 +181,11 @@ xcodebuild -project planora.xcodeproj \
 1. Open `planora.xcodeproj` in Xcode.
 2. Select the `planora` scheme.
 3. Run on an iPhone simulator, device, or `My Mac`.
-4. For an unsigned command-line build:
+4. Command-line builds use the Xcode selected by `xcode-select`; set `DEVELOPER_DIR` only when selecting another installation.
+
+Unsigned iOS Simulator build:
 
 ```bash
-DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 xcodebuild -project planora.xcodeproj \
   -scheme planora \
   -destination 'generic/platform=iOS Simulator' \
@@ -199,7 +196,6 @@ xcodebuild -project planora.xcodeproj \
 Native macOS build:
 
 ```bash
-DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
 xcodebuild -project planora.xcodeproj \
   -scheme planora \
   -destination 'platform=macOS,arch=arm64' \
@@ -210,11 +206,11 @@ xcodebuild -project planora.xcodeproj \
 
 ### 中文
 
-Planora 1.6.6 继续追求 Apple 风格的简洁和清晰：iPhone 保留系统 TabView，Mac 使用原生 `NavigationSplitView` 侧栏、系统导航工具组、常驻搜索框、表格、检查器与独立设置场景。Topic、Assessment、考试规划、头像、任务排序、备份与 ManageBac 逻辑位于共享层，平台差异只留在轻量界面壳层。
+Planora 在 iPhone、iPad 和 Mac 上使用各平台原生导航；任务、课程、成绩与出勤共享模型和同步逻辑，界面按屏幕空间调整。成绩模式使用系统 Segmented Control，Mac 软件更新与窗口布局留在 Mac 专属代码中。玻璃材质用于界面层次，不取代内容的可读性。
 
 ### English
 
-Planora 1.6.6 keeps an Apple-like sense of clarity: iPhone retains its system TabView while Mac uses a native `NavigationSplitView`, a system navigation control group, persistent search, tables, inspectors, and a dedicated Settings scene. Topics, assessments, exam planning, avatars, ordering, backup, and ManageBac logic live in the shared layer while platform differences stay in lightweight presentation shells.
+Planora uses platform-native navigation on iPhone, iPad, and Mac. Tasks, courses, grades, and attendance share models and sync logic, while layouts adapt to available space. Grade modes use a system Segmented Control; software updates and window layout remain Mac-specific. Glass materials support visual hierarchy without compromising legibility.
 
 ## 后续计划 / Next Steps
 
