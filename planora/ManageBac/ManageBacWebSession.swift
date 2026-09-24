@@ -1179,23 +1179,29 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         // Inspect lesson containers, never coloured assignment-count badges.
         const containers = [cell, ...cell.querySelectorAll('div,a,section')].filter(node =>
           timePattern.test(normalize(node.textContent)) && node.getBoundingClientRect().height > 30);
-        const statusPattern = /\b(present|late|absent|unrecorded|not[-_ ]recorded)\b/i;
+        const statusPattern = /\b(present|late|absent|unrecorded|not[-_ ]recorded|tbd)\b/i;
         for (const node of containers) {
           const semantic = [node.getAttribute('data-attendance-status'), node.getAttribute('data-status'),
             node.getAttribute('aria-label'), node.getAttribute('title'), node.className].join(' ');
           const match = semantic.match(statusPattern);
-          if (match) return /recorded/i.test(match[1]) ? 'unrecorded' : match[1].toLowerCase();
+          if (match) return /recorded|tbd/i.test(match[1]) ? 'unrecorded' : match[1].toLowerCase();
         }
-        // ManageBac's timetable legend defines green/orange/red lesson backgrounds.
-        for (const node of containers.reverse()) {
-          const values = getComputedStyle(node).backgroundColor.match(/[\d.]+/g)?.map(Number);
-          if (!values || values.length < 3 || (values.length > 3 && values[3] < 0.1)) continue;
-          const [r, g, b] = values;
+        const colorStatus = value => {
+          const components = value?.match(/[\d.]+/g)?.map(Number);
+          if (!components || components.length < 3 || (components.length > 3 && components[3] < 0.1)) return null;
+          const [r, g, b] = components;
           const spread = Math.max(r, g, b) - Math.min(r, g, b);
-          if (spread < 8) continue;
-          if (g > r + 5 && g > b + 5) return 'present';
-          if (r > b + 12 && g > b + 6 && Math.abs(r - g) < spread * 0.8) return 'late';
-          if (r > g + 5 && r > b + 5 && Math.abs(g - b) < spread * 0.6) return 'absent';
+          if (spread < 4) return null;
+          if (g > r + 3 && g > b + 3) return 'present';
+          if (r > b + 10 && g > b + 5 && Math.abs(r - g) < spread * 0.85) return 'late';
+          if (r > g + 4 && r > b + 4 && Math.abs(g - b) < spread * 0.65) return 'absent';
+          return null;
+        };
+        // ManageBac's timetable legend defines the lesson background, not task badges.
+        for (const node of containers.reverse()) {
+          const style = getComputedStyle(node);
+          const status = colorStatus(style.backgroundColor) || colorStatus(style.borderTopColor);
+          if (status) return status;
         }
         return 'unrecorded';
       };
@@ -1250,17 +1256,34 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     let attendanceOverview = null;
     if (path.startsWith('/student/timetables')) {
       const title = 'Weekly Class Attendance';
-      const heading = Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6,strong,p,span,div'))
-        .find(node => normalize(node.textContent) === title);
+      const findHeading = () => Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6,strong,p,span,div'))
+        .find(node => normalize(node.textContent) === title && node.getBoundingClientRect().height > 0);
+      if (!findHeading()) {
+        const toggle = Array.from(document.querySelectorAll('button,[role="button"]')).find(node =>
+          /^(details)(\s+details)?$/i.test(normalize(node.getAttribute('aria-label') || node.textContent)));
+        if (toggle) {
+          toggle.click();
+          await new Promise(resolve => {
+            const started = Date.now();
+            const timer = setInterval(() => {
+              if (findHeading() || Date.now() - started > 3000) { clearInterval(timer); resolve(); }
+            }, 100);
+          });
+        }
+      }
+      const heading = findHeading();
       if (heading) {
         let node = heading;
         for (let depth = 0; depth < 5 && node; depth += 1, node = node.parentElement) {
-          const text = normalize(node.textContent);
+          const text = normalize(node.innerText || node.textContent);
           const tail = text.slice(text.indexOf(title) + title.length, text.indexOf(title) + title.length + 220);
-          const matches = Array.from(tail.matchAll(/(\d+)\s*(Present|Late|Absent|Unrecorded)\b/gi));
+          const matches = Array.from(tail.matchAll(/(\d+)\s*(Present|Late|Absent|Unrecorded|Not Recorded|TBD)\b/gi));
           if (!matches.length) continue;
           attendanceOverview = { present: 0, late: 0, absent: 0, unrecorded: 0 };
-          for (const match of matches) attendanceOverview[match[2].toLowerCase()] += Number(match[1]);
+          for (const match of matches) {
+            const status = /tbd|recorded/i.test(match[2]) ? 'unrecorded' : match[2].toLowerCase();
+            attendanceOverview[status] += Number(match[1]);
+          }
           break;
         }
       }

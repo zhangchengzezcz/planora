@@ -631,6 +631,27 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertNil(AttendanceSummary(events: []).rate)
     }
 
+    func testCollapsedAttendanceDetailsAndTBDCountAreRead() async throws {
+        let html = #"""
+        <html><body><input aria-label="Select Date" value="Sep 21, 2026 - Sep 27, 2026">
+        <button onclick="document.getElementById('details').innerHTML='<h3>Weekly Class Attendance</h3><div>35 Present</div><div>9 TBD</div>'">Details</button>
+        <aside id="details"></aside>
+        <table><tr><th>Period</th><th>Sep 21, Mon</th><th>Sep 22, Tue</th></tr>
+        <tr><th>1</th>
+        <td><div style="height:100px;background:rgb(247,251,247)">7:30 AM - 8:10 AM History</div></td>
+        <td><div style="height:100px;background:rgb(248,249,250)">7:30 AM - 8:10 AM History</div></td>
+        </tr></table></body></html>
+        """#
+        let webView = try await loadedWebView(html: html, url: "https://school.managebac.cn/student/timetables")
+        let result = try await webView.callAsyncJavaScript(ManageBacWebSession.workspaceScript,
+            arguments: ["courseRecords": []], in: nil, contentWorld: .page)
+        let payload = try JSONDecoder().decode(WorkspaceFixturePayload.self,
+            from: Data(try XCTUnwrap(result as? String).utf8))
+        XCTAssertEqual(payload.schedule.map(\.attendanceStatus), ["present", "unrecorded"])
+        XCTAssertEqual(payload.attendanceOverview?.present, 35)
+        XCTAssertEqual(payload.attendanceOverview?.unrecorded, 9)
+    }
+
     func testCurrentWeeklyTimetableTableIsRead() async throws {
         let html = #"""
         <!doctype html><html><body><main>
