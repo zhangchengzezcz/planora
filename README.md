@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.7.9
+## Planora 1.7.10
 
 ### 中文
 
@@ -8,7 +8,7 @@ Planora 不是 ManageBac 的替代品。
 
 Planora 帮助 IB 与 IGCSE 学生整理 ManageBac 中分散的课程、任务、截止日期、成绩与出勤信息，并在本机安排自己的学习。完整课程内容与原始记录仍以 ManageBac 为准。
 
-1.7.9 修复 ManageBac 时间表右侧 Details 默认收起时出勤汇总未读取的问题，并识别 `TBD` 未记录状态与浅色课表块。Mac 与 iPad 首页保留按时间排列的成绩柱状图，课程成绩仍可切换数字、柱状图与折线图。
+1.7.10 修复课程出勤仍显示“未记录”的问题：ManageBac 使用的 CSS Color 4 色值现已正确识别。Mac 与 iPad 首页保留按时间排列的成绩柱状图，课程成绩仍可切换数字、柱状图与折线图。
 
 **出勤说明：** 更新后需重新同步 ManageBac。课堂出勤优先读取时间表右侧的汇总，逐节课状态用于补充；新版 App 的完整同步结果仍需使用者核对。iPhone 首页没有成绩模式切换。软件更新仅适用于 Mac。
 
@@ -18,15 +18,15 @@ Planora is not a replacement for ManageBac.
 
 Planora helps IB and IGCSE students organize courses, tasks, deadlines, grades, and attendance from ManageBac, then plan their own work locally. ManageBac remains the source for full course content and original records.
 
-Version 1.7.9 fixes attendance import when ManageBac's timetable Details panel starts collapsed, recognizes `TBD` as unrecorded, and improves pale timetable color detection. The chronological grade chart on Mac and iPad Home and the three Course grade modes remain available.
+Version 1.7.10 fixes lessons still showing "Not Recorded" by correctly reading the CSS Color 4 values returned by ManageBac. The chronological grade chart on Mac and iPad Home and the three Course grade modes remain available.
 
 **Attendance note:** sync ManageBac again after updating. Planora prefers the timetable Details overview and supplements it with per-lesson states; end-to-end sync in the updated app still needs live-account verification. There is no Home grade-mode switch on iPhone. In-app software updates are Mac-only.
 
-**下载 / Download:** [Planora 1.7.9 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.9) · [更新说明 / Release notes](updates/1.7.9.md)
+**下载 / Download:** [Planora 1.7.10 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.10) · [更新说明 / Release notes](updates/1.7.10.md)
 
 ## 当前版本 / Current Version
 
-- Version: **1.7.9** (build **24**)
+- Version: **1.7.10** (build **25**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle
