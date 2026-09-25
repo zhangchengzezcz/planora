@@ -652,6 +652,27 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(payload.attendanceOverview?.unrecorded, 9)
     }
 
+    func testCSSColorFourLessonAttendanceIsRead() async throws {
+        let html = #"""
+        <html><body><input aria-label="Select Date" value="Sep 21, 2026 - Sep 27, 2026">
+        <table><tr><th>Period</th><th>Sep 21, Mon</th><th>Sep 22, Tue</th><th>Sep 23, Wed</th><th>Sep 24, Thu</th><th>Sep 25, Fri</th></tr>
+        <tr><th>1</th>
+        <td><a style="display:block;height:100px;background:color(srgb 0.925 0.965 0.925);border:1px solid color(srgb 0.75 0.883333 0.75)">7:30 AM - 8:10 AM History <span style="background:red">2</span></a></td>
+        <td><a style="display:block;height:100px;background:color(srgb 1 0.95 0.85)">7:30 AM - 8:10 AM History</a></td>
+        <td><a style="display:block;height:100px;background:color(srgb 1 0.88 0.88)">7:30 AM - 8:10 AM History</a></td>
+        <td><a style="display:block;height:100px;background:color(srgb 0.951765 0.956765 0.964412)">7:30 AM - 8:10 AM History</a></td>
+        <td><a style="display:block;height:100px;background:color(display-p3 0.925 0.965 0.925)">7:30 AM - 8:10 AM History</a></td>
+        </tr></table></body></html>
+        """#
+        let webView = try await loadedWebView(html: html, url: "https://school.managebac.cn/student/timetables")
+        let result = try await webView.callAsyncJavaScript(ManageBacWebSession.workspaceScript,
+            arguments: ["courseRecords": []], in: nil, contentWorld: .page)
+        let payload = try JSONDecoder().decode(WorkspaceFixturePayload.self,
+            from: Data(try XCTUnwrap(result as? String).utf8))
+        XCTAssertEqual(payload.schedule.map(\.attendanceStatus),
+            ["present", "late", "absent", "unrecorded", "present"])
+    }
+
     func testCurrentWeeklyTimetableTableIsRead() async throws {
         let html = #"""
         <!doctype html><html><body><main>

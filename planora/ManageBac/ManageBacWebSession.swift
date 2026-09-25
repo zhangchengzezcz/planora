@@ -1187,9 +1187,12 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
           if (match) return /recorded|tbd/i.test(match[1]) ? 'unrecorded' : match[1].toLowerCase();
         }
         const colorStatus = value => {
-          const components = value?.match(/[\d.]+/g)?.map(Number);
+          const colorSpace = /^color\((?:srgb|display-p3)\s/i;
+          const normalized = colorSpace.test(value) ? value.replace(colorSpace, '') : value;
+          const components = normalized?.match(/[\d.]+/g)?.map(Number);
           if (!components || components.length < 3 || (components.length > 3 && components[3] < 0.1)) return null;
-          const [r, g, b] = components;
+          const scale = colorSpace.test(value) ? 255 : 1;
+          const [r, g, b] = components.map(component => component * scale);
           const spread = Math.max(r, g, b) - Math.min(r, g, b);
           if (spread < 4) return null;
           if (g > r + 3 && g > b + 3) return 'present';
