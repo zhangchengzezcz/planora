@@ -671,6 +671,17 @@ final class ManageBacIntegrationTests: XCTestCase {
             from: Data(try XCTUnwrap(result as? String).utf8))
         XCTAssertEqual(payload.schedule.map(\.attendanceStatus),
             ["present", "late", "absent", "unrecorded", "present"])
+        let container = try makeContainer()
+        let record = try XCTUnwrap(payload.schedule.first)
+        let stored = PlanoraScheduleEvent(externalIdentifier: record.remoteIdentifier,
+            title: record.title, startDate: Date(), endDate: Date())
+        stored.attendanceStatus = "unrecorded"
+        container.mainContext.insert(stored)
+        let snapshot = ManageBacSyncSnapshot(schoolHost: "school.managebac.cn",
+            courses: [], units: [], tasks: [], schedule: payload.schedule)
+        _ = try ManageBacTaskImporter.importSnapshot(snapshot,
+            currentCurriculum: .ib, existingTasks: [], into: container.mainContext)
+        XCTAssertEqual(stored.attendanceStatus, "present")
     }
 
     func testCurrentWeeklyTimetableTableIsRead() async throws {
