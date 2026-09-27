@@ -455,17 +455,19 @@ private struct MacAccountMenu: View {
 }
 
 private struct MacHelpMenu: View {
+    @Environment(\.locale) private var locale
+    @State private var selectedCategory: HelpMenuDestination?
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label(String(localized: "Help and Feedback"), systemImage: "questionmark.circle")
-                .font(.headline)
-            Divider()
-            Text(String(localized: "Planora help is coming soon."))
-                .font(.callout)
-                .foregroundStyle(.secondary)
+        VStack(spacing: 0) {
+            helpButton(zh: "帮助中心", en: "Help Center", symbol: "questionmark.circle", category: nil)
+            Divider().padding(.horizontal, 8)
+            helpButton(zh: "开始使用", en: "Get Started", symbol: "sparkles", category: "start")
+            helpButton(zh: "ManageBac 同步", en: "ManageBac Sync", symbol: "arrow.triangle.2.circlepath", category: "managebac")
+            helpButton(zh: "故障排查", en: "Troubleshooting", symbol: "wrench.and.screwdriver", category: "trouble")
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(8)
+        .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(Color(nsColor: .windowBackgroundColor))
@@ -475,7 +477,32 @@ private struct MacHelpMenu: View {
                 .stroke(.separator.opacity(0.7), lineWidth: 0.5)
         }
         .shadow(color: .black.opacity(0.14), radius: 18, y: 8)
+        .sheet(item: $selectedCategory) { destination in
+            HelpCenterView(initialCategory: destination.category, standalone: true)
+        }
     }
+
+    private func helpButton(zh: String, en: String, symbol: String, category: String?) -> some View {
+        Button {
+            selectedCategory = HelpMenuDestination(category: category)
+        } label: {
+            HStack {
+                Label(locale.language.languageCode?.identifier == "zh" ? zh : en, systemImage: symbol)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .macMenuHoverStyle()
+    }
+}
+
+private struct HelpMenuDestination: Identifiable {
+    let id = UUID()
+    let category: String?
 }
 
 private struct MacMenuHoverModifier: ViewModifier {

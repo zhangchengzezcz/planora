@@ -470,6 +470,14 @@ private struct SettingsHomeView: View {
 
                     }
                 }
+                DashboardSection(title: String(localized: "Help and Feedback")) {
+                    NavigationLink {
+                        HelpCenterView()
+                    } label: {
+                        SettingsRow(icon: "questionmark.circle", title: String(localized: "Help and Feedback"), value: "", showsChevron: true)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .padding(.bottom, 32)
         }
