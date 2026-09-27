@@ -9,6 +9,39 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.7.12</title>
+            <pubDate>Sun, 27 Sep 2026 16:43:09 +0800</pubDate>
+            <sparkle:version>27</sparkle:version>
+            <sparkle:shortVersionString>1.7.12</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.12
+
+## 中文
+
+- 修复其他应用的同名旧数据库阻止首次启动的问题，不迁移或改动无关数据。
+- 修复异常提醒日期和重复任务序号可能导致的崩溃，并将通知更新串行化，避免与任务删除交错。
+- 断开 ManageBac 时立即取消后台同步；严格校验缓存的学校主机地址。
+- 撤销删除兼容重复任务标识，头像采用原子保存，异常成绩不会进入图表计算。
+- 成绩柱状图按需加载，出勤列表避免重复分组和筛选，批量取消提醒只读取一次通知队列。
+- 合并重复删除逻辑并移除无调用的提醒接口。保留 26 系统兼容分支及 27 的原生滑动操作 API。
+
+功能范围不变。本版本不包含未完成的入场动画或 Vlog 开发者功能。
+
+## English
+
+- An unrelated legacy database no longer prevents a fresh launch; unrelated data is never migrated or modified.
+- Invalid reminder dates and overflowing recurrence sequences no longer crash. Notification mutations are serialized to avoid interleaving with task deletion.
+- Disconnecting ManageBac immediately cancels background synchronization. Cached school hostnames are validated before navigation.
+- Undo tolerates duplicate task identifiers, avatars are saved atomically, and non-finite grades are kept out of chart calculations.
+- Grade bars load lazily, attendance avoids repeated grouping and filtering, and batch reminder removal reads notification queues once.
+- Consolidated duplicate deletion logic and removed unused reminder entry points. Retained OS 26 compatibility and OS 27 native swipe-action APIs.
+
+The feature set is unchanged. Unfinished entrance animation and Vlog-only developer features are not included.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.12/Planora-1.7.12-macOS.zip" length="6202664" type="application/octet-stream" sparkle:edSignature="Abzd6iFAk3gppOtgYghhtFUrDavoO6rYm0qyR7pLwaAfsrq0JjA2GYhk3tNTz/OS/pkJeY5v2WpupZx85fvxAA=="/>
+        </item>
+        <item>
             <title>1.7.11</title>
             <pubDate>Sun, 27 Sep 2026 11:15:08 +0800</pubDate>
             <sparkle:version>26</sparkle:version>
@@ -58,34 +91,6 @@ The macOS app is ad-hoc signed, not Developer ID signed or notarized.
 macOS 应用使用临时签名，未进行 Developer ID 签名或公证。
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.10/Planora-1.7.10-macOS.zip" length="6139816" type="application/octet-stream" sparkle:edSignature="PzYp61adtv1TgxKLFXFXF4ssRTPOtHqEnuPdI8/JoBF5okq4YdwrbbSWqksEozGZinL8Matymidajnz+vJ2oAQ=="/>
-        </item>
-        <item>
-            <title>1.7.9</title>
-            <pubDate>Thu, 24 Sep 2026 23:20:36 +0800</pubDate>
-            <sparkle:version>24</sparkle:version>
-            <sparkle:shortVersionString>1.7.9</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.9
-
-## 中文
-- 修复 ManageBac 时间表右侧 Details 默认收起时，出勤汇总无法导入、首页出勤率空白的问题。同步时会展开并读取课堂出勤汇总。
-- 将 `TBD` 与 `Not Recorded` 识别为尚未记录；改进浅色课堂背景及边框的出勤状态识别，不把作业提示色当成出勤状态。
-- 更新后请重新同步 ManageBac。不会修改学校端的出勤数据。
-- 38 项 ManageBac 回归测试通过，iOS 模拟器目标构建通过。真实账户在新版 App 中的完整同步结果仍需核对。
-- Mac 保留 Sparkle 签名更新及带内置背景的 DMG；iPhone 和 iPad 不使用 Sparkle。
-
-## English
-- Fixed a blank Home attendance rate when ManageBac's timetable Details panel was collapsed. Sync now expands the panel and reads the classroom attendance overview.
-- Treats `TBD` and `Not Recorded` as unrecorded, and improves detection of pale lesson backgrounds and borders without interpreting assignment badges as attendance.
-- Sync ManageBac again after updating. Planora does not change school attendance data.
-- All 38 ManageBac regression tests and the iOS Simulator build passed. End-to-end sync in the updated app still needs checking with a live account.
-- The Mac release retains signed Sparkle updates and a DMG with an embedded background. Sparkle is not included on iPhone or iPad.
-
-The macOS app is ad-hoc signed, not Developer ID signed or notarized.
-macOS 应用使用临时签名，未进行 Developer ID 签名或公证。
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.9/Planora-1.7.9-macOS.zip" length="6139790" type="application/octet-stream" sparkle:edSignature="r/vkvAACN4d0bTC9YgL2FgAkJ7Qja3zwfD2UR9OG6wyWlaxdr+o+OJ+DHxlDW56jNC7M6hFhqKxVLCe1tcDjBQ=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -178,6 +183,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: vC/aeLA83DsDwctRm1FcwCNB25DdQT0eZEQKca/NT0HX7WPupzaKB2oeJ1feod2z44yHzzNu6ZkUEHFqR3LuDQ==
-length: 14815
+edSignature: T54wQuvR0im/tCR3rO8OvxTAeLnpMRHSiO66J1YjxoxrRDLM/hYnIVUhkAX5YC3YdjfWWnMprOtW0jjLZX4HBQ==
+length: 15045
 -->

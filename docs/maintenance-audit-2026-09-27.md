@@ -31,6 +31,8 @@ Official references:
 
 Regression coverage includes unrelated/corrupt legacy databases, invalid reminders, serialized asynchronous operations, recurrence overflow, hostname injection and non-finite grades. Existing suites cover ManageBac parsing/import, recurrence, task operations, backups, ordering and layout, including thousand-task rendering on iOS.
 
+Completed runs: macOS, 122 tests with 6 skips and no failures; iPadOS 26.5, 123 tests with no failures; iOS 27.1, 123 tests with no failures. The signed Release configuration builds successfully. Packaging scripts pass shell syntax validation and the final DMG passes remounted structural verification.
+
 The private historical database fixture was unavailable. Its test skips without touching user data. Five UIKit rendering tests skip on macOS and run on iOS instead. The macOS narrow-window test still emits a framework toolbar-title constraint warning while its sizing assertions pass; no private-framework workaround was introduced.
 
 The release uses the existing vendored Sparkle framework and signed appcast process. DMG verification checks that the image and Finder metadata are embedded inside the mounted volume. Packaging checks do not replace testing an update on another physical Mac. The application is ad-hoc signed, not Developer ID notarized.
