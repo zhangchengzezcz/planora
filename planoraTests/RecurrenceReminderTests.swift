@@ -5,6 +5,39 @@ import UserNotifications
 
 @MainActor
 final class RecurrenceReminderTests: XCTestCase {
+    func testReminderOperationsRemainSerializedAcrossSuspension() async {
+        let queue = ReminderOperationQueue()
+        var events: [Int] = []
+        await withTaskGroup(of: Void.self) { group in
+            for index in 0..<20 {
+                group.addTask { @MainActor in
+                    await queue.run {
+                        events.append(index)
+                        await Task.yield()
+                        events.append(index)
+                    }
+                }
+            }
+        }
+        XCTAssertEqual(events.count, 40)
+        for index in stride(from: 0, to: events.count, by: 2) {
+            XCTAssertEqual(events[index], events[index + 1])
+        }
+        await queue.run { events.append(100) }
+        XCTAssertEqual(events.last, 100)
+    }
+
+    func testRecurrenceSequenceOverflowDoesNotCrash() throws {
+        let container = try ModelContainer(for: PlanoraTask.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let task = makeTask(deadline: Date())
+        task.recurrenceSeriesID = UUID()
+        task.recurrenceSequence = Int.max
+        task.recurrenceRule = TaskRecurrenceRule(frequency: .daily, end: .never)
+        container.mainContext.insert(task)
+        XCTAssertFalse(RecurringTaskEngine.ensureRollingSeries(tasks: [task], in: container.mainContext))
+        XCTAssertEqual(RecurringTaskEngine.regenerateFuture(from: task, deleting: [], in: container.mainContext).count, 1)
+    }
+
     private var gregorian: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.locale = Locale(identifier: "en_US_POSIX")
@@ -154,6 +187,26 @@ final class RecurrenceReminderTests: XCTestCase {
         XCTAssertTrue(candidates.allSatisfy { $0.task.id == first.id })
         XCTAssertLessThan(candidates[0].fireDate, candidates[1].fireDate)
         XCTAssertEqual(Set(candidates.map { "\($0.task.id)-\($0.reminder.id)" }).count, 2)
+    }
+
+    func testMalformedRemindersDoNotTrapOrSchedule() {
+        let deadline = Date()
+        for timing: TaskReminderTiming in [.daysBefore(Int.min), .daysBefore(Int.max), .daysAfter(Int.max), .daysAfter(-1)] {
+            XCTAssertNil(TaskReminder(timing: timing).fireDate(deadline: deadline))
+        }
+        for value in [Double.nan, .infinity, -.infinity, Double.greatestFiniteMagnitude] {
+            let reminder = TaskReminder(timing: .custom(Date(timeIntervalSince1970: value)))
+            XCTAssertNil(reminder.fireDate(deadline: nil))
+            XCTAssertEqual(reminder.configurationKey, "custom:invalid")
+        }
+        XCTAssertNil(TaskReminder(timing: .atDeadline, hour: 24).fireDate(deadline: deadline))
+        XCTAssertNil(TaskReminder(timing: .atDeadline, minute: -1).fireDate(deadline: deadline))
+    }
+
+    func testCustomReminderDeduplicationStillUsesMinutePrecision() {
+        let first = TaskReminder(timing: .custom(Date(timeIntervalSince1970: 1_800_000_001)))
+        let second = TaskReminder(timing: .custom(Date(timeIntervalSince1970: 1_800_000_010)))
+        XCTAssertEqual(TaskReminder.deduplicated([first, second]).count, 1)
     }
 
     func testReminderSnapshotSurvivesModelContextReset() throws {

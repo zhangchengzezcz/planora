@@ -275,11 +275,13 @@ enum RecurringTaskEngine {
         let dates = rule.occurrenceDates(starting: startDate)
         var created = [seed]
         for (offset, date) in dates.dropFirst().enumerated() {
+            let (sequence, overflow) = baseSequence.addingReportingOverflow(offset + 1)
+            guard !overflow else { break }
             let occurrence = copy(
                 seed,
                 date: date,
                 seriesID: seriesID,
-                sequence: baseSequence + offset + 1,
+                sequence: sequence,
                 rule: rule
             )
             modelContext.insert(occurrence)
@@ -308,11 +310,13 @@ enum RecurringTaskEngine {
 
             let dates = rule.occurrenceDates(starting: latestDate, rollingHorizon: horizon)
             for (offset, date) in dates.dropFirst().enumerated() {
+                let (sequence, overflow) = latest.recurrenceSequence.addingReportingOverflow(offset + 1)
+                guard !overflow else { break }
                 let occurrence = copy(
                     latest,
                     date: date,
                     seriesID: seriesID,
-                    sequence: latest.recurrenceSequence + offset + 1,
+                    sequence: sequence,
                     rule: rule
                 )
                 modelContext.insert(occurrence)

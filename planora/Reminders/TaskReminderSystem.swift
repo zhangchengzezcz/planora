@@ -24,25 +24,35 @@ struct TaskReminder: Codable, Identifiable, Hashable {
     func fireDate(deadline: Date?, calendar: Calendar = .current) -> Date? {
         switch timing {
         case .custom(let date):
-            return date
+            return Self.isSupportedDate(date) ? date : nil
         case .daysBefore(let days):
-            guard let deadline else { return nil }
+            guard let deadline, Self.isSupportedDayOffset(days) else { return nil }
             return relativeDate(from: deadline, dayOffset: -days, calendar: calendar)
         case .atDeadline:
             guard let deadline else { return nil }
             return relativeDate(from: deadline, dayOffset: 0, calendar: calendar)
         case .daysAfter(let days):
-            guard let deadline else { return nil }
+            guard let deadline, Self.isSupportedDayOffset(days) else { return nil }
             return relativeDate(from: deadline, dayOffset: days, calendar: calendar)
         }
     }
 
     private func relativeDate(from deadline: Date, dayOffset: Int, calendar: Calendar) -> Date? {
+        guard Self.isSupportedDate(deadline), (0..<24).contains(hour), (0..<60).contains(minute) else { return nil }
         guard let shiftedDate = calendar.date(byAdding: .day, value: dayOffset, to: calendar.startOfDay(for: deadline)) else {
             return nil
         }
 
+        guard Self.isSupportedDate(shiftedDate) else { return nil }
         return calendar.date(bySettingHour: hour, minute: minute, second: 0, of: shiftedDate)
+    }
+
+    private static func isSupportedDate(_ date: Date) -> Bool {
+        date.timeIntervalSince1970.isFinite && date >= .distantPast && date <= .distantFuture
+    }
+
+    private static func isSupportedDayOffset(_ days: Int) -> Bool {
+        days >= 0 && days <= Int(Date.distantFuture.timeIntervalSince(.distantPast) / 86_400)
     }
 
     var configurationKey: String {
@@ -54,7 +64,7 @@ struct TaskReminder: Codable, Identifiable, Hashable {
         case .daysAfter(let days):
             "after:\(days):\(hour):\(minute)"
         case .custom(let date):
-            "custom:\(Int(date.timeIntervalSince1970 / 60))"
+            "custom:\(Int(exactly: (date.timeIntervalSince1970 / 60).rounded(.towardZero)).map(String.init) ?? "invalid")"
         }
     }
 
@@ -122,6 +132,7 @@ enum TaskReminderScheduler {
     static let snoozeHourAction = "PLANORA_SNOOZE_ONE_HOUR"
     static let snoozeTomorrowAction = "PLANORA_SNOOZE_TOMORROW"
     private static let identifierPrefix = "planora.task."
+    private static let operationQueue = ReminderOperationQueue()
 
     static func configureCategories() {
         let hourAction = UNNotificationAction(
@@ -156,12 +167,12 @@ enum TaskReminderScheduler {
         return await authorizationStatus()
     }
 
-    static func synchronize(task: PlanoraTask) async {
-        await synchronize(snapshot: TaskReminderTaskSnapshot(task: task))
+    static func synchronize(snapshot: TaskReminderTaskSnapshot) async {
+        await operationQueue.run { await performSynchronization(snapshot: snapshot) }
     }
 
-    static func synchronize(snapshot: TaskReminderTaskSnapshot) async {
-        await removeRequests(forTaskID: snapshot.id)
+    private static func performSynchronization(snapshot: TaskReminderTaskSnapshot) async {
+        await performRemoval(forTaskIDs: [snapshot.id])
         guard !snapshot.isCompleted else { return }
 
         let status = await authorizationStatus()
@@ -181,6 +192,10 @@ enum TaskReminderScheduler {
     }
 
     static func reconcile(snapshots: [TaskReminderTaskSnapshot], requestLimit: Int = 48) async {
+        await operationQueue.run { await performReconciliation(snapshots: snapshots, requestLimit: requestLimit) }
+    }
+
+    private static func performReconciliation(snapshots: [TaskReminderTaskSnapshot], requestLimit: Int) async {
         let center = UNUserNotificationCenter.current()
         let status = await authorizationStatus()
         let isAllowed = notificationsAllowed(for: status)
@@ -237,7 +252,7 @@ enum TaskReminderScheduler {
     static func candidates(tasks: [PlanoraTask], now: Date = Date(), limit: Int = 48) -> [TaskReminderCandidate] {
         var seenFireTimes: Set<String> = []
         return tasks
-            .filter { !$0.isCompleted }
+            .filter { !$0.isCompleted && !$0.isArchived && !$0.isDeleted }
             .flatMap { task in
                 task.reminders.compactMap { reminder -> TaskReminderCandidate? in
                     guard let date = reminder.fireDate(deadline: task.deadline), date > now else { return nil }
@@ -262,32 +277,37 @@ enum TaskReminderScheduler {
     }
 
     static func removeRequests(forTaskID taskID: UUID) async {
-        let prefix = taskIdentifierPrefix(taskID)
+        await removeRequests(forTaskIDs: [taskID])
+    }
+
+    static func removeRequests(forTaskIDs taskIDs: [UUID]) async {
+        await operationQueue.run { await performRemoval(forTaskIDs: taskIDs) }
+    }
+
+    private static func performRemoval(forTaskIDs taskIDs: [UUID]) async {
+        let ids = Set(taskIDs)
+        guard !ids.isEmpty else { return }
         let center = UNUserNotificationCenter.current()
+        let belongsToTask: (String) -> Bool = { identifier in
+            guard let id = taskID(fromRequestIdentifier: identifier) else { return false }
+            return ids.contains(id)
+        }
         let pendingIDs = await center.pendingNotificationRequests()
             .map(\.identifier)
-            .filter { $0.hasPrefix(prefix) }
+            .filter(belongsToTask)
         let deliveredIDs = await center.deliveredNotifications()
             .map { $0.request.identifier }
-            .filter { $0.hasPrefix(prefix) }
+            .filter(belongsToTask)
 
         center.removePendingNotificationRequests(withIdentifiers: pendingIDs)
         center.removeDeliveredNotifications(withIdentifiers: deliveredIDs)
     }
 
-    static func removeRequests(for tasks: [PlanoraTask]) async {
-        for task in tasks {
-            await removeRequests(forTaskID: task.id)
-        }
-    }
-
-    static func removeRequests(forTaskIDs taskIDs: [UUID]) async {
-        for taskID in taskIDs {
-            await removeRequests(forTaskID: taskID)
-        }
-    }
-
     static func snooze(content: UNNotificationContent, after interval: TimeInterval) async {
+        await operationQueue.run { await performSnooze(content: content, after: interval) }
+    }
+
+    private static func performSnooze(content: UNNotificationContent, after interval: TimeInterval) async {
         let mutableContent = content.mutableCopy() as? UNMutableNotificationContent
             ?? UNMutableNotificationContent()
         mutableContent.sound = .default

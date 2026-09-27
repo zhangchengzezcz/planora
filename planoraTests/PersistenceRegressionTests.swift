@@ -1,9 +1,43 @@
 import SwiftData
+import SQLite3
 import XCTest
 @testable import planora
 
 @MainActor
 final class PersistenceRegressionTests: XCTestCase {
+    func testNonFiniteScoresCannotReachChartsOrIntegerFormatting() {
+        let assessment = PlanoraAssessment(title: "Invalid score", subject: "Physics", earnedScore: 1, maximumScore: 10)
+        for value in [Double.nan, .infinity, -.infinity] {
+            assessment.earnedScore = value
+            XCTAssertEqual(assessment.percentage, 0)
+            XCTAssertEqual(PlanoraFormat.percent(value), "—")
+        }
+    }
+
+    func testUnrelatedLegacyStoreIsNotMigratedOrModified() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let legacy = root.appendingPathComponent("default.store")
+        var database: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(legacy.path, &database), SQLITE_OK)
+        XCTAssertEqual(sqlite3_exec(database, "CREATE TABLE unrelated (id INTEGER)", nil, nil, nil), SQLITE_OK)
+        sqlite3_close(database)
+        let original = try Data(contentsOf: legacy)
+        let destination = try PlanoraPersistence.prepareStore(in: root)
+        XCTAssertEqual(destination.lastPathComponent, "Planora.store")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: destination.path))
+        XCTAssertEqual(try Data(contentsOf: legacy), original)
+    }
+
+    func testCorruptLegacyStoreStillReportsFailure() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try Data("not a database".utf8).write(to: root.appendingPathComponent("default.store"))
+        XCTAssertThrowsError(try PlanoraPersistence.prepareStore(in: root))
+    }
+
     func testFreshStoreAndRepeatedImportWithStaleQuery() throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }

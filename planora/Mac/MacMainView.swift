@@ -134,7 +134,7 @@ struct MacMainView: View {
             return
         }
         let existingTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? []
-        let existingByID = Dictionary(uniqueKeysWithValues: existingTasks.map { ($0.id, $0) })
+        var existingByID = Dictionary(existingTasks.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         var restoredModels: [PlanoraTask] = []
         for decodedTask in restoredTasks {
             if let existing = existingByID[decodedTask.id] {
@@ -143,6 +143,7 @@ struct MacMainView: View {
             } else {
                 decodedTask.deletedDate = nil
                 modelContext.insert(decodedTask)
+                existingByID[decodedTask.id] = decodedTask
                 restoredModels.append(decodedTask)
             }
         }

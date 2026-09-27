@@ -44,7 +44,8 @@ final class PlanoraAssessment {
     }
 
     var percentage: Double {
-        min(max(earnedScore / max(maximumScore, 0.01), 0), 1)
+        guard earnedScore.isFinite, maximumScore.isFinite else { return 0 }
+        return min(max(earnedScore / max(maximumScore, 0.01), 0), 1)
     }
 }
 

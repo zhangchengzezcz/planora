@@ -78,8 +78,9 @@ enum ProfileAvatarStorage {
             withIntermediateDirectories: true
         )
 
-        guard let destination = CGImageDestinationCreateWithURL(
-            fileURL as CFURL,
+        let encodedImage = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(
+            encodedImage,
             UTType.png.identifier as CFString,
             1,
             nil
@@ -91,6 +92,7 @@ enum ProfileAvatarStorage {
         guard CGImageDestinationFinalize(destination) else {
             throw CocoaError(.fileWriteUnknown)
         }
+        try (encodedImage as Data).write(to: fileURL, options: .atomic)
 
 #if os(macOS)
         cachedImage = NSImage(cgImage: thumbnail, size: .zero)

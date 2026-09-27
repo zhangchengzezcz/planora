@@ -140,14 +140,26 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     func startSilentSync(snapshot: ManageBacConnectionSnapshot) {
-        guard let url = URL(string: "https://\(snapshot.schoolHost)/student/home") else {
+        resetForScan(mode: .silent)
+        guard let url = Self.schoolHomeURL(for: snapshot.schoolHost) else {
             phase = .failed(.unsupportedAddress)
             return
         }
-        resetForScan(mode: .silent)
         schoolHost = snapshot.schoolHost
         phase = .verifying
         load(url)
+    }
+
+    static func schoolHomeURL(for host: String) -> URL? {
+        let host = host.lowercased()
+        guard host == "managebac.com" || host.hasSuffix(".managebac.com") || host.hasSuffix(".managebac.cn"),
+              host.utf8.allSatisfy({ (97...122).contains($0) || (48...57).contains($0) || $0 == 45 || $0 == 46 }),
+              !host.split(separator: ".", omittingEmptySubsequences: false).contains(where: { $0.isEmpty }) else { return nil }
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = host
+        components.path = "/student/home"
+        return components.url
     }
 
     func cancel() {
@@ -178,7 +190,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     func clearWebsiteData() async {
-        webView.stopLoading()
+        teardown()
+        ManageBacConnectionStorage.clear()
         let dataStore = WKWebsiteDataStore.default()
         let types = WKWebsiteDataStore.allWebsiteDataTypes()
         let storedRecords = await dataStore.dataRecords(ofTypes: types)
@@ -187,7 +200,6 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
             $0.displayName.localizedCaseInsensitiveContains("faria")
         }
         await dataStore.removeData(ofTypes: types, for: manageBacRecords)
-        ManageBacConnectionStorage.clear()
         phase = .idle
     }
 

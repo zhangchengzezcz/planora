@@ -34,7 +34,15 @@ struct ManageBacAutomaticSyncHost: View {
             synchronizeIfNeeded()
         }
         .onReceive(NotificationCenter.default.publisher(for: .manageBacConnectionDidChange)) { _ in
+            let previousHost = snapshot?.schoolHost
             snapshot = ManageBacConnectionStorage.load()
+            if snapshot == nil || snapshot?.schoolHost != previousHost {
+                session?.teardown()
+                session = nil
+                isSyncing = false
+                lastAttemptDate = nil
+                needsLaunchSync = true
+            }
             synchronizeIfNeeded()
         }
         .onReceive(Timer.publish(every: Self.automaticSyncInterval, on: .main, in: .common).autoconnect()) { _ in
@@ -85,6 +93,9 @@ struct ManageBacAutomaticSyncHost: View {
     }
 
     private func importSnapshot(_ snapshot: ManageBacSyncSnapshot) throws -> ManageBacImportSummary {
+        guard ManageBacConnectionStorage.load()?.schoolHost == snapshot.schoolHost else {
+            throw CancellationError()
+        }
         let currentTasks = (try? modelContext.fetch(FetchDescriptor<PlanoraTask>())) ?? tasks
         let summary = try ManageBacTaskImporter.importSnapshot(
             snapshot,

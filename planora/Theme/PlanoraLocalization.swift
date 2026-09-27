@@ -44,6 +44,7 @@ enum PlanoraFormat {
     }
 
     static func percent(_ value: Double) -> String {
+        guard value.isFinite else { return "—" }
         let clampedValue = min(max(value, 0), 1)
         return percentFormatter.string(from: NSNumber(value: clampedValue)) ?? "\(Int(clampedValue * 100))%"
     }

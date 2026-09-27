@@ -87,6 +87,8 @@ struct AttendanceView: View {
     }
 
     var body: some View {
+        let lessonsForWeek = filtered
+        let lessonsByTitle = Dictionary(grouping: lessonsForWeek, by: \.title)
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 if events.isEmpty && connection?.attendanceOverview == nil {
@@ -104,8 +106,8 @@ struct AttendanceView: View {
                         }
                         .labelsHidden().fixedSize()
                     }
-                    ForEach(Array(Dictionary(grouping: filtered, by: \.title).keys.sorted()), id: \.self) { title in
-                        let lessons = filtered.filter { $0.title == title }
+                    ForEach(lessonsByTitle.keys.sorted(), id: \.self) { title in
+                        let lessons = lessonsByTitle[title] ?? []
                         VStack(alignment: .leading, spacing: 12) {
                             Text(title).font(.headline)
                             ForEach(lessons) { event in
@@ -121,7 +123,7 @@ struct AttendanceView: View {
                         }
                         Divider()
                     }
-                    if let syncDate = filtered.map(\.lastSyncDate).max() {
+                    if let syncDate = lessonsForWeek.map(\.lastSyncDate).max() {
                         HStack {
                             Text(String(localized: "Last Synced"))
                             Text(syncDate, format: .dateTime.month().day().hour().minute())

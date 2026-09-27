@@ -9,6 +9,16 @@ import UIKit
 
 @MainActor
 final class ManageBacIntegrationTests: XCTestCase {
+    func testCachedSchoolHostCannotInjectURLComponents() {
+        XCTAssertEqual(ManageBacWebSession.schoolHomeURL(for: "School.managebac.cn")?.absoluteString,
+                       "https://school.managebac.cn/student/home")
+        XCTAssertNotNil(ManageBacWebSession.schoolHomeURL(for: "school.managebac.com"))
+        for host in ["evil.example", "school.managebac.cn.evil.example", "evil.example/path.managebac.cn",
+                     "user@school.managebac.cn", "school.managebac.cn:443", ".managebac.cn", "school..managebac.cn"] {
+            XCTAssertNil(ManageBacWebSession.schoolHomeURL(for: host), host)
+        }
+    }
+
 #if os(iOS)
     func testMobileWorkspaceScreensAtNarrowWidth() async throws {
         let store = PlanoraStore(storage: .preview, loadSavedProfile: false)

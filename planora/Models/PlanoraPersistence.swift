@@ -34,11 +34,13 @@ enum PlanoraPersistence {
         defer { sqlite3_close(source) }
         var statement: OpaquePointer?
         defer { sqlite3_finalize(statement) }
-        guard sqlite3_prepare_v2(source, "SELECT name FROM sqlite_master WHERE type='table' AND name='ZPLANORATASK'", -1, &statement, nil) == SQLITE_OK,
-              sqlite3_step(statement) == SQLITE_ROW else {
-            // The generic filename may belong to another app. Never adopt an unrelated store.
-            throw CocoaError(.fileReadUnknown)
+        guard sqlite3_prepare_v2(source, "SELECT name FROM sqlite_master WHERE type='table' AND name='ZPLANORATASK'", -1, &statement, nil) == SQLITE_OK else {
+            throw CocoaError(.fileReadCorruptFile)
         }
+        let lookup = sqlite3_step(statement)
+        // Another app's generic store must neither be adopted nor prevent a fresh launch.
+        if lookup == SQLITE_DONE { return destination }
+        guard lookup == SQLITE_ROW else { throw CocoaError(.fileReadCorruptFile) }
         sqlite3_finalize(statement)
         statement = nil
 

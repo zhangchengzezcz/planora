@@ -52,7 +52,8 @@ struct GradeEntry: Identifiable {
         subject = task.subject
         date = task.deadline ?? task.createdDate
         self.result = result
-        if let earned = task.remoteScoreEarned, let possible = task.remoteScorePossible, possible > 0 {
+        if let earned = task.remoteScoreEarned, let possible = task.remoteScorePossible,
+           earned.isFinite, possible.isFinite, possible > 0 {
             fraction = min(max(earned / possible, 0), 1)
         } else {
             fraction = nil
@@ -96,6 +97,7 @@ struct GradeVisualization: View {
     private var plotted: [GradeEntry] { entries.filter { $0.fraction != nil } }
 
     var body: some View {
+        let plotted = plotted
         if plotted.isEmpty {
             Text(String(localized: "No comparable numeric scores yet"))
                 .foregroundStyle(.secondary)
@@ -103,7 +105,7 @@ struct GradeVisualization: View {
                 .padding(16)
         } else if mode == .bars {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .bottom, spacing: 12) {
+                LazyHStack(alignment: .bottom, spacing: 12) {
                     ForEach(plotted) { entry in
                         VStack(alignment: .leading, spacing: 7) {
                             Text(entry.result).font(.headline).monospacedDigit()
@@ -130,6 +132,7 @@ struct GradeVisualization: View {
                     }
                 }
                 .padding(.horizontal, 2)
+                .frame(height: 220)
             }
         } else {
             Chart(plotted.sorted { $0.date < $1.date }) { entry in

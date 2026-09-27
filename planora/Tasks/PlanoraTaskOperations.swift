@@ -61,17 +61,7 @@ enum PlanoraTaskOperations {
         modelContext: ModelContext,
         store: PlanoraStore
     ) {
-        let targets = deletionTargets(for: task, scope: scope, in: allTasks)
-        let taskIDs = targets.map(\.id)
-
-        if let json = try? TaskBackupCodec.json(for: targets) {
-            store.stageDeletedTasks(json: json, count: targets.count)
-        }
-        AutomaticTaskBackup.save(tasks: allTasks)
-        let deletedAt = Date()
-        targets.forEach { $0.deletedDate = deletedAt }
-        PlanoraTaskPersistence.save(modelContext)
-        Task { await TaskReminderScheduler.removeRequests(forTaskIDs: taskIDs) }
+        delete([task], scope: scope, allTasks: allTasks, modelContext: modelContext, store: store)
     }
 
     static func delete(
