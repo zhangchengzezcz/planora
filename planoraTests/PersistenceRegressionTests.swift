@@ -5,6 +5,34 @@ import XCTest
 
 @MainActor
 final class PersistenceRegressionTests: XCTestCase {
+    func testAutomaticBackupMigratesOnlyAfterAtomicWrite() throws {
+        let name = "PlanoraBackupTest-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: name))
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+        defer {
+            defaults.removePersistentDomain(forName: name)
+            try? FileManager.default.removeItem(at: root)
+        }
+        let key = "legacy"
+        defaults.set("original", forKey: key)
+        let destination = root.appendingPathComponent("backup.json")
+        XCTAssertEqual(try AutomaticTaskBackup.read(from: destination, defaults: defaults, legacyKey: key), "original")
+        XCTAssertNil(defaults.string(forKey: key))
+        XCTAssertEqual(try String(contentsOf: destination, encoding: .utf8), "original")
+        defaults.set("retained", forKey: key)
+        let invalidDestination = destination.appendingPathComponent("backup.json")
+        XCTAssertEqual(try AutomaticTaskBackup.read(from: invalidDestination, defaults: defaults, legacyKey: key), "retained")
+        XCTAssertEqual(defaults.string(forKey: key), "retained")
+    }
+    func testFailedCommitRollsBackAndDoesNotReportSuccess() {
+        var rolledBack = false
+        let success = PlanoraTaskPersistence.commit(save: {
+            throw CocoaError(.fileWriteOutOfSpace)
+        }, rollback: { rolledBack = true })
+        XCTAssertFalse(success)
+        XCTAssertTrue(rolledBack)
+        XCTAssertTrue(PlanoraTaskPersistence.commit(save: {}, rollback: { XCTFail("Successful save must not roll back") }))
+    }
     func testNonFiniteScoresCannotReachChartsOrIntegerFormatting() {
         let assessment = PlanoraAssessment(title: "Invalid score", subject: "Physics", earnedScore: 1, maximumScore: 10)
         for value in [Double.nan, .infinity, -.infinity] {

@@ -75,14 +75,24 @@ enum PlanoraTaskOperations {
         guard !targets.isEmpty else { return }
 
         AutomaticTaskBackup.save(tasks: allTasks)
-        if let json = try? TaskBackupCodec.json(for: targets) {
-            store.stageDeletedTasks(json: json, count: targets.count)
+        let undoJSON = try? TaskBackupCodec.json(for: targets)
+
+        if scope == .future {
+            var truncated = Set<UUID>()
+            for task in selectedTasks.sorted(by: { $0.recurrenceSequence < $1.recurrenceSequence }) {
+                guard let seriesID = task.recurrenceSeriesID else { continue }
+                guard truncated.insert(seriesID).inserted else { continue }
+                RecurringTaskEngine.truncateSeries(before: task, in: allTasks.filter { $0.recurrenceSeriesID == seriesID })
+            }
         }
 
         let taskIDs = targets.map(\.id)
         let deletedAt = Date()
         targets.forEach { $0.deletedDate = deletedAt }
-        PlanoraTaskPersistence.save(modelContext)
+        guard PlanoraTaskPersistence.save(modelContext) else { return }
+        if let undoJSON {
+            store.stageDeletedTasks(json: undoJSON, count: targets.count)
+        }
         Task { await TaskReminderScheduler.removeRequests(forTaskIDs: taskIDs) }
     }
 
@@ -91,7 +101,8 @@ enum PlanoraTaskOperations {
         modelContext: ModelContext
     ) {
         tasks.forEach { $0.deletedDate = nil }
-        PlanoraTaskPersistence.save(modelContext)
+        restoreRecurrenceRules(for: tasks, in: modelContext)
+        guard PlanoraTaskPersistence.save(modelContext) else { return }
         PlanoraTaskPersistence.reconcile(fallbackTasks: tasks, in: modelContext)
     }
 
@@ -108,8 +119,16 @@ enum PlanoraTaskOperations {
             }
             modelContext.delete(task)
         }
-        PlanoraTaskPersistence.save(modelContext)
+        guard PlanoraTaskPersistence.save(modelContext) else { return }
         Task { await TaskReminderScheduler.removeRequests(forTaskIDs: taskIDs) }
+    }
+
+    static func restoreRecurrenceRules(for restored: [PlanoraTask], in context: ModelContext) {
+        guard let allTasks = try? context.fetch(FetchDescriptor<PlanoraTask>()) else { return }
+        for task in restored where task.recurrenceRule?.end == .never {
+            guard let seriesID = task.recurrenceSeriesID else { continue }
+            RecurringTaskEngine.restoreSeriesRule(from: task, in: allTasks.filter { $0.recurrenceSeriesID == seriesID })
+        }
     }
 
     static func switchCurriculum(
@@ -169,7 +188,7 @@ enum PlanoraTaskOperations {
             }
         }
 
-        PlanoraTaskPersistence.save(modelContext)
+        guard PlanoraTaskPersistence.save(modelContext) else { return }
         if !deletedTaskIDs.isEmpty {
             Task { await TaskReminderScheduler.removeRequests(forTaskIDs: deletedTaskIDs) }
         }

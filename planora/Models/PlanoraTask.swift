@@ -38,6 +38,7 @@ final class PlanoraTask {
     var courseID: UUID?
     var unitID: UUID?
     var remoteStatusRawValue: String?
+    var completionAppliedBySync: Bool?
     var remoteGradeText: String?
     var remoteScoreEarned: Double?
     var remoteScorePossible: Double?
@@ -187,7 +188,8 @@ final class PlanoraTask {
 
     var isArchived: Bool { archivedDate != nil }
     var isManageBacCompleted: Bool {
-        isManageBacTask && (remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue ||
+        isManageBacTask && remoteStatusRawValue != ManageBacRemoteTaskStatus.incomplete.rawValue &&
+            (remoteStatusRawValue == ManageBacRemoteTaskStatus.completed.rawValue ||
             ManageBacAssessment.hasResult(grade: remoteGradeText, earned: remoteScoreEarned, possible: remoteScorePossible))
     }
 
@@ -375,7 +377,8 @@ final class PlanoraTask {
         synchronizeProgress(with: milestones)
     }
 
-    func setCompleted(_ completed: Bool) {
+    func setCompleted(_ completed: Bool, fromSync: Bool = false) {
+        completionAppliedBySync = fromSync && completed
         if completed != isCompleted {
             completedDate = completed ? Date() : nil
         }

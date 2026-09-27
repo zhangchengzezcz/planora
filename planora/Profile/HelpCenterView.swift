@@ -1,28 +1,33 @@
 import SwiftUI
 
-private struct HelpCopy {
+struct HelpCopy {
     let zh: String
     let en: String
+    var ja: String? = nil
 
     func value(for locale: Locale) -> String {
-        locale.language.languageCode?.identifier == "zh" ? zh : en
+        switch locale.language.languageCode?.identifier {
+        case "zh": zh
+        case "ja": ja ?? en
+        default: en
+        }
     }
 }
 
-private struct HelpArticle: Identifiable {
+struct HelpArticle: Identifiable {
     let id: String
-    let title: HelpCopy
-    let body: HelpCopy
+    var title: HelpCopy
+    var body: HelpCopy
 }
 
-private struct HelpCategory: Identifiable {
+struct HelpCategory: Identifiable {
     let id: String
-    let title: HelpCopy
+    var title: HelpCopy
     let symbol: String
-    let articles: [HelpArticle]
+    var articles: [HelpArticle]
 }
 
-private enum PlanoraHelpContent {
+enum PlanoraHelpContent {
     static let categories: [HelpCategory] = [
         HelpCategory(id: "start", title: .init(zh: "开始使用", en: "Get started"), symbol: "sparkles", articles: [
             .init(id: "first", title: .init(zh: "第一次打开该做什么？", en: "What should I do first?"), body: .init(zh: "选择课程体系和科目后，就可以创建任务。ManageBac 连接是可选的；连接后，课程、任务、消息和时间表会出现在相应页面。", en: "Choose your curriculum and subjects, then create a task. Connecting ManageBac is optional. Once connected, courses, tasks, messages, and the timetable appear in their respective views.")),
@@ -62,7 +67,29 @@ private enum PlanoraHelpContent {
             .init(id: "wrong-data", title: .init(zh: "任务、分数或时间不对怎么办？", en: "What if a task, grade, or time looks wrong?"), body: .init(zh: "在 ManageBac 原页面核对同一条记录并重新同步。若仍不一致，反馈时附上 Planora 版本、设备系统版本、相关页面和预期结果；分享截图前请遮挡个人信息。", en: "Compare the same record on the original ManageBac page and sync again. If it still differs, include the Planora version, OS version, relevant page, and expected result in your report. Hide personal details in screenshots.")),
             .init(id: "feedback", title: .init(zh: "怎样反馈问题？", en: "How do I report a problem?"), body: .init(zh: "在下方打开项目的问题反馈页面，说明复现步骤和实际表现。请不要公开学校密码、登录 Cookie、完整成绩单或同学信息。", en: "Open the project's issue tracker below and describe the steps to reproduce and what happened. Do not post school passwords, sign-in cookies, full transcripts, or classmates' details."))
         ])
-    ]
+    ].map { category in
+        var category = category
+        category.title.ja = JapaneseHelpContent.categories[category.id]
+        category.articles = category.articles.map { article in
+            var article = article
+            article.title.ja = JapaneseHelpContent.articles[article.id]?.0
+            article.body.ja = JapaneseHelpContent.articles[article.id]?.1
+            return article
+        }
+        return category
+    }
+
+    static func search(_ query: String, locale: Locale, categoryID: String? = nil) -> [HelpCategory] {
+        let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return categories.filter { categoryID == nil || $0.id == categoryID } }
+        return categories.compactMap { category in
+            let matches = category.articles.filter { article in
+                [article.title.value(for: locale), article.body.value(for: locale), category.title.value(for: locale)]
+                    .contains { $0.localizedStandardContains(query) }
+            }
+            return matches.isEmpty ? nil : HelpCategory(id: category.id, title: category.title, symbol: category.symbol, articles: matches)
+        }
+    }
 }
 
 struct HelpCenterView: View {
@@ -73,17 +100,7 @@ struct HelpCenterView: View {
     var standalone = false
 
     private var categories: [HelpCategory] {
-        guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return PlanoraHelpContent.categories.filter { initialCategory == nil || $0.id == initialCategory }
-        }
-        return PlanoraHelpContent.categories.compactMap { category in
-            let matches = category.articles.filter { article in
-                [article.title.value(for: locale), article.body.value(for: locale),
-                 category.title.value(for: locale)].contains { $0.localizedStandardContains(query) }
-            }
-            return matches.isEmpty ? nil : HelpCategory(id: category.id, title: category.title,
-                symbol: category.symbol, articles: matches)
-        }
+        PlanoraHelpContent.search(query, locale: locale, categoryID: initialCategory)
     }
 
     var body: some View {
@@ -104,7 +121,8 @@ struct HelpCenterView: View {
                 if query.isEmpty {
                     Section {
                         Text(HelpCopy(zh: "让计划、课程和学校信息各归其位。选择一个问题，几步就能找到答案。",
-                                      en: "Keep plans, courses, and school information in one place. Choose a question for a short answer.").value(for: locale))
+                                      en: "Keep plans, courses, and school information in one place. Choose a question for a short answer.",
+                                      ja: "予定、科目、学校の情報をひとつに。質問を選ぶと、簡潔な回答を確認できます。").value(for: locale))
                             .foregroundStyle(.secondary)
                             .listRowBackground(Color.clear)
                     }
@@ -125,7 +143,7 @@ struct HelpCenterView: View {
                 }
                 Section {
                     Link(destination: URL(string: "https://github.com/zhangchengzezcz/planora/issues")!) {
-                        Label(HelpCopy(zh: "反馈问题", en: "Report an issue").value(for: locale),
+                        Label(HelpCopy(zh: "反馈问题", en: "Report an issue", ja: "問題を報告").value(for: locale),
                               systemImage: "arrow.up.right.square")
                     }
                     if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
@@ -133,15 +151,15 @@ struct HelpCenterView: View {
                     }
                 }
         }
-        .navigationTitle(HelpCopy(zh: "帮助中心", en: "Help Center").value(for: locale))
+        .navigationTitle(HelpCopy(zh: "帮助中心", en: "Help Center", ja: "ヘルプセンター").value(for: locale))
         .toolbar {
             if standalone {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(HelpCopy(zh: "完成", en: "Done").value(for: locale)) { dismiss() }
+                    Button(HelpCopy(zh: "完成", en: "Done", ja: "完了").value(for: locale)) { dismiss() }
                 }
             }
         }
-        .searchable(text: $query, prompt: HelpCopy(zh: "搜索问题", en: "Search help").value(for: locale))
+        .searchable(text: $query, prompt: HelpCopy(zh: "搜索问题", en: "Search help", ja: "ヘルプを検索").value(for: locale))
         .overlay {
             if categories.isEmpty {
                 ContentUnavailableView.search(text: query)
@@ -169,6 +187,6 @@ private struct HelpArticleView: View {
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(24)
         }
-        .navigationTitle(HelpCopy(zh: "帮助", en: "Help").value(for: locale))
+        .navigationTitle(HelpCopy(zh: "帮助", en: "Help", ja: "ヘルプ").value(for: locale))
     }
 }

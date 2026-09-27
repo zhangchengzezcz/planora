@@ -141,6 +141,18 @@ enum ManageBacTaskImporter {
                 message.lastSyncDate = Date()
             }
 
+            if let interval = snapshot.scheduleCoverage?.interval,
+               snapshot.schedule.allSatisfy({ record in
+                   guard let start = ManageBacDateParser.date(from: record.startDateText),
+                         let end = ManageBacDateParser.date(from: record.endDateText) else { return false }
+                   return start >= interval.start && start < interval.end && end >= start
+               }) {
+                let received = Set(snapshot.schedule.map(\.remoteIdentifier))
+                for event in scheduleByIdentifier.values where event.startDate >= interval.start &&
+                    event.startDate < interval.end && !received.contains(event.externalIdentifier) {
+                    modelContext.delete(event)
+                }
+            }
             for record in deduplicatedSchedule(snapshot.schedule) {
                 guard let startDate = ManageBacDateParser.date(from: record.startDateText),
                       let endDate = ManageBacDateParser.date(from: record.endDateText) else {
@@ -210,8 +222,12 @@ enum ManageBacTaskImporter {
                     task.unitID = unitsByRemoteID[unitIdentifier]?.id
                 }
                 if task.isManageBacCompleted, !task.isCompleted {
-                    task.setCompleted(true)
+                    task.setCompleted(true, fromSync: true)
                     completedCount += 1
+                } else if record.statusIsAuthoritative == true,
+                          record.remoteStatus != .completed,
+                          !task.isManageBacCompleted, task.completionAppliedBySync == true {
+                    task.setCompleted(false, fromSync: true)
                 }
             }
 
@@ -277,7 +293,7 @@ enum ManageBacTaskImporter {
         let changed = tasks.filter { !$0.isDeleted && !$0.isCompleted && $0.isManageBacCompleted }
         guard !changed.isEmpty else { return }
         do {
-            for task in changed { task.setCompleted(true) }
+            for task in changed { task.setCompleted(true, fromSync: true) }
             try modelContext.save()
         } catch {
             modelContext.rollback()
@@ -353,8 +369,15 @@ enum ManageBacTaskImporter {
         }
         task.externalURLString = record.detailURL
         task.externalUpdatedAt = Date()
-        if record.remoteStatus == .completed || task.remoteStatusRawValue != ManageBacRemoteTaskStatus.completed.rawValue {
+        if record.statusIsAuthoritative == true || record.remoteStatus == .completed ||
+            (record.remoteStatus != .unknown && task.remoteStatusRawValue != ManageBacRemoteTaskStatus.completed.rawValue &&
+             task.remoteStatusRawValue != ManageBacRemoteTaskStatus.incomplete.rawValue) {
             task.remoteStatusRawValue = record.remoteStatus.rawValue
+        }
+        if record.assessmentIsAuthoritative == true {
+            task.remoteGradeText = nil
+            task.remoteScoreEarned = nil
+            task.remoteScorePossible = nil
         }
         if let grade = ManageBacAssessment.grade(record.remoteGradeText) { task.remoteGradeText = grade }
         if let earned = record.remoteScoreEarned, let possible = record.remoteScorePossible,
@@ -370,7 +393,17 @@ enum ManageBacTaskImporter {
         var indices: [String: Int] = [:]
         for record in records {
             if let index = indices[record.stableIdentifier] {
-                if record.remoteStatus == .completed {
+                if record.statusIsAuthoritative == true {
+                    result[index].remoteStatus = record.remoteStatus
+                    result[index].statusIsAuthoritative = true
+                }
+                if record.assessmentIsAuthoritative == true {
+                    result[index].remoteGradeText = record.remoteGradeText
+                    result[index].remoteScoreEarned = record.remoteScoreEarned
+                    result[index].remoteScorePossible = record.remoteScorePossible
+                    result[index].assessmentIsAuthoritative = true
+                }
+                if record.remoteStatus == .completed, result[index].statusIsAuthoritative != true {
                     result[index].remoteStatus = .completed
                 }
                 if result[index].deadline == nil, record.deadline != nil {
@@ -379,11 +412,13 @@ enum ManageBacTaskImporter {
                 if result[index].unitIdentifier == nil {
                     result[index].unitIdentifier = record.unitIdentifier
                 }
-                if let grade = ManageBacAssessment.grade(record.remoteGradeText),
+                if result[index].assessmentIsAuthoritative != true,
+                   let grade = ManageBacAssessment.grade(record.remoteGradeText),
                    record.sourceView == "course" || ManageBacAssessment.grade(result[index].remoteGradeText) == nil {
                     result[index].remoteGradeText = grade
                 }
-                if let earned = record.remoteScoreEarned, let possible = record.remoteScorePossible,
+                if result[index].assessmentIsAuthoritative != true,
+                   let earned = record.remoteScoreEarned, let possible = record.remoteScorePossible,
                    earned.isFinite, possible.isFinite, earned >= 0, possible > 0,
                    record.sourceView == "course" || result[index].remoteScoreEarned == nil {
                     result[index].remoteScoreEarned = earned

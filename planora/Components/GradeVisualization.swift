@@ -75,6 +75,10 @@ struct GradeModePicker: View {
     let modes: [GradeDisplayMode]
 
     var body: some View {
+#if os(macOS)
+        MacModePicker(selection: $selection, values: modes, title: String(localized: "Grade Display"),
+                      label: { $0.title }, symbol: { $0.symbol })
+#else
         Picker(String(localized: "Grade Display"), selection: $selection) {
             ForEach(modes) { mode in
                 Image(systemName: mode.symbol)
@@ -87,6 +91,7 @@ struct GradeModePicker: View {
         .labelsHidden()
         .frame(width: CGFloat(modes.count) * 58)
         .accessibilityLabel(String(localized: "Grade Display"))
+#endif
     }
 }
 

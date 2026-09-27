@@ -308,6 +308,12 @@ struct HomeDashboardView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack(spacing: 12) {
                     Text("Calendar Preview").font(.headline)
+#if os(macOS)
+                    MacModePicker(selection: $showsMonthCalendar, values: [false, true],
+                        title: String(localized: "Calendar Preview"),
+                        label: { $0 ? String(localized: "Month") : String(localized: "Week") },
+                        symbol: { _ in "calendar" }, showsLabels: true)
+#else
                     Picker(String(localized: "Calendar Preview"), selection: $showsMonthCalendar) {
                         Text(String(localized: "Week")).tag(false)
                         Text(String(localized: "Month")).tag(true)
@@ -315,6 +321,7 @@ struct HomeDashboardView: View {
                     .pickerStyle(.segmented)
                     .labelsHidden()
                     .frame(width: 100)
+#endif
                     Spacer(minLength: 0)
                     }
                     if showsMonthCalendar {

@@ -71,12 +71,17 @@ struct AttendanceView: View {
     private var calendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.firstWeekday = 2
-        calendar.timeZone = TimeZone(identifier: "Asia/Shanghai") ?? .current
+        calendar.timeZone = .current
         return calendar
     }
 
     private var weeks: [Date] {
-        Array(Set(events.compactMap { calendar.dateInterval(of: .weekOfYear, for: $0.startDate)?.start })).sorted(by: >)
+        var starts = Set(events.compactMap { calendar.dateInterval(of: .weekOfYear, for: $0.startDate)?.start })
+        if let text = connection?.attendanceOverview?.periodStart,
+           let start = ManageBacDateParser.date(from: text) {
+            starts.insert(start)
+        }
+        return starts.sorted(by: >)
     }
 
     private var week: Date? { selectedWeek ?? weeks.first }
@@ -95,7 +100,7 @@ struct AttendanceView: View {
                     ContentUnavailableView(String(localized: "No Attendance Records"), systemImage: "person.badge.clock",
                         description: Text(String(localized: "Sync ManageBac to read classroom attendance.")))
                 } else {
-                    AttendanceMetrics(events: events, overview: connection?.attendanceOverview)
+                    AttendanceMetrics(events: lessonsForWeek, overview: matchingOverview)
                     HStack {
                         Text(String(localized: "Class Attendance")).font(.title2.bold())
                         Spacer()
@@ -139,6 +144,12 @@ struct AttendanceView: View {
             connection = ManageBacConnectionStorage.load()
         }
     }
+
+    private var matchingOverview: ManageBacAttendanceOverview? {
+        guard let week, let interval = calendar.dateInterval(of: .weekOfYear, for: week),
+              let overview = connection?.attendanceOverview, overview.matches(interval) else { return nil }
+        return overview
+    }
 }
 
 private struct AttendanceMetrics: View {
@@ -176,6 +187,14 @@ struct HomeAttendanceSection: View {
     @Query(sort: \PlanoraScheduleEvent.startDate) private var events: [PlanoraScheduleEvent]
     @State private var connection = ManageBacConnectionStorage.load()
 
+    private var overviewWithoutLessons: ManageBacAttendanceOverview? {
+        guard events.isEmpty, let overview = connection?.attendanceOverview,
+              let startText = overview.periodStart, let endText = overview.periodEnd,
+              let start = ManageBacDateParser.date(from: startText),
+              let end = ManageBacDateParser.date(from: endText), end > start else { return nil }
+        return overview
+    }
+
     var body: some View {
         GlassPanel(padding: 20) {
             VStack(alignment: .leading, spacing: 16) {
@@ -188,7 +207,9 @@ struct HomeAttendanceSection: View {
                     .accessibilityLabel(String(localized: "Attendance Details"))
                 }
                 if !events.isEmpty || connection?.attendanceOverview != nil {
-                    AttendanceMetrics(events: events, overview: connection?.attendanceOverview)
+                    Text(overviewWithoutLessons == nil ? String(localized: "Recorded History") : String(localized: "Latest Synced Week"))
+                        .font(.caption).foregroundStyle(.secondary)
+                    AttendanceMetrics(events: events, overview: overviewWithoutLessons)
                 } else {
                     Text(String(localized: "Sync ManageBac to read classroom attendance."))
                         .foregroundStyle(.secondary)

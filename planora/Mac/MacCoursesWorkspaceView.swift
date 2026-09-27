@@ -17,11 +17,9 @@ struct MacCoursesWorkspaceView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Picker(String(localized: "Courses"), selection: $section) {
-                ForEach(MacCoursesWorkspaceSection.allCases) { item in Text(item.title).tag(item) }
-            }
-            .pickerStyle(.segmented)
-            .frame(maxWidth: 430)
+            MacModePicker(selection: $section, values: MacCoursesWorkspaceSection.allCases,
+                title: String(localized: "Courses"), label: { $0.title },
+                symbol: { _ in "books.vertical" }, showsLabels: true)
             .padding(14)
 
             NavigationStack {

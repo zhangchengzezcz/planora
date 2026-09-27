@@ -291,7 +291,7 @@ enum RecurringTaskEngine {
     }
 
     @discardableResult
-    static func ensureRollingSeries(tasks: [PlanoraTask], in modelContext: ModelContext) -> Bool {
+    static func ensureRollingSeries(tasks: [PlanoraTask], in modelContext: ModelContext, now: Date = Date()) -> Bool {
         let series = Dictionary(grouping: tasks.compactMap { task -> (UUID, PlanoraTask)? in
             guard let seriesID = task.recurrenceSeriesID, task.recurrenceRule?.end == .never else { return nil }
             return (seriesID, task)
@@ -300,12 +300,12 @@ enum RecurringTaskEngine {
 
         for (_, entries) in series {
             let instances = entries.map(\.1)
-            guard let latest = instances.max(by: { $0.recurrenceSequence < $1.recurrenceSequence }),
-                  !latest.isDeleted,
+            guard let template = instances.filter({ !$0.isDeleted }).max(by: { $0.recurrenceSequence < $1.recurrenceSequence }),
+                  let latest = instances.max(by: { $0.recurrenceSequence < $1.recurrenceSequence }),
                   let latestDate = latest.deadline,
-                  let rule = latest.recurrenceRule,
+                  let rule = template.recurrenceRule,
                   let seriesID = latest.recurrenceSeriesID,
-                  let horizon = Calendar.current.date(byAdding: .day, value: 90, to: Date()),
+                  let horizon = Calendar.current.date(byAdding: .day, value: 90, to: now),
                   latestDate < horizon else { continue }
 
             let dates = rule.occurrenceDates(starting: latestDate, rollingHorizon: horizon)
@@ -313,7 +313,7 @@ enum RecurringTaskEngine {
                 let (sequence, overflow) = latest.recurrenceSequence.addingReportingOverflow(offset + 1)
                 guard !overflow else { break }
                 let occurrence = copy(
-                    latest,
+                    template,
                     date: date,
                     seriesID: seriesID,
                     sequence: sequence,
@@ -324,7 +324,7 @@ enum RecurringTaskEngine {
             }
         }
         if didCreateOccurrences {
-            try? modelContext.save()
+            return PlanoraTaskPersistence.save(modelContext)
         }
         return didCreateOccurrences
     }

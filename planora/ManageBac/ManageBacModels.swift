@@ -14,6 +14,7 @@ struct ManageBacConnectionSnapshot: Codable, Equatable {
     var detectionConfidenceRawValue: String?
     var skippedItems: [String]? = nil
     var attendanceOverview: ManageBacAttendanceOverview? = nil
+    var connectionID: UUID? = nil
 
     var isConnected: Bool { !schoolHost.isEmpty }
 
@@ -75,6 +76,8 @@ struct ManageBacTaskRecord: Codable, Equatable, Sendable {
     var remoteGradeText: String?
     var remoteScoreEarned: Double?
     var remoteScorePossible: Double?
+    var statusIsAuthoritative: Bool? = nil
+    var assessmentIsAuthoritative: Bool? = nil
 
     init(
         remoteIdentifier: String,
@@ -134,6 +137,7 @@ enum ManageBacRemoteTaskStatus: String, Codable, Sendable {
     case past
     case overdue
     case completed
+    case incomplete
     case unknown
 
     init(sourceView: String) {
@@ -196,6 +200,15 @@ struct ManageBacAttendanceOverview: Codable, Equatable, Sendable {
     var late: Int
     var absent: Int
     var unrecorded: Int
+    var periodStart: String? = nil
+    var periodEnd: String? = nil
+
+    func matches(_ interval: DateInterval) -> Bool {
+        guard let periodStart, let periodEnd,
+              let start = ManageBacDateParser.date(from: periodStart),
+              let end = ManageBacDateParser.date(from: periodEnd) else { return false }
+        return abs(start.timeIntervalSince(interval.start)) < 1 && abs(end.timeIntervalSince(interval.end)) < 1
+    }
 
     var recorded: Int { present + late + absent }
     var rate: Double? { recorded > 0 ? Double(present + late) / Double(recorded) : nil }
@@ -217,6 +230,20 @@ struct ManageBacSyncSnapshot: Codable, Equatable, Sendable {
     var messages: [ManageBacMessageRecord] = []
     var schedule: [ManageBacScheduleRecord] = []
     var attendanceOverview: ManageBacAttendanceOverview? = nil
+    var scheduleCoverage: ManageBacScheduleCoverage? = nil
+}
+
+struct ManageBacScheduleCoverage: Codable, Equatable, Sendable {
+    var start: String
+    var end: String
+    var isComplete: Bool
+
+    var interval: DateInterval? {
+        guard isComplete, let start = ManageBacDateParser.date(from: start),
+              let end = ManageBacDateParser.date(from: end), end > start,
+              end.timeIntervalSince(start) <= 8 * 86400 else { return nil }
+        return DateInterval(start: start, end: end)
+    }
 }
 
 enum ManageBacDetectionConfidence: String, Codable, Sendable {

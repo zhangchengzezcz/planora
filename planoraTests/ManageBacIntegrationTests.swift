@@ -9,6 +9,71 @@ import UIKit
 
 @MainActor
 final class ManageBacIntegrationTests: XCTestCase {
+    func testScheduleReconciliationRequiresCompleteBoundedCoverage() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let start = try XCTUnwrap(ManageBacDateParser.date(from: "2026-09-14T00:00:00Z"))
+        let current = PlanoraScheduleEvent(externalIdentifier: "removed", title: "Removed lesson", startDate: start, endDate: start.addingTimeInterval(3600))
+        let history = PlanoraScheduleEvent(externalIdentifier: "history", title: "Previous week", startDate: start.addingTimeInterval(-7 * 86400), endDate: start.addingTimeInterval(-7 * 86400 + 3600))
+        context.insert(current)
+        context.insert(history)
+        try context.save()
+        var snapshot = ManageBacSyncSnapshot(schoolHost: "school.managebac.cn", courses: [], units: [], tasks: [])
+        func sync() throws {
+            _ = try ManageBacTaskImporter.importSnapshot(snapshot, currentCurriculum: .igcse, existingTasks: [], into: context)
+        }
+        try sync()
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<PlanoraScheduleEvent>()), 2)
+        snapshot.scheduleCoverage = .init(start: start.ISO8601Format(), end: start.addingTimeInterval(5 * 86400).ISO8601Format(), isComplete: false)
+        try sync()
+        XCTAssertEqual(try context.fetchCount(FetchDescriptor<PlanoraScheduleEvent>()), 2)
+        snapshot.scheduleCoverage?.isComplete = true
+        try sync()
+        XCTAssertEqual(try context.fetch(FetchDescriptor<PlanoraScheduleEvent>()).map(\.externalIdentifier), ["history"])
+    }
+    func testAuthoritativeReopeningPreservesManualCompletionAndUnknownResults() throws {
+        let container = try makeContainer()
+        var record = ManageBacTaskRecord(remoteIdentifier: "reopening", title: "Worksheet", subject: "Physics",
+            deadlineText: "2026-09-20", detailURL: nil, sourceView: "course", remoteStatus: .completed,
+            remoteGradeText: "7", remoteScoreEarned: 8, remoteScorePossible: 10)
+        func sync(_ record: ManageBacTaskRecord) throws {
+            _ = try ManageBacTaskImporter.importSnapshot(
+                ManageBacSyncSnapshot(schoolHost: "school.managebac.cn", courses: [], units: [], tasks: [record]),
+                currentCurriculum: .igcse, existingTasks: [], into: container.mainContext)
+        }
+        try sync(record)
+        let task = try XCTUnwrap(container.mainContext.fetch(FetchDescriptor<PlanoraTask>()).first)
+        XCTAssertTrue(task.isCompleted)
+        XCTAssertEqual(task.completionAppliedBySync, true)
+        record.remoteStatus = .unknown
+        record.remoteGradeText = nil
+        record.remoteScoreEarned = nil
+        record.remoteScorePossible = nil
+        try sync(record)
+        XCTAssertTrue(task.isCompleted)
+        XCTAssertEqual(task.remoteGradeText, "7")
+        record.remoteStatus = .incomplete
+        record.statusIsAuthoritative = true
+        record.assessmentIsAuthoritative = true
+        try sync(record)
+        XCTAssertFalse(task.isCompleted)
+        XCTAssertNil(task.remoteGradeText)
+        XCTAssertNil(task.remoteScoreEarned)
+        task.setCompleted(true)
+        try sync(record)
+        XCTAssertTrue(task.isCompleted, "Manual completion must survive a remote reopening")
+    }
+
+    func testAttendanceOverviewOnlyMatchesItsRecordedWeek() throws {
+        var overview = ManageBacAttendanceOverview(present: 40)
+        let start = try XCTUnwrap(ManageBacDateParser.date(from: "2026-09-14T00:00:00Z"))
+        let end = start.addingTimeInterval(7 * 86400)
+        XCTAssertFalse(overview.matches(DateInterval(start: start, end: end)))
+        overview.periodStart = start.ISO8601Format()
+        overview.periodEnd = end.ISO8601Format()
+        XCTAssertTrue(overview.matches(DateInterval(start: start, end: end)))
+        XCTAssertFalse(overview.matches(DateInterval(start: end, duration: 7 * 86400)))
+    }
     func testCachedSchoolHostCannotInjectURLComponents() {
         XCTAssertEqual(ManageBacWebSession.schoolHomeURL(for: "School.managebac.cn")?.absoluteString,
                        "https://school.managebac.cn/student/home")

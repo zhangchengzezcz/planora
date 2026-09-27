@@ -49,6 +49,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     var messages: [ManageBacMessageRecord] = []
     var schedule: [ManageBacScheduleRecord] = []
     var attendanceOverview: ManageBacAttendanceOverview?
+    private var scheduleCoverage: ManageBacScheduleCoverage?
     var programmeText: String?
     var completedStepCount = 0
     private(set) var recoveryPhase: Phase?
@@ -112,6 +113,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored var onSnapshotReady: ((ManageBacSyncSnapshot) throws -> ManageBacImportSummary)?
     @ObservationIgnored private(set) lazy var webView: WKWebView = makeWebView()
     @ObservationIgnored private var mode: Mode = .interactive
+    @ObservationIgnored private var expectedConnection: ManageBacConnectionSnapshot?
     @ObservationIgnored private var schoolHost: String?
     @ObservationIgnored private let taskViews = ["upcoming", "past", "overdue"]
     @ObservationIgnored private var currentTaskViewIndex = 0
@@ -141,6 +143,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     func startSilentSync(snapshot: ManageBacConnectionSnapshot) {
         resetForScan(mode: .silent)
+        expectedConnection = snapshot
         guard let url = Self.schoolHomeURL(for: snapshot.schoolHost) else {
             phase = .failed(.unsupportedAddress)
             return
@@ -297,6 +300,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         messages = []
         schedule = []
         attendanceOverview = nil
+        scheduleCoverage = nil
         programmeText = nil
         schoolHost = nil
         currentTaskViewIndex = 0
@@ -440,6 +444,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 messages.append(contentsOf: payload.messages)
                 schedule.append(contentsOf: payload.schedule)
                 if let overview = payload.attendanceOverview { attendanceOverview = overview }
+                if let coverage = payload.scheduleCoverage { scheduleCoverage = coverage }
                 currentWorkspacePathIndex += 1
                 if currentWorkspacePathIndex < workspacePaths.count {
                     loadStudentPath(workspacePaths[currentWorkspacePathIndex])
@@ -533,6 +538,9 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
             return
         }
         do {
+            if mode == .silent, ManageBacConnectionStorage.load() != expectedConnection {
+                throw CancellationError()
+            }
             phase = .comparing
             completedStepCount = 7
             phase = .importing
@@ -544,7 +552,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 tasks: records,
                 messages: messages,
                 schedule: schedule,
-                attendanceOverview: attendanceOverview
+                attendanceOverview: attendanceOverview,
+                scheduleCoverage: scheduleCoverage
             )
             let summary = try onSnapshotReady(snapshot)
             let detection = ManageBacProgrammeDetector.detect(
@@ -561,7 +570,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                     detectedCurriculumRawValue: detection.curriculum?.rawValue,
                     detectionConfidenceRawValue: detection.confidence.rawValue,
                     skippedItems: skippedItems,
-                    attendanceOverview: summary.attendanceOverview
+                    attendanceOverview: summary.attendanceOverview,
+                    connectionID: mode == .silent ? expectedConnection?.connectionID : UUID()
                 )
             )
             phase = .completed(summary)
@@ -673,6 +683,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         var messages: [ManageBacMessageRecord]
         var schedule: [ManageBacScheduleRecord]
         var attendanceOverview: ManageBacAttendanceOverview?
+        var scheduleCoverage: ManageBacScheduleCoverage?
     }
 
     static let courseScript = #"""
@@ -1017,6 +1028,11 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         !node.children.length && !node.closest('a,button,h1,h2,h3,h4,h5,h6,[class*=comment]') &&
         /^(complete|completed)$/i.test(normalize(node.textContent))
       ));
+      const explicitIncomplete = currentSourceView === 'course' && results.some(result =>
+        /^(incomplete|not submitted|missing)$/i.test(normalize(result.textContent)));
+      const explicitUngraded = currentSourceView === 'course' && results.some(result =>
+        /^(not assessed yet|not assessed|ungraded|N\/A)$/i.test(normalize(result.textContent)));
+      const completed = binaryComplete || isInCompletedSection(container);
       candidates.push({
         remoteIdentifier,
         title,
@@ -1026,7 +1042,9 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         sourceView: currentSourceView,
         courseIdentifier,
         unitIdentifier: unitMatch?.[1] || null,
-        remoteStatus: (binaryComplete || isInCompletedSection(container)) ? 'completed' : (['upcoming','past','overdue'].includes(currentSourceView) ? currentSourceView : 'unknown'),
+        remoteStatus: completed ? 'completed' : (explicitIncomplete ? 'incomplete' : (['upcoming','past','overdue'].includes(currentSourceView) ? currentSourceView : 'unknown')),
+        statusIsAuthoritative: currentSourceView === 'course' && (completed || explicitIncomplete),
+        assessmentIsAuthoritative: currentSourceView === 'course' && (explicitUngraded || Boolean(gradeText || pointsMatch)),
         remoteGradeText: gradeText,
         remoteScoreEarned: pointsMatch ? Number(pointsMatch[1]) : null,
         remoteScorePossible: pointsMatch ? Number(pointsMatch[2]) : null
@@ -1088,6 +1106,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     const courses = Array.isArray(courseRecords) ? courseRecords : [];
     const messages = [];
     const schedule = [];
+    let attendancePeriod = null;
+    let scheduleCoverage = null;
     const path = location.pathname;
 
     const nearestRow = (link, pattern, maxLength = 3000) => {
@@ -1187,6 +1207,14 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         return date.toISOString().slice(0, 10);
       });
       const timePattern = /(\d{1,2}:\d{2}\s*(?:AM|PM))\s*-\s*(\d{1,2}:\d{2}\s*(?:AM|PM))/i;
+      if (headers.length >= 5 && headers.every(Boolean)) {
+        const start = new Date(`${headers[0]} 00:00:00`);
+        if (!Number.isNaN(start.valueOf()) && start.getDay() === 1) {
+          const end = new Date(start);
+          end.setDate(end.getDate() + 7);
+          attendancePeriod = { periodStart: start.toISOString(), periodEnd: end.toISOString() };
+        }
+      }
       const attendanceForCell = cell => {
         // Inspect lesson containers, never coloured assignment-count badges.
         const containers = [cell, ...cell.querySelectorAll('div,a,section')].filter(node =>
@@ -1230,14 +1258,21 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         return Number.isNaN(parsed.valueOf()) ? null : parsed.toISOString();
       };
       const seen = new Set();
+      let fullyRead = rows.some(row => /^\d+$/.test(normalize(row.querySelector('th,td')?.textContent)))
+        && /\b20\d{2}\b/.test(rangeText) && headers.length >= 5 && headers.every(Boolean);
       for (const row of rows.slice(1)) {
         const cells = Array.from(row.querySelectorAll('th,td'));
         const period = normalize(cells[0]?.textContent);
+        if (!/^\d+$/.test(period)) continue;
+        if (cells.length !== headers.length + 1) fullyRead = false;
         for (let index = 1; index < cells.length && index <= headers.length; index += 1) {
           const cell = cells[index];
           const cellText = normalize(cell?.textContent);
           const timeMatch = cellText.match(timePattern);
-          if (!timeMatch) continue;
+          if (!timeMatch) {
+            if (cellText && !/^(—|-|free|no class)$/i.test(cellText)) fullyRead = false;
+            continue;
+          }
           let details = normalize(cellText.replace(timePattern, ''));
           const course = courses
             .map(item => ({ ...item, shortName: normalizedCourseName(item.name) }))
@@ -1250,7 +1285,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
           details = normalize(details.replace(/\bGrade\s+\d+\b/i, '').replace(/^\d+\s+/, ''));
           const startDateText = toISO(headers[index - 1], timeMatch[1]);
           const endDateText = toISO(headers[index - 1], timeMatch[2]);
-          if (!startDateText || !endDateText || !title) continue;
+          if (!startDateText || !endDateText || !title) { fullyRead = false; continue; }
           const remoteIdentifier = [headers[index - 1], period, course?.remoteIdentifier || title, timeMatch[1]].join('|');
           if (seen.has(remoteIdentifier)) continue;
           seen.add(remoteIdentifier);
@@ -1265,6 +1300,14 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
             attendanceStatus: attendanceForCell(cell),
             detailURL: null
           });
+        }
+      }
+      if (fullyRead && attendancePeriod && !table.querySelector('[aria-busy="true"],.loading')) {
+        const start = new Date(`${headers[0]} 00:00:00`);
+        const end = new Date(`${headers[headers.length - 1]} 00:00:00`);
+        end.setDate(end.getDate() + 1);
+        if (!Number.isNaN(end.valueOf())) {
+          scheduleCoverage = { start: start.toISOString(), end: end.toISOString(), isComplete: true };
         }
       }
     }
@@ -1294,7 +1337,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
           const tail = text.slice(text.indexOf(title) + title.length, text.indexOf(title) + title.length + 220);
           const matches = Array.from(tail.matchAll(/(\d+)\s*(Present|Late|Absent|Unrecorded|Not Recorded|TBD)\b/gi));
           if (!matches.length) continue;
-          attendanceOverview = { present: 0, late: 0, absent: 0, unrecorded: 0 };
+          attendanceOverview = { present: 0, late: 0, absent: 0, unrecorded: 0, ...(attendancePeriod || {}) };
           for (const match of matches) {
             const status = /tbd|recorded/i.test(match[2]) ? 'unrecorded' : match[2].toLowerCase();
             attendanceOverview[status] += Number(match[1]);
@@ -1303,6 +1346,6 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         }
       }
     }
-    return JSON.stringify({ messages, schedule, attendanceOverview });
+    return JSON.stringify({ messages, schedule, attendanceOverview, scheduleCoverage });
     """#
 }

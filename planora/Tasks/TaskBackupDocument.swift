@@ -533,6 +533,11 @@ struct TaskImportResult {
 @MainActor
 enum AutomaticTaskBackup {
     private static let key = "planora.automaticTaskBackup"
+    private static var fileURL: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Planora", isDirectory: true)
+            .appendingPathComponent("AutomaticBackup.json")
+    }
 
     static func save(
         tasks: [PlanoraTask],
@@ -548,7 +553,14 @@ enum AutomaticTaskBackup {
             topics: topics,
             assessments: assessments
         ) else { return }
-        UserDefaults.standard.set(json, forKey: key)
+        do {
+            try write(json, to: fileURL)
+            UserDefaults.standard.removeObject(forKey: key)
+        } catch {
+            // Preserve the previous on-disk backup and the legacy copy on failure.
+            NotificationCenter.default.post(name: PlanoraTaskPersistence.saveFailed, object: nil,
+                userInfo: ["message": error.localizedDescription, "backup": true])
+        }
     }
 
     static func tasks() throws -> [PlanoraTask] {
@@ -556,14 +568,28 @@ enum AutomaticTaskBackup {
     }
 
     static func content() throws -> PlanoraBackupContent {
-        guard let json = UserDefaults.standard.string(forKey: key) else {
-            throw TaskBackupError.emptyBackup
-        }
-        return try TaskBackupCodec.content(from: json)
+        try TaskBackupCodec.content(from: read(from: fileURL, defaults: .standard, legacyKey: key))
     }
 
     static var isAvailable: Bool {
-        UserDefaults.standard.string(forKey: key) != nil
+        FileManager.default.fileExists(atPath: fileURL.path) || UserDefaults.standard.string(forKey: key) != nil
+    }
+
+    static func write(_ json: String, to url: URL) throws {
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data(json.utf8).write(to: url, options: .atomic)
+    }
+
+    static func read(from url: URL, defaults: UserDefaults, legacyKey: String) throws -> String {
+        if FileManager.default.fileExists(atPath: url.path) {
+            return try String(contentsOf: url, encoding: .utf8)
+        }
+        guard let legacy = defaults.string(forKey: legacyKey) else { throw TaskBackupError.emptyBackup }
+        // A migration failure must not prevent restoring the existing backup.
+        if (try? write(legacy, to: url)) != nil {
+            defaults.removeObject(forKey: legacyKey)
+        }
+        return legacy
     }
 }
 
@@ -629,6 +655,7 @@ private struct PlanoraTaskBackupItem: Codable {
     var courseID: UUID?
     var unitID: UUID?
     var remoteStatusRawValue: String?
+    var completionAppliedBySync: Bool?
     var remoteGradeText: String?
     var remoteScoreEarned: Double?
     var remoteScorePossible: Double?
@@ -680,6 +707,7 @@ private struct PlanoraTaskBackupItem: Codable {
         courseID = task.courseID
         unitID = task.unitID
         remoteStatusRawValue = task.remoteStatusRawValue
+        completionAppliedBySync = task.completionAppliedBySync
         remoteGradeText = task.remoteGradeText
         remoteScoreEarned = task.remoteScoreEarned
         remoteScorePossible = task.remoteScorePossible
@@ -750,6 +778,7 @@ private struct PlanoraTaskBackupItem: Codable {
         restoredTask.courseID = courseID
         restoredTask.unitID = unitID
         restoredTask.remoteStatusRawValue = remoteStatusRawValue
+        restoredTask.completionAppliedBySync = completionAppliedBySync
         restoredTask.remoteGradeText = remoteGradeText
         restoredTask.remoteScoreEarned = remoteScoreEarned
         restoredTask.remoteScorePossible = remoteScorePossible
@@ -1068,6 +1097,7 @@ private extension PlanoraTask {
         courseID = source.courseID
         unitID = source.unitID
         remoteStatusRawValue = source.remoteStatusRawValue
+        completionAppliedBySync = source.completionAppliedBySync
         remoteGradeText = source.remoteGradeText
         remoteScoreEarned = source.remoteScoreEarned
         remoteScorePossible = source.remoteScorePossible

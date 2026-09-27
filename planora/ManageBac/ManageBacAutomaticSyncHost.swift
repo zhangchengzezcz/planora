@@ -35,8 +35,9 @@ struct ManageBacAutomaticSyncHost: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .manageBacConnectionDidChange)) { _ in
             let previousHost = snapshot?.schoolHost
+            let previousConnectionID = snapshot?.connectionID
             snapshot = ManageBacConnectionStorage.load()
-            if snapshot == nil || snapshot?.schoolHost != previousHost {
+            if snapshot == nil || snapshot?.schoolHost != previousHost || snapshot?.connectionID != previousConnectionID {
                 session?.teardown()
                 session = nil
                 isSyncing = false
@@ -79,7 +80,10 @@ struct ManageBacAutomaticSyncHost: View {
         needsLaunchSync = false
         lastAttemptDate = Date()
         let newSession = ManageBacWebSession()
-        newSession.onSnapshotReady = importSnapshot
+        newSession.onSnapshotReady = { incoming in
+            guard ManageBacConnectionStorage.load() == snapshot else { throw CancellationError() }
+            return try importSnapshot(incoming)
+        }
         session = newSession
         newSession.startSilentSync(snapshot: snapshot)
     }

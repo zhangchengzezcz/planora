@@ -59,6 +59,18 @@ private struct PlanoraRootView: View {
         .onOpenURL { url in
             importSharedBackup(from: url)
         }
+        .onReceive(NotificationCenter.default.publisher(for: PlanoraTaskPersistence.saveFailed)) { notification in
+            importAlertTitle = String(localized: "Unable to Save Changes")
+            importAlertMessage = String(localized: "Your changes could not be saved and were reverted. Check available storage and try again.")
+            if notification.userInfo?["backup"] as? Bool == true {
+                importAlertTitle = String(localized: "Backup Failed")
+                importAlertMessage = String(localized: "The previous backup was kept. Check available storage before making further changes.")
+            }
+            if let detail = notification.userInfo?["message"] as? String {
+                importAlertMessage += "\n\n" + detail
+            }
+            isShowingImportAlert = true
+        }
         .alert(importAlertTitle, isPresented: $isShowingImportAlert) {
             Button(String(localized: "OK"), role: .cancel) { }
         } message: {

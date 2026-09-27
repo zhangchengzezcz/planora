@@ -5,6 +5,51 @@ import UserNotifications
 
 @MainActor
 final class RecurrenceReminderTests: XCTestCase {
+    func testDeletingFutureStopsRollingUntilRestored() throws {
+        let container = try ModelContainer(for: PlanoraTask.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let now = Date()
+        let seed = makeTask(deadline: now)
+        seed.recurrenceSeriesID = UUID()
+        seed.recurrenceRule = TaskRecurrenceRule(frequency: .daily, end: .never)
+        container.mainContext.insert(seed)
+        let tasks = RecurringTaskEngine.materializeSeries(from: seed, in: container.mainContext)
+        let selected = tasks[2]
+        RecurringTaskEngine.truncateSeries(before: selected, in: tasks)
+        for task in tasks where task.recurrenceSequence >= selected.recurrenceSequence { task.deletedDate = now }
+        try container.mainContext.save()
+        let future = now.addingTimeInterval(20 * 86400)
+        XCTAssertFalse(RecurringTaskEngine.ensureRollingSeries(tasks: tasks, in: container.mainContext, now: future))
+        selected.deletedDate = nil
+        PlanoraTaskOperations.restoreRecurrenceRules(for: [selected], in: container.mainContext)
+        XCTAssertTrue(RecurringTaskEngine.ensureRollingSeries(tasks: tasks, in: container.mainContext, now: future))
+    }
+    func testDeletedTailDoesNotStopRollingOrRecreateDeletedDate() throws {
+        let container = try ModelContainer(for: PlanoraTask.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let now = Date()
+        let seed = makeTask(deadline: now)
+        seed.recurrenceSeriesID = UUID()
+        seed.recurrenceRule = TaskRecurrenceRule(frequency: .daily, end: .never)
+        container.mainContext.insert(seed)
+        let tasks = RecurringTaskEngine.materializeSeries(from: seed, in: container.mainContext)
+        let tail = try XCTUnwrap(tasks.last)
+        tail.deletedDate = now
+        try container.mainContext.save()
+        XCTAssertTrue(RecurringTaskEngine.ensureRollingSeries(tasks: tasks, in: container.mainContext, now: now.addingTimeInterval(10 * 86400)))
+        let extended = try container.mainContext.fetch(FetchDescriptor<PlanoraTask>())
+        XCTAssertEqual(extended.filter { $0.deadline == tail.deadline }.count, 1)
+        XCTAssertTrue(tail.isDeleted)
+        XCTAssertGreaterThan(extended.count, tasks.count)
+    }
+
+    func testDeletedEntireSeriesDoesNotResume() throws {
+        let container = try ModelContainer(for: PlanoraTask.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let task = makeTask(deadline: Date())
+        task.recurrenceSeriesID = UUID()
+        task.recurrenceRule = TaskRecurrenceRule(frequency: .daily, end: .never)
+        task.deletedDate = Date()
+        container.mainContext.insert(task)
+        XCTAssertFalse(RecurringTaskEngine.ensureRollingSeries(tasks: [task], in: container.mainContext))
+    }
     func testReminderOperationsRemainSerializedAcrossSuspension() async {
         let queue = ReminderOperationQueue()
         var events: [Int] = []

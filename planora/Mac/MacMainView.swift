@@ -147,7 +147,8 @@ struct MacMainView: View {
                 restoredModels.append(decodedTask)
             }
         }
-        PlanoraTaskPersistence.save(modelContext)
+        PlanoraTaskOperations.restoreRecurrenceRules(for: restoredModels, in: modelContext)
+        guard PlanoraTaskPersistence.save(modelContext) else { return }
         store.clearDeletionUndo()
         PlanoraTaskPersistence.reconcile(fallbackTasks: existingTasks + restoredModels, in: modelContext)
     }
