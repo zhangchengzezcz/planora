@@ -9,6 +9,39 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.7.13</title>
+            <pubDate>Mon, 28 Sep 2026 07:13:45 +0800</pubDate>
+            <sparkle:version>28</sparkle:version>
+            <sparkle:shortVersionString>1.7.13</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.13
+
+## 中文
+
+- 修复删除重复任务末项后无法继续生成后续任务的问题，保留删除未来任务与恢复操作的语义。
+- 保存失败时回滚并显示错误，不再继续取消提醒、清除撤销记录或切换课程体系。
+- ManageBac 同步区分明确撤回与未知结果，保护手动完成标记，阻止旧连接的后台结果覆盖新连接。
+- 时间表仅在完整识别的日期范围内清理已移除课次；历史周与不完整读取不受影响。
+- 出勤详情按所选周统计，首页标明历史记录；不再固定使用上海时区。
+- 自动备份改用应用数据目录内的原子文件写入，并兼容旧备份迁移。
+- Mac 成绩、日历和课程显示切换使用系统玻璃按钮，保留移动端原生分段控件。
+- 补充日语帮助内容和搜索回归测试。
+
+## English
+
+- Fixed rolling recurrence after deleting the final occurrence, while preserving future-deletion and restore behavior.
+- Failed saves now roll back and report errors before reminder removal, undo clearing, or curriculum changes.
+- ManageBac sync distinguishes authoritative changes from unknown results, preserves manual completion, and rejects stale connection results.
+- Timetable reconciliation only removes missing lessons inside a completely recognized date range, preserving history and partial scans.
+- Attendance details follow the selected week; Home explicitly shows recorded history. Removed the fixed Shanghai time zone.
+- Automatic backups now use atomic files in Application Support with legacy migration support.
+- Mac grade, calendar, and course display controls use system glass buttons; mobile segmented controls remain native.
+- Added Japanese help and search regression coverage.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.13/Planora-1.7.13-macOS.zip" length="6255197" type="application/octet-stream" sparkle:edSignature="vQF2UG2HjnmH/klMy6XKPtfPnfodPmjQ8no/ZKSpVL3eRYMttdV+WP23UgAjjuXXJm228/j7e5HdTxf0fMZdDw=="/>
+        </item>
+        <item>
             <title>1.7.12</title>
             <pubDate>Sun, 27 Sep 2026 16:43:09 +0800</pubDate>
             <sparkle:version>27</sparkle:version>
@@ -65,32 +98,6 @@ The feature set is unchanged. Unfinished entrance animation and Vlog-only develo
 - The Mac disk image embeds its installation background. Existing Mac users can install this release through Software Update.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.11/Planora-1.7.11-macOS.zip" length="6188382" type="application/octet-stream" sparkle:edSignature="IoLctftJGupcIcXO9CMbsCG5t2LWzCIhKyQG3BrBHlkZ8dyoctNnc0vVguDlaM9WXiOCFbTDbMzOpFIAZkaoBA=="/>
-        </item>
-        <item>
-            <title>1.7.10</title>
-            <pubDate>Fri, 25 Sep 2026 08:48:00 +0800</pubDate>
-            <sparkle:version>25</sparkle:version>
-            <sparkle:shortVersionString>1.7.10</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.10
-
-## 中文
-- 修复 1.7.9 中课程出勤仍显示“未记录”：ManageBac 返回的课表颜色可能使用 `color(srgb …)` 或 `color(display-p3 …)`，现已按其正确的数值范围解析。
-- 在真实课表页面只读核对了颜色类别；新增回归测试覆盖绿色、橙色、红色、灰色，以及重新同步后纠正旧的“未记录”课程。
-- 更新后请重新同步 ManageBac，旧课程状态会随同步更新。不会修改学校端记录。
-- 39 项 ManageBac 测试通过。真实账户在新版 App 中的完整同步结果仍需核对。
-
-## English
-- Fixed lessons still showing "Not Recorded" in 1.7.9. ManageBac may return timetable colors as `color(srgb …)` or `color(display-p3 …)`; Planora now interprets their numeric ranges correctly.
-- Checked color categories against the live timetable without changing school data. Regression tests cover green, orange, red, and gray lessons, plus correcting previously imported records on resync.
-- Sync ManageBac again after updating to refresh existing lessons. No school records are changed.
-- All 39 ManageBac tests passed. End-to-end sync in the updated app still needs live-account verification.
-
-The macOS app is ad-hoc signed, not Developer ID signed or notarized.
-macOS 应用使用临时签名，未进行 Developer ID 签名或公证。
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.10/Planora-1.7.10-macOS.zip" length="6139816" type="application/octet-stream" sparkle:edSignature="PzYp61adtv1TgxKLFXFXF4ssRTPOtHqEnuPdI8/JoBF5okq4YdwrbbSWqksEozGZinL8Matymidajnz+vJ2oAQ=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -183,6 +190,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: T54wQuvR0im/tCR3rO8OvxTAeLnpMRHSiO66J1YjxoxrRDLM/hYnIVUhkAX5YC3YdjfWWnMprOtW0jjLZX4HBQ==
-length: 15045
+edSignature: uduMzuSxU7flsJergN8P/EAvf3OcC6xuN1lG8u/BzYOMCaWrfIxRkpWP2Rq+dkRdioynJ8CxCWfaEimU3b8wAw==
+length: 15460
 -->
