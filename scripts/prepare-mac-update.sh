@@ -26,7 +26,7 @@ key=$(/usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$plist")
 expected_key=$(/usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$root/planora/Mac/Info.plist")
 [[ "$key" == "$expected_key" ]] || { printf 'Signing public key does not match.\n' >&2; exit 1; }
 [[ -d "$app/Contents/Frameworks/Sparkle.framework" ]] || exit 1
-/usr/bin/codesign --verify --deep --strict "$app"
+bash "$root/scripts/verify-mac-signing.sh" "$app"
 
 if [[ ! -x "$cache/bin/generate_appcast" ]]; then
     mkdir -p "$cache"

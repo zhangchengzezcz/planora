@@ -8,6 +8,7 @@ fi
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
 app="$1"
+bash "$root/scripts/verify-mac-signing.sh" "$app"
 output="$2"
 tools="$3"
 
