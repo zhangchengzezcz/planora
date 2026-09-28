@@ -11,6 +11,8 @@ struct MacModePicker<Value: Hashable>: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @FocusState private var focused: Value?
+    @Namespace private var coordinateSpace
+    @State private var frames: [Value: CGRect] = [:]
 
     var body: some View {
         GlassEffectContainer(spacing: 4) {
@@ -21,8 +23,14 @@ struct MacModePicker<Value: Hashable>: View {
                             control(value).buttonStyle(.bordered)
                                 .tint(selection == value ? .accentColor : .secondary)
                         } else {
-                            control(value).buttonStyle(.glass(selection == value ? .regular.tint(.accentColor) : .regular))
+                            control(value).buttonStyle(.glass(selection == value ? .regular.tint(.accentColor).interactive() : .regular.interactive()))
                         }
+                    }
+                    .buttonBorderShape(.capsule)
+                    .onGeometryChange(for: CGRect.self) { proxy in
+                        proxy.frame(in: .named(coordinateSpace))
+                    } action: { frame in
+                        frames[value] = frame
                     }
                     .focused($focused, equals: value)
                     .accessibilityLabel(label(value))
@@ -31,6 +39,18 @@ struct MacModePicker<Value: Hashable>: View {
                 }
             }
         }
+        .coordinateSpace(name: coordinateSpace)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 4, coordinateSpace: .named(coordinateSpace))
+                .onChanged { gesture in
+                    guard abs(gesture.translation.width) > abs(gesture.translation.height),
+                          frames.values.contains(where: { $0.contains(gesture.startLocation) }),
+                          let value = values.first(where: { frames[$0]?.contains(gesture.location) == true }),
+                          selection != value else { return }
+                    select(value)
+                    focused = value
+                }
+        )
         .accessibilityElement(children: .contain)
         .accessibilityLabel(title)
         .onMoveCommand { direction in

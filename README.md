@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.7.13
+## Planora 1.7.14
 
 ### 中文
 
@@ -22,11 +22,15 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 **Attendance note:** sync ManageBac again after updating. Details follows the selected week and only uses a school overview with a matching range. Home shows imported lesson history. Unrecorded lessons are excluded; late arrivals count toward attendance. Live school data still needs verification. There is no Home grade-mode switch on iPhone. In-app updates are Mac-only.
 
-**下载 / Download:** [Planora 1.7.13 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.13) · [更新说明 / Release notes](updates/1.7.13.md)
+1.7.14 增加 Mac 横向玻璃控件拖动切换，保留移动端原生控件。
+
+1.7.14 adds horizontal drag selection to Mac glass controls while preserving native mobile controls.
+
+**下载 / Download:** [Planora 1.7.14 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.14) · [更新说明 / Release notes](updates/1.7.14.md)
 
 ## 当前版本 / Current Version
 
-- Version: **1.7.13** (build **28**)
+- Version: **1.7.14** (build **29**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle

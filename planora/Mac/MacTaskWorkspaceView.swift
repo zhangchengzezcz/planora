@@ -263,25 +263,26 @@ struct MacTaskWorkspaceView: View {
 
 private struct MacLiquidGlassStatusPicker: View {
     @Binding var selection: MacTaskStatus
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         GeometryReader { geometry in
             GlassEffectContainer(spacing: 6) {
                 HStack(spacing: 6) {
                     ForEach(MacTaskStatus.allCases) { value in
-                        Button {
-                            withAnimation(.snappy) { selection = value }
-                        } label: {
-                            Text(value.title)
-                                .font(.system(size: 13, weight: selection == value ? .bold : .medium))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.75)
-                                .frame(maxWidth: .infinity, minHeight: 34)
-                                .foregroundStyle(Color.planoraInk)
-                                .glassEffect(.regular.tint(value.tint.opacity(selection == value ? 0.4 : 0.08)).interactive(), in: Capsule())
-                                .contentShape(Capsule())
+                        Group {
+                            if reduceTransparency {
+                                control(value)
+                                    .buttonStyle(.bordered)
+                                    .tint(selection == value ? value.tint : .secondary)
+                            } else {
+                                control(value)
+                                    .buttonStyle(.glass(.regular.tint(value.tint.opacity(selection == value ? 0.4 : 0.08))))
+                            }
                         }
-                        .buttonStyle(.plain)
+                        .buttonBorderShape(.capsule)
+                        .frame(maxWidth: .infinity)
                         .accessibilityAddTraits(selection == value ? [.isSelected] : [])
                     }
                 }
@@ -300,11 +301,24 @@ private struct MacLiquidGlassStatusPicker: View {
                         let segmentWidth = geometry.size.width / CGFloat(values.count)
                         let index = min(max(Int(gesture.location.x / segmentWidth), 0), values.count - 1)
                         if selection != values[index] {
-                            withAnimation(.snappy) { selection = values[index] }
+                            withAnimation(reduceMotion ? nil : .snappy) { selection = values[index] }
                         }
                     }
             )
         }
+    }
+
+    private func control(_ value: MacTaskStatus) -> some View {
+        Button {
+            withAnimation(reduceMotion ? nil : .snappy) { selection = value }
+        } label: {
+            Text(value.title)
+                .font(.system(size: 13, weight: selection == value ? .bold : .medium))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .frame(maxWidth: .infinity, minHeight: 24)
+        }
+        .help(value.title)
     }
 }
 
