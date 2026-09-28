@@ -9,6 +9,36 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.7.14</title>
+            <pubDate>Mon, 28 Sep 2026 19:09:26 +0800</pubDate>
+            <sparkle:version>29</sparkle:version>
+            <sparkle:shortVersionString>1.7.14</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.14
+
+## 中文
+
+- Mac 成绩、周/月及课程显示切换支持横向拖动，按实际按钮位置切换。
+- 任务状态切换使用系统 Liquid Glass 按钮，保留状态颜色和拖动操作。
+- 保留完整玻璃与动画效果，仅在系统辅助功能要求时降低效果。iPhone、iPad 原生分段控件不变。
+- 继承 1.7.13 的数据可靠性、出勤统计、备份及帮助中心修复。
+
+## English
+
+- Added horizontal drag selection to Mac grade, week/month, and course display controls using measured button bounds.
+- Task status controls now use system Liquid Glass buttons while retaining status colors and drag selection.
+- Full glass and animation effects remain enabled unless reduced by system accessibility preferences. Native iPhone and iPad segmented controls are unchanged.
+- Includes the data reliability, attendance, backup, and help fixes from 1.7.13.
+
+## Validation
+
+- Mac Debug builds passed for production and Vlog projects.
+- Interactive visual validation across macOS versions remains pending.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.14/Planora-1.7.14-macOS.zip" length="6263071" type="application/octet-stream" sparkle:edSignature="302EqX11BVKHnUUQLDvAKENkdCmXbhVmW96uoQ9LjPQ5YP14rfcqX2A0yTtIu8Nudobe+1yOk1pGOHp2T0kKBA=="/>
+        </item>
+        <item>
             <title>1.7.13</title>
             <pubDate>Mon, 28 Sep 2026 07:13:45 +0800</pubDate>
             <sparkle:version>28</sparkle:version>
@@ -73,31 +103,6 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
 The feature set is unchanged. Unfinished entrance animation and Vlog-only developer features are not included.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.12/Planora-1.7.12-macOS.zip" length="6202664" type="application/octet-stream" sparkle:edSignature="Abzd6iFAk3gppOtgYghhtFUrDavoO6rYm0qyR7pLwaAfsrq0JjA2GYhk3tNTz/OS/pkJeY5v2WpupZx85fvxAA=="/>
-        </item>
-        <item>
-            <title>1.7.11</title>
-            <pubDate>Sun, 27 Sep 2026 11:15:08 +0800</pubDate>
-            <sparkle:version>26</sparkle:version>
-            <sparkle:shortVersionString>1.7.11</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.11
-
-## 中文
-
-- 新增中英双语帮助中心，支持搜索入门、ManageBac 同步、任务与提醒、课程与日历、成绩与出勤、数据与更新和故障排查。
-- Mac 侧栏问号菜单提供帮助中心和常用主题入口；iPhone 与 iPad 可从设置进入。
-- 帮助内容说明未评分与未完成的区别、出勤率计算、备份恢复和问题反馈，并保留 1.7.10 的出勤识别修复。
-- Mac 安装镜像继续内嵌安装背景；现有 Mac 用户可通过软件更新获取新版。
-
-## English
-
-- Added a searchable Chinese and English Help Center covering setup, ManageBac sync, tasks and reminders, courses and calendars, grades and attendance, data and updates, and troubleshooting.
-- Open help and common topics from the Mac sidebar question-mark menu, or from Settings on iPhone and iPad.
-- Help explains ungraded versus incomplete work, attendance calculations, backup and restore, and issue reporting. The attendance fixes from 1.7.10 are retained.
-- The Mac disk image embeds its installation background. Existing Mac users can install this release through Software Update.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.11/Planora-1.7.11-macOS.zip" length="6188382" type="application/octet-stream" sparkle:edSignature="IoLctftJGupcIcXO9CMbsCG5t2LWzCIhKyQG3BrBHlkZ8dyoctNnc0vVguDlaM9WXiOCFbTDbMzOpFIAZkaoBA=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -190,6 +195,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: uduMzuSxU7flsJergN8P/EAvf3OcC6xuN1lG8u/BzYOMCaWrfIxRkpWP2Rq+dkRdioynJ8CxCWfaEimU3b8wAw==
-length: 15460
+edSignature: 6gcegoB5aEDFciOzwiVe2hpYhdv8ugGm4Nqw/1/Ij2tatGCD+ZhPn6d54DWoajn7aCGefYTYuQ5wwqyIBL3MAQ==
+length: 15376
 -->
