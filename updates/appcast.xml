@@ -9,6 +9,31 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.7.15</title>
+            <pubDate>Mon, 28 Sep 2026 19:21:47 +0800</pubDate>
+            <sparkle:version>30</sparkle:version>
+            <sparkle:shortVersionString>1.7.15</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.15
+
+## 中文
+
+- 修复临时签名 Mac 安装包在启动时因 Sparkle 库验证失败而退出的问题。
+- 临时签名构建使用专用库验证例外，保留其余 Hardened Runtime 保护；打包时拦截缺少该配置的临时签名包。
+- 任务数据无需删除。无法启动 1.7.14 的用户请手动下载安装此版本。
+- 此包仍为临时签名，未经过 Developer ID 签名或 Apple 公证。
+
+## English
+
+- Fixed a launch-time Sparkle library-validation failure in ad-hoc signed Mac distributions.
+- Ad-hoc builds use a dedicated library-validation exception while retaining other Hardened Runtime protections. Packaging rejects ad-hoc runtime builds missing this configuration.
+- No task data reset is needed. If 1.7.14 cannot launch, download and install this version manually.
+- This distribution remains ad-hoc signed, without Developer ID signing or Apple notarization.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.15/Planora-1.7.15-macOS.zip" length="6263080" type="application/octet-stream" sparkle:edSignature="sWBVRns1jEnA+/NLt1yuusyc1pBcdtO/aB2SWn1TUJJe/yjYuM5+Oe9tocroMBWkUdt0hDsk8unx7XTqwTdWCg=="/>
+        </item>
+        <item>
             <title>1.7.14</title>
             <pubDate>Mon, 28 Sep 2026 19:09:26 +0800</pubDate>
             <sparkle:version>29</sparkle:version>
@@ -70,39 +95,6 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
 - Added Japanese help and search regression coverage.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.13/Planora-1.7.13-macOS.zip" length="6255197" type="application/octet-stream" sparkle:edSignature="vQF2UG2HjnmH/klMy6XKPtfPnfodPmjQ8no/ZKSpVL3eRYMttdV+WP23UgAjjuXXJm228/j7e5HdTxf0fMZdDw=="/>
-        </item>
-        <item>
-            <title>1.7.12</title>
-            <pubDate>Sun, 27 Sep 2026 16:43:09 +0800</pubDate>
-            <sparkle:version>27</sparkle:version>
-            <sparkle:shortVersionString>1.7.12</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.12
-
-## 中文
-
-- 修复其他应用的同名旧数据库阻止首次启动的问题，不迁移或改动无关数据。
-- 修复异常提醒日期和重复任务序号可能导致的崩溃，并将通知更新串行化，避免与任务删除交错。
-- 断开 ManageBac 时立即取消后台同步；严格校验缓存的学校主机地址。
-- 撤销删除兼容重复任务标识，头像采用原子保存，异常成绩不会进入图表计算。
-- 成绩柱状图按需加载，出勤列表避免重复分组和筛选，批量取消提醒只读取一次通知队列。
-- 合并重复删除逻辑并移除无调用的提醒接口。保留 26 系统兼容分支及 27 的原生滑动操作 API。
-
-功能范围不变。本版本不包含未完成的入场动画或 Vlog 开发者功能。
-
-## English
-
-- An unrelated legacy database no longer prevents a fresh launch; unrelated data is never migrated or modified.
-- Invalid reminder dates and overflowing recurrence sequences no longer crash. Notification mutations are serialized to avoid interleaving with task deletion.
-- Disconnecting ManageBac immediately cancels background synchronization. Cached school hostnames are validated before navigation.
-- Undo tolerates duplicate task identifiers, avatars are saved atomically, and non-finite grades are kept out of chart calculations.
-- Grade bars load lazily, attendance avoids repeated grouping and filtering, and batch reminder removal reads notification queues once.
-- Consolidated duplicate deletion logic and removed unused reminder entry points. Retained OS 26 compatibility and OS 27 native swipe-action APIs.
-
-The feature set is unchanged. Unfinished entrance animation and Vlog-only developer features are not included.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.12/Planora-1.7.12-macOS.zip" length="6202664" type="application/octet-stream" sparkle:edSignature="Abzd6iFAk3gppOtgYghhtFUrDavoO6rYm0qyR7pLwaAfsrq0JjA2GYhk3tNTz/OS/pkJeY5v2WpupZx85fvxAA=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -195,6 +187,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: 6gcegoB5aEDFciOzwiVe2hpYhdv8ugGm4Nqw/1/Ij2tatGCD+ZhPn6d54DWoajn7aCGefYTYuQ5wwqyIBL3MAQ==
-length: 15376
+edSignature: siWLKBRXdS2WdlTyYOVKDpMUW4FqVd1HdnTpL9sQwGoZniYNDjKpypdkJShCXl5MOxR6uOlq2DwGFYArSBF1Cg==
+length: 14544
 -->

@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.7.14
+## Planora 1.7.15
 
 ### 中文
 
@@ -26,11 +26,15 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 1.7.14 adds horizontal drag selection to Mac glass controls while preserving native mobile controls.
 
-**下载 / Download:** [Planora 1.7.14 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.14) · [更新说明 / Release notes](updates/1.7.14.md)
+1.7.15 修复 Mac 临时签名包的 Sparkle 启动加载失败。此包未经过 Apple 公证。
+
+1.7.15 fixes Sparkle loading in ad-hoc signed Mac builds. This distribution is not Apple-notarized.
+
+**下载 / Download:** [Planora 1.7.15 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.15) · [更新说明 / Release notes](updates/1.7.15.md)
 
 ## 当前版本 / Current Version
 
-- Version: **1.7.14** (build **29**)
+- Version: **1.7.15** (build **30**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle
