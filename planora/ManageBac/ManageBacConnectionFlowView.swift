@@ -301,10 +301,12 @@ struct ManageBacConnectionFlowView: View {
                         else { start() }
                     }
                     .buttonStyle(.borderedProminent)
-                    if session.recoveryPhase != nil {
+                    if session.recoveryPhase != nil && session.recoveryPhase != .importing {
                         Button(String(localized: "Skip This Item")) { session.skipFailedStep() }
                             .buttonStyle(.bordered)
                     }
+                    Button(String(localized: "Cancel"), action: cancel)
+                        .buttonStyle(.bordered)
                 }
                 .controlSize(.large)
             }
@@ -398,7 +400,12 @@ struct ManageBacConnectionFlowView: View {
         case .connect:
             session.startInteractiveConnection()
         case .sync(let snapshot):
-            session.startSilentSync(snapshot: snapshot)
+            if let current = ManageBacConnectionStorage.load(),
+               snapshot.belongsToSameConnection(as: current) {
+                session.startSilentSync(snapshot: current)
+            } else {
+                session.startInteractiveConnection()
+            }
         }
     }
 

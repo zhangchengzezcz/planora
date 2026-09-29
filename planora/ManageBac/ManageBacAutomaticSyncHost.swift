@@ -81,7 +81,7 @@ struct ManageBacAutomaticSyncHost: View {
         lastAttemptDate = Date()
         let newSession = ManageBacWebSession()
         newSession.onSnapshotReady = { incoming in
-            guard ManageBacConnectionStorage.load() == snapshot else { throw CancellationError() }
+            guard snapshot.belongsToSameConnection(as: ManageBacConnectionStorage.load()) else { throw CancellationError() }
             return try importSnapshot(incoming)
         }
         session = newSession

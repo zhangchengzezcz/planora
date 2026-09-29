@@ -9,6 +9,26 @@ import UIKit
 
 @MainActor
 final class ManageBacIntegrationTests: XCTestCase {
+    func testConnectionIdentityIgnoresSyncMetadataButRejectsAccountChanges() {
+        let original = ManageBacConnectionSnapshot(schoolHost: "school.managebac.cn",
+            lastSyncDate: .distantPast, courseCount: 1, taskCount: 2,
+            connectionID: UUID())
+        var refreshed = original
+        refreshed.lastSyncDate = Date()
+        refreshed.taskCount = 200
+        XCTAssertTrue(original.belongsToSameConnection(as: refreshed))
+        refreshed.connectionID = UUID()
+        XCTAssertFalse(original.belongsToSameConnection(as: refreshed))
+        refreshed = original
+        refreshed.schoolHost = "other.managebac.cn"
+        XCTAssertFalse(original.belongsToSameConnection(as: refreshed))
+        XCTAssertFalse(original.belongsToSameConnection(as: nil))
+        var legacy = original
+        legacy.connectionID = nil
+        XCTAssertTrue(legacy.belongsToSameConnection(as: legacy))
+        XCTAssertFalse(legacy.belongsToSameConnection(as: original))
+    }
+
     func testScheduleReconciliationRequiresCompleteBoundedCoverage() throws {
         let container = try makeContainer()
         let context = container.mainContext

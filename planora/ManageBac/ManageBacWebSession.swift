@@ -78,6 +78,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
             pageCheckTask = Task { await continueCourseDetails() }
         case .loadingTasks: loadStudentPath(taskPaths[currentTaskViewIndex])
         case .loadingWorkspace: loadStudentPath(workspacePaths[currentWorkspacePathIndex])
+        case .importing: finishImport()
         default: break
         }
     }
@@ -538,8 +539,9 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
             return
         }
         do {
-            if mode == .silent, ManageBacConnectionStorage.load() != expectedConnection {
-                throw CancellationError()
+            if mode == .silent, expectedConnection?.belongsToSameConnection(as: ManageBacConnectionStorage.load()) != true {
+                phase = .needsLogin
+                return
             }
             phase = .comparing
             completedStepCount = 7
@@ -576,7 +578,8 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
             )
             phase = .completed(summary)
         } catch {
-            phase = .failed(.invalidResponse)
+            recoveryPhase = .importing
+            phase = .failed(.importFailed(error.localizedDescription))
         }
     }
 

@@ -18,6 +18,11 @@ struct ManageBacConnectionSnapshot: Codable, Equatable {
 
     var isConnected: Bool { !schoolHost.isEmpty }
 
+    func belongsToSameConnection(as other: Self?) -> Bool {
+        guard let other else { return false }
+        return schoolHost == other.schoolHost && connectionID == other.connectionID
+    }
+
     var detectedCurriculum: Curriculum? {
         detectedCurriculumRawValue.flatMap(Curriculum.init(rawValue:))
     }
@@ -29,19 +34,36 @@ struct ManageBacConnectionSnapshot: Codable, Equatable {
 
 enum ManageBacConnectionStorage {
     private static let key = "planora.managebac.connection"
+    private static var fileURL: URL? {
+        let folder = Bundle.main.bundleIdentifier?.contains(".vlog") == true ? "Planora-Vlog" : "Planora"
+        return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
+            .appendingPathComponent(folder, isDirectory: true)
+            .appendingPathComponent("ManageBacConnection.json")
+    }
 
     static func load() -> ManageBacConnectionSnapshot? {
-        guard let data = UserDefaults.standard.data(forKey: key) else { return nil }
+        let data = UserDefaults.standard.data(forKey: key) ?? fileURL.flatMap { try? Data(contentsOf: $0) }
+        guard let data else { return nil }
         return try? JSONDecoder().decode(ManageBacConnectionSnapshot.self, from: data)
     }
 
     static func save(_ snapshot: ManageBacConnectionSnapshot) {
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         UserDefaults.standard.set(data, forKey: key)
+        if let url = fileURL {
+            do {
+                try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try data.write(to: url, options: .atomic)
+                UserDefaults.standard.removeObject(forKey: key)
+            } catch {
+                // Keep preferences as a fallback until disk persistence succeeds.
+            }
+        }
         NotificationCenter.default.post(name: .manageBacConnectionDidChange, object: nil)
     }
 
     static func clear() {
+        if let url = fileURL { try? FileManager.default.removeItem(at: url) }
         UserDefaults.standard.removeObject(forKey: key)
         NotificationCenter.default.post(name: .manageBacConnectionDidChange, object: nil)
     }
@@ -320,6 +342,7 @@ enum ManageBacConnectionError: LocalizedError, Equatable {
     case pageStructureChanged
     case invalidResponse
     case cancelled
+    case importFailed(String)
 
     var errorDescription: String? {
         switch self {
@@ -333,6 +356,8 @@ enum ManageBacConnectionError: LocalizedError, Equatable {
             String(localized: "Planora could not read the ManageBac response.")
         case .cancelled:
             String(localized: "Connection cancelled.")
+        case .importFailed(let detail):
+            String(localized: "Import failed. Existing data was preserved.") + "\n" + detail
         }
     }
 }

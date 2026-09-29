@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.7.15
+## Planora 1.7.16
 
 ### 中文
 
@@ -30,11 +30,15 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 1.7.15 fixes Sparkle loading in ad-hoc signed Mac builds. This distribution is not Apple-notarized.
 
-**下载 / Download:** [Planora 1.7.15 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.15) · [更新说明 / Release notes](updates/1.7.15.md)
+1.7.16 修复同步连接误判，增加导入重试及退出入口，并将个人资料持久化以避免清除偏好后重新进入引导。
+
+1.7.16 fixes false stale-sync rejection, adds import recovery, and persists profiles outside preferences.
+
+**下载 / Download:** [Planora 1.7.16 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.16) · [更新说明 / Release notes](updates/1.7.16.md)
 
 ## 当前版本 / Current Version
 
-- Version: **1.7.15** (build **30**)
+- Version: **1.7.16** (build **31**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle
@@ -234,6 +238,44 @@ Private project. All rights reserved unless a license is added later.
 
 ## 完整卸载 / Complete Uninstall
 
+### 用户数据与缓存 / User Data vs Cache
+
+Mac 正式版只有一个正在使用的任务数据库：
+`~/Library/Application Support/Planora/Planora.store`。
+同目录的 `-wal`、`-shm` 是数据库组成部分，不是可清理缓存。
+`AutomaticBackup.json`、`LearningProfile.json` 和 `ProfileAvatar.png` 也是用户数据。
+不要让 CleanMyMac 或其他清理工具删除整个 Application Support/Planora。
+
+Only `~/Library/Caches/com.zhangchengze.planora.mac` is disposable app cache.
+Database WAL/SHM files, backups and avatars are user data, not cache.
+Use `bash scripts/clean-planora-cache.sh` to preview the supported cache path;
+after quitting Planora, add `--execute` to clear it without touching user data.
+Third-party cleaners control their own classifications; review their deletion list.
+
+连接记录位于同一用户数据目录的 `ManageBacConnection.json`（不含密码或 Cookie）。
+偏好设置位于 `~/Library/Preferences/com.zhangchengze.planora.mac.plist`。
+WebKit/HTTPStorages 下的应用专属目录包含学校登录网站数据，删除会要求重新登录，
+但不应删除任务。它们不包含在上述清缓存脚本中。
+
+Preferences and website login data are not included in cache cleaning.
+Removing website data can require signing in again; it does not remove the task store.
+
+旧版 `~/Library/Application Support/default.store` 仅作为迁移来源，迁移成功后不再写入。
+为防误删其他应用同名数据库，升级不会自动删除这组旧文件。
+确认它属于 Planora 且新库数据完整后，可备份再移走旧库及其 `-wal/-shm`。
+桌面上的手动备份与 Vlog 的 `Planora-Vlog` 目录不会由正式版卸载流程删除。
+
+The legacy default.store is a migration source only, not a second active database.
+Keep it until ownership and migration are verified; never blindly delete generic default.store files.
+Manual backups and the separate Vlog project/data are intentionally preserved.
+
+正常更新通过 Sparkle 替换应用包，不移动或重置上述用户数据，无需 PKG。
+无法启动的旧版（例如受签名问题影响的 1.7.14）需手动下载新版并替换应用。
+不要先运行下面的完整卸载命令。应用签名修复不等于 Apple 公证。
+
+Sparkle updates replace the app bundle while leaving user data in place.
+If an old app cannot launch, manually replace it with the new download; do not run full uninstall first.
+
 ### 中文
 
 如果只想卸载 Planora App，将 `/Applications/planora.app` 移到废纸篓即可。
@@ -264,7 +306,6 @@ rm -rf "$HOME/Library/WebKit/com.zhangchengze.planora.mac"
 rm -rf "$HOME/Library/HTTPStorages/com.zhangchengze.planora.mac"
 rm -rf "$HOME/Library/HTTPStorages/com.zhangchengze.planora.mac.binarycookies"
 
-rm -rf "$HOME/Library/Caches/com.sparkle-project.Sparkle"
 rm -rf "$HOME/Library/Caches/com.zhangchengze.planora.mac/org.sparkle-project.Sparkle"
 rm -rf "$HOME/Library/Application Support/com.zhangchengze.planora.mac/Update"
 
@@ -272,7 +313,6 @@ find "$HOME/Library" -maxdepth 4 \
   \( -iname '*com.zhangchengze.planora.mac*' -o -iname '*planora*' \) \
   -print 2>/dev/null
 
-killall cfprefsd 2>/dev/null || true
 ```
 
 最后的 `find` 命令只会**列出**仍然包含 `Planora` 或 `com.zhangchengze.planora.mac` 名称的项目，不会自动删除这些额外项目。这样可以在删除未知文件之前先进行检查。
@@ -313,7 +353,6 @@ rm -rf "$HOME/Library/WebKit/com.zhangchengze.planora.mac"
 rm -rf "$HOME/Library/HTTPStorages/com.zhangchengze.planora.mac"
 rm -rf "$HOME/Library/HTTPStorages/com.zhangchengze.planora.mac.binarycookies"
 
-rm -rf "$HOME/Library/Caches/com.sparkle-project.Sparkle"
 rm -rf "$HOME/Library/Caches/com.zhangchengze.planora.mac/org.sparkle-project.Sparkle"
 rm -rf "$HOME/Library/Application Support/com.zhangchengze.planora.mac/Update"
 
@@ -321,7 +360,6 @@ find "$HOME/Library" -maxdepth 4 \
   \( -iname '*com.zhangchengze.planora.mac*' -o -iname '*planora*' \) \
   -print 2>/dev/null
 
-killall cfprefsd 2>/dev/null || true
 ```
 
 The final `find` command only **lists** remaining items whose names contain `Planora` or `com.zhangchengze.planora.mac`; it does not automatically delete those additional items. This allows them to be reviewed before removing anything unexpected.

@@ -1,6 +1,11 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "Import failed. Existing data was preserved." : { "localizations" : {
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导入失败，原有数据已保留。" } },
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "Import failed. Existing data was preserved." } },
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "読み込みに失敗しました。既存のデータは保持されています。" } }
+    } },
     "Latest Synced Week" : { "localizations" : {
       "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "最近同步的周" } },
       "en" : { "stringUnit" : { "state" : "translated", "value" : "Latest Synced Week" } },
