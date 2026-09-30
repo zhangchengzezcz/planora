@@ -114,13 +114,13 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored var onSnapshotReady: ((ManageBacSyncSnapshot) throws -> ManageBacImportSummary)?
     @ObservationIgnored private(set) lazy var webView: WKWebView = makeWebView()
     @ObservationIgnored private var mode: Mode = .interactive
+    private(set) var syncMode: ManageBacSyncMode = .full
     @ObservationIgnored private var expectedConnection: ManageBacConnectionSnapshot?
     @ObservationIgnored private var schoolHost: String?
     @ObservationIgnored private let taskViews = ["upcoming", "past", "overdue"]
     @ObservationIgnored private var currentTaskViewIndex = 0
     private var taskPaths: [String] {
-        taskViews.map { "/student/tasks_and_deadlines?view=\($0)" }
-        + courses.map { "/student/classes/\($0.remoteIdentifier)/core_tasks" }
+        ManageBacSyncPolicy.taskPaths(mode: syncMode, courseIDs: courses.map(\.remoteIdentifier))
     }
     @ObservationIgnored private let workspacePaths = ["/student/notifications", "/student/timetables"]
     @ObservationIgnored private var currentWorkspacePathIndex = 0
@@ -134,6 +134,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     func startInteractiveConnection() {
         resetForScan(mode: .interactive)
+        syncMode = .full
         phase = .authenticating
         guard let signInURL = URL(string: "https://signin.managebac.com/") else {
             phase = .failed(.unsupportedAddress)
@@ -142,8 +143,9 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         load(signInURL)
     }
 
-    func startSilentSync(snapshot: ManageBacConnectionSnapshot) {
+    func startSilentSync(snapshot: ManageBacConnectionSnapshot, syncMode: ManageBacSyncMode = .full) {
         resetForScan(mode: .silent)
+        self.syncMode = syncMode
         expectedConnection = snapshot
         guard let url = Self.schoolHomeURL(for: snapshot.schoolHost) else {
             phase = .failed(.unsupportedAddress)
@@ -404,7 +406,13 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                 phase = .identifyingCurriculum
                 completedStepCount = 3
                 phase = .loadingUnits
-                await continueCourseDetails()
+                if syncMode == .quick {
+                    completedStepCount = 4
+                    phase = .loadingTasks
+                    loadStudentPath(taskPaths[0])
+                } else {
+                    await continueCourseDetails()
+                }
             } catch {
                 guard generation == pageLoadGeneration else { return }
                 phase = .failed(.pageStructureChanged)
@@ -433,7 +441,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
             }
         case .loadingWorkspace:
             do {
-                if workspacePaths[currentWorkspacePathIndex] == "/student/notifications" {
+                if syncMode == .full && workspacePaths[currentWorkspacePathIndex] == "/student/notifications" {
                     let _: Bool = try await decodeJavaScript(Self.notificationHistoryScript)
                     guard generation == pageLoadGeneration else { return }
                 }
@@ -573,7 +581,9 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
                     detectionConfidenceRawValue: detection.confidence.rawValue,
                     skippedItems: skippedItems,
                     attendanceOverview: summary.attendanceOverview,
-                    connectionID: mode == .silent ? expectedConnection?.connectionID : UUID()
+                    connectionID: mode == .silent ? expectedConnection?.connectionID : UUID(),
+                    lastFullSyncDate: syncMode == .full ? Date() : expectedConnection?.lastFullSyncDate,
+                    lastSyncMode: syncMode
                 )
             )
             phase = .completed(summary)

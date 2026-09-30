@@ -21,7 +21,7 @@ version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$plist
 build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$plist")
 identifier=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$plist")
 [[ "$identifier" == "$account" ]] || { printf 'Not a Planora Mac app.\n' >&2; exit 1; }
-[[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ && "$build" =~ ^[0-9]+$ ]] || exit 1
+[[ "$version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ && "$build" =~ ^[0-9]+$ ]] || exit 1
 key=$(/usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$plist")
 expected_key=$(/usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$root/planora/Mac/Info.plist")
 [[ "$key" == "$expected_key" ]] || { printf 'Signing public key does not match.\n' >&2; exit 1; }

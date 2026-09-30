@@ -15,6 +15,8 @@ struct ManageBacConnectionSnapshot: Codable, Equatable {
     var skippedItems: [String]? = nil
     var attendanceOverview: ManageBacAttendanceOverview? = nil
     var connectionID: UUID? = nil
+    var lastFullSyncDate: Date? = nil
+    var lastSyncMode: ManageBacSyncMode? = nil
 
     var isConnected: Bool { !schoolHost.isEmpty }
 

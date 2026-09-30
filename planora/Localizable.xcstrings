@@ -1,6 +1,14 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "Quick Sync" : {"localizations":{"zh-Hans":{"stringUnit":{"state":"translated","value":"快速同步"}},"en":{"stringUnit":{"state":"translated","value":"Quick Sync"}},"ja":{"stringUnit":{"state":"translated","value":"高速同期"}}}},
+    "Full Sync" : {"localizations":{"zh-Hans":{"stringUnit":{"state":"translated","value":"完整同步"}},"en":{"stringUnit":{"state":"translated","value":"Full Sync"}},"ja":{"stringUnit":{"state":"translated","value":"完全同期"}}}},
+    "Sync Mode" : {"localizations":{"zh-Hans":{"stringUnit":{"state":"translated","value":"同步方式"}},"en":{"stringUnit":{"state":"translated","value":"Sync Mode"}},"ja":{"stringUnit":{"state":"translated","value":"同期方式"}}}},
+    "Keep existing teachers and units" : {"localizations":{"zh-Hans":{"stringUnit":{"state":"translated","value":"保留现有教师与单元"}},"en":{"stringUnit":{"state":"translated","value":"Keep existing teachers and units"}},"ja":{"stringUnit":{"state":"translated","value":"教師と単元を保持"}}}},
+    "Last 7 Days" : {"localizations":{"zh-Hans":{"stringUnit":{"state":"translated","value":"最近 7 天"}},"en":{"stringUnit":{"state":"translated","value":"Last 7 Days"}},"ja":{"stringUnit":{"state":"translated","value":"直近7日間"}}}},
+    "Open Planora" : {"localizations":{"zh-Hans":{"stringUnit":{"state":"translated","value":"打开 Planora"}},"en":{"stringUnit":{"state":"translated","value":"Open Planora"}},"ja":{"stringUnit":{"state":"translated","value":"Planoraを開く"}}}},
+    "Quit Planora" : {"localizations":{"zh-Hans":{"stringUnit":{"state":"translated","value":"退出 Planora"}},"en":{"stringUnit":{"state":"translated","value":"Quit Planora"}},"ja":{"stringUnit":{"state":"translated","value":"Planoraを終了"}}}},
+    "No Upcoming Tasks" : {"localizations":{"zh-Hans":{"stringUnit":{"state":"translated","value":"暂无待办任务"}},"en":{"stringUnit":{"state":"translated","value":"No Upcoming Tasks"}},"ja":{"stringUnit":{"state":"translated","value":"予定タスクなし"}}}},
     "Undo Latest Import" : {"localizations":{"zh-Hans":{"stringUnit":{"state":"translated","value":"撤销最近一次导入或同步"}},"en":{"stringUnit":{"state":"translated","value":"Undo Latest Import"}},"ja":{"stringUnit":{"state":"translated","value":"直前の読み込みを取り消す"}}}},
     "Clear All Learning Data" : {"localizations":{"zh-Hans":{"stringUnit":{"state":"translated","value":"清除全部课程数据"}},"en":{"stringUnit":{"state":"translated","value":"Clear All Learning Data"}},"ja":{"stringUnit":{"state":"translated","value":"すべての学習データを消去"}}}},
     "Undo Latest Import?" : {"localizations":{"zh-Hans":{"stringUnit":{"state":"translated","value":"撤销最近一次导入或同步？"}},"en":{"stringUnit":{"state":"translated","value":"Undo Latest Import?"}},"ja":{"stringUnit":{"state":"translated","value":"直前の読み込みを取り消しますか？"}}}},

@@ -77,6 +77,7 @@ struct AttendanceView: View {
 
     private var weeks: [Date] {
         var starts = Set(events.compactMap { calendar.dateInterval(of: .weekOfYear, for: $0.startDate)?.start })
+        if let current = calendar.dateInterval(of: .weekOfYear, for: Date())?.start { starts.insert(current) }
         if let text = connection?.attendanceOverview?.periodStart,
            let start = ManageBacDateParser.date(from: text) {
             starts.insert(start)
@@ -84,7 +85,7 @@ struct AttendanceView: View {
         return starts.sorted(by: >)
     }
 
-    private var week: Date? { selectedWeek ?? weeks.first }
+    private var week: Date? { selectedWeek ?? calendar.dateInterval(of: .weekOfYear, for: Date())?.start }
 
     private var filtered: [PlanoraScheduleEvent] {
         guard let week, let end = calendar.date(byAdding: .day, value: 7, to: week) else { return [] }
@@ -187,12 +188,9 @@ struct HomeAttendanceSection: View {
     @Query(sort: \PlanoraScheduleEvent.startDate) private var events: [PlanoraScheduleEvent]
     @State private var connection = ManageBacConnectionStorage.load()
 
-    private var overviewWithoutLessons: ManageBacAttendanceOverview? {
-        guard events.isEmpty, let overview = connection?.attendanceOverview,
-              let startText = overview.periodStart, let endText = overview.periodEnd,
-              let start = ManageBacDateParser.date(from: startText),
-              let end = ManageBacDateParser.date(from: endText), end > start else { return nil }
-        return overview
+    private var recentEvents: [PlanoraScheduleEvent] {
+        let interval = RecentAttendanceWindow.interval()
+        return events.filter { $0.startDate >= interval.start && $0.startDate <= interval.end }
     }
 
     var body: some View {
@@ -206,10 +204,10 @@ struct HomeAttendanceSection: View {
                     }
                     .accessibilityLabel(String(localized: "Attendance Details"))
                 }
-                if !events.isEmpty || connection?.attendanceOverview != nil {
-                    Text(overviewWithoutLessons == nil ? String(localized: "Recorded History") : String(localized: "Latest Synced Week"))
-                        .font(.caption).foregroundStyle(.secondary)
-                    AttendanceMetrics(events: events, overview: overviewWithoutLessons)
+                Text(String(localized: "Last 7 Days"))
+                    .font(.caption).foregroundStyle(.secondary)
+                if !recentEvents.isEmpty {
+                    AttendanceMetrics(events: recentEvents)
                 } else {
                     Text(String(localized: "Sync ManageBac to read classroom attendance."))
                         .foregroundStyle(.secondary)

@@ -30,7 +30,7 @@ struct PlanoraApp: App {
     @StateObject private var softwareUpdater = MacSoftwareUpdater.shared
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: "main") {
             storedContent { ContentView(store: store) }
         }
         .defaultSize(width: 1180, height: 760)
@@ -54,6 +54,14 @@ struct PlanoraApp: App {
             storedContent { MacSettingsView(store: store) }
                 .frame(width: 620, height: 520)
         }
+
+        MenuBarExtra {
+            storedContent { MacMenuBarView(store: store) }
+        } label: {
+            Image(nsImage: PlanoraMenuBarIcon.image)
+                .accessibilityLabel("Planora")
+        }
+        .menuBarExtraStyle(.window)
     }
 #else
     var body: some Scene {

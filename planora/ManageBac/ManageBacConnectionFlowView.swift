@@ -3,7 +3,7 @@ import SwiftUI
 
 enum ManageBacFlow: Identifiable {
     case connect
-    case sync(ManageBacConnectionSnapshot)
+    case sync(ManageBacConnectionSnapshot, ManageBacSyncMode = .full)
 
     var id: String {
         switch self {
@@ -333,7 +333,7 @@ struct ManageBacConnectionFlowView: View {
             String(localized: "Verify student account"),
             String(localized: "Read courses"),
             String(localized: "Identify curriculum"),
-            String(localized: "Read teachers and units"),
+            session.syncMode == .quick ? String(localized: "Keep existing teachers and units") : String(localized: "Read teachers and units"),
             String(localized: "Read tasks and deadlines"),
             String(localized: "Read messages and timetable"),
             String(localized: "Compare with Planora"),
@@ -399,10 +399,10 @@ struct ManageBacConnectionFlowView: View {
         switch flow {
         case .connect:
             session.startInteractiveConnection()
-        case .sync(let snapshot):
+        case .sync(let snapshot, let syncMode):
             if let current = ManageBacConnectionStorage.load(),
                snapshot.belongsToSameConnection(as: current) {
-                session.startSilentSync(snapshot: current)
+                session.startSilentSync(snapshot: current, syncMode: syncMode)
             } else {
                 session.startInteractiveConnection()
             }

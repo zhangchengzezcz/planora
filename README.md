@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.7.17
+## Planora 1.8
 
 ### 中文
 
@@ -10,7 +10,7 @@ Planora 帮助 IB 与 IGCSE 学生整理 ManageBac 中分散的课程、任务�
 
 1.7.13 修复保存失败处理与重复任务续排，明确同步状态、时间表清理和出勤统计的范围，并将自动备份迁移到独立文件。Mac 显示切换采用系统玻璃按钮；帮助中心新增日语，保留中英文内容。
 
-**出勤说明：** 更新后需重新同步 ManageBac。出勤详情统计所选周，仅使用日期范围匹配的学校汇总；首页显示已导入的历史课次。未记录不计入分母，迟到计入出勤。真实学校数据仍需核对。iPhone 首页没有成绩模式切换，软件更新仅适用于 Mac。
+**出勤说明：** 首页仅统计最近 7 天已导入的课次，不包含未来课程。出勤详情默认本周，也可选择历史周，仅使用日期范围匹配的学校汇总。未记录不计入分母，迟到计入出勤。未同步的课次无法纳入统计。iPhone 首页没有成绩模式切换，软件更新仅适用于 Mac。
 
 ### English
 
@@ -20,7 +20,7 @@ Planora helps IB and IGCSE students organize courses, tasks, deadlines, grades, 
 
 Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync authority and timetable/attendance ranges, and moves automatic backups to a separate file. Mac display controls use system glass buttons. The Help Center now supports Japanese alongside Chinese and English.
 
-**Attendance note:** sync ManageBac again after updating. Details follows the selected week and only uses a school overview with a matching range. Home shows imported lesson history. Unrecorded lessons are excluded; late arrivals count toward attendance. Live school data still needs verification. There is no Home grade-mode switch on iPhone. In-app updates are Mac-only.
+**Attendance note:** Home covers imported lessons from the last 7 days, excluding future lessons. Details defaults to this week, allows historical weeks and only uses a school overview with a matching range. Unrecorded lessons are excluded; late arrivals count toward attendance. Unsynced lessons cannot be counted. There is no Home grade-mode switch on iPhone. In-app updates are Mac-only.
 
 1.7.14 增加 Mac 横向玻璃控件拖动切换，保留移动端原生控件。
 
@@ -38,14 +38,26 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 1.7.17 adds undo for the latest import/sync, a learning-data reset, and an import entry in the Mac task workspace. Your name, avatar and appearance are preserved.
 
-**下载 / Download:** [Planora 1.7.17 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.17) · [更新说明 / Release notes](updates/1.7.17.md)
+**下载 / Download:** [Planora 1.8 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8) · [更新说明 / Release notes](updates/1.8.md)
 
 ## 当前版本 / Current Version
 
-- Version: **1.7.17** (build **32**)
+- Version: **1.8** (build **33**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle
+
+### 1.8 同步与菜单栏 / Sync and Menu Bar
+
+快速同步更新全局任务列表、当前消息页、当周时间表与出勤，不逐课程扫描单元、教师详情及历史消息。
+完整同步保留所有读取流程，适用于首次连接、补全历史与核查课程内容。两种方式均合并更新，不因未扫描而删除现有单元。
+自动同步仅在前台活动时运行，最多每15分钟一次，每24小时安排完整同步；关闭应用或没有活动窗口时不承诺持续后台网络读取。
+Mac 菜单栏使用系统模板图标自动适配明暗颜色；关闭主窗口后，菜单栏仍可打开应用、查看待办任务、手动同步。选择“退出 Planora”才完全退出。不自动设置登录启动。
+
+Quick sync refreshes global task lists, the current notification page and this week's timetable/attendance without scanning every course's units, teacher details or message history.
+Full sync retains the complete scan for initial connection, history and course verification. Unscanned existing units remain intact.
+Automatic sync runs only while active, at most every 15 minutes, with a full refresh every 24 hours. Continuous network activity is not promised while closed or without an active window.
+The Mac menu-bar template icon follows system colors. Closing the main window leaves access to pending tasks, manual sync and reopening Planora. Choose Quit Planora to exit. Login startup is not enabled automatically.
 
 ## 交互式演示 / Interactive Demo
 

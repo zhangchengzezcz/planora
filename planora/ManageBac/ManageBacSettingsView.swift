@@ -4,6 +4,7 @@ struct ManageBacSettingsView: View {
     @State private var snapshot = ManageBacConnectionStorage.load()
     @State private var flow: ManageBacFlow?
     @State private var isShowingDisconnectConfirmation = false
+    @State private var syncMode: ManageBacSyncMode = .quick
 
     let store: PlanoraStore
     var onClose: (() -> Void)?
@@ -34,6 +35,7 @@ struct ManageBacSettingsView: View {
             }
             Section {
                 connectionStatus
+                if snapshot != nil { syncModePicker }
                 connectionActions
             } header: {
                 Text(verbatim: "ManageBac")
@@ -122,9 +124,9 @@ struct ManageBacSettingsView: View {
     private var connectionActions: some View {
         if let snapshot {
             Button {
-                flow = .sync(snapshot)
+                flow = .sync(snapshot, syncMode)
             } label: {
-                Label(String(localized: "Sync Now"), systemImage: "arrow.clockwise")
+                Label(syncMode.title, systemImage: syncMode.symbol)
             }
             Button(String(localized: "Disconnect"), role: .destructive) {
                 isShowingDisconnectConfirmation = true
@@ -136,6 +138,15 @@ struct ManageBacSettingsView: View {
                 Label(String(localized: "Connect Account"), systemImage: "arrow.up.right.square")
             }
         }
+    }
+
+    private var syncModePicker: some View {
+        Picker("Sync Mode", selection: $syncMode) {
+            ForEach(ManageBacSyncMode.allCases) { mode in
+                Label(mode.title, systemImage: mode.symbol).tag(mode)
+            }
+        }
+        .pickerStyle(.segmented)
     }
 
     @ViewBuilder
@@ -185,10 +196,11 @@ struct ManageBacSettingsView: View {
 
                 if let snapshot {
                     VStack(spacing: 12) {
+                        syncModePicker
                         Button {
-                            flow = .sync(snapshot)
+                            flow = .sync(snapshot, syncMode)
                         } label: {
-                            Label(String(localized: "Sync Now"), systemImage: "arrow.clockwise")
+                            Label(syncMode.title, systemImage: syncMode.symbol)
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)

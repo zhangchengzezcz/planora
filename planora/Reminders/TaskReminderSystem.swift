@@ -436,6 +436,8 @@ final class PlanoraAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
 }
 #elseif os(macOS)
 final class PlanoraAppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         let center = UNUserNotificationCenter.current()
         center.delegate = self

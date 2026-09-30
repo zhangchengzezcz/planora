@@ -3,7 +3,7 @@ import SwiftData
 import SwiftUI
 
 struct ManageBacAutomaticSyncHost: View {
-    private static let automaticSyncInterval: TimeInterval = 2 * 60
+    private static let automaticSyncInterval = ManageBacSyncPolicy.quickInterval
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
@@ -12,7 +12,6 @@ struct ManageBacAutomaticSyncHost: View {
     @State private var snapshot = ManageBacConnectionStorage.load()
     @State private var lastAttemptDate: Date?
     @State private var isSyncing = false
-    @State private var needsLaunchSync = true
 
     let store: PlanoraStore
 
@@ -42,7 +41,6 @@ struct ManageBacAutomaticSyncHost: View {
                 session = nil
                 isSyncing = false
                 lastAttemptDate = nil
-                needsLaunchSync = true
             }
             synchronizeIfNeeded()
         }
@@ -66,18 +64,14 @@ struct ManageBacAutomaticSyncHost: View {
     }
 
     private func synchronizeIfNeeded() {
-#if os(iOS)
         // iOS suspends WebKit work after the app leaves the foreground. The
         // active-phase check also ensures a due sync is resumed on return.
         guard scenePhase == .active else { return }
-#endif
         guard !isSyncing, let snapshot else { return }
 
-        let referenceDate = max(snapshot.lastSyncDate, lastAttemptDate ?? .distantPast)
-        guard needsLaunchSync || Date().timeIntervalSince(referenceDate) >= Self.automaticSyncInterval else { return }
+        guard let syncMode = ManageBacSyncPolicy.automaticMode(connection: snapshot, lastAttempt: lastAttemptDate, now: Date()) else { return }
 
         isSyncing = true
-        needsLaunchSync = false
         lastAttemptDate = Date()
         let newSession = ManageBacWebSession()
         newSession.onSnapshotReady = { incoming in
@@ -85,7 +79,7 @@ struct ManageBacAutomaticSyncHost: View {
             return try importSnapshot(incoming)
         }
         session = newSession
-        newSession.startSilentSync(snapshot: snapshot)
+        newSession.startSilentSync(snapshot: snapshot, syncMode: syncMode)
     }
 
     private func refreshStoredCourseMetadata() {
