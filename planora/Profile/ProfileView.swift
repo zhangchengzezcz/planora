@@ -220,6 +220,8 @@ struct ProfileView: View {
                 onRestoreAutomatic: restoreAutomaticBackup
             )
             .padding(18)
+            ImportRecoveryControls(store: store)
+                .padding(18)
         }
     }
 

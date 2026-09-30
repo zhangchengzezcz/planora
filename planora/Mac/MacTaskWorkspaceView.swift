@@ -13,6 +13,7 @@ struct MacTaskWorkspaceView: View {
     @State private var selectedSubject = ""
     @State private var tableSelection = Set<PlanoraTask.ID>()
     @State private var isShowingBulkActions = false
+    @State private var isShowingImport = false
     @State private var detailTask: PlanoraTask?
     @State private var taskPendingCompletion: PlanoraTask?
 
@@ -244,6 +245,10 @@ struct MacTaskWorkspaceView: View {
 
     private var taskActions: some View {
         HStack(spacing: 10) {
+            Button(String(localized: "Import"), systemImage: "arrow.triangle.2.circlepath") {
+                isShowingImport = true
+            }
+            .help(String(localized: "Connect or sync ManageBac"))
             if let selectedTask {
                 Button(String(localized: "Task Details"), systemImage: "doc.text") {
                     detailTask = selectedTask
@@ -258,6 +263,12 @@ struct MacTaskWorkspaceView: View {
             }
         }
         .labelStyle(.iconOnly)
+        .sheet(isPresented: $isShowingImport) {
+            NavigationStack {
+                ManageBacSettingsView(store: store) { isShowingImport = false }
+            }
+            .frame(minWidth: 680, idealWidth: 760, minHeight: 600, idealHeight: 720)
+        }
     }
 }
 

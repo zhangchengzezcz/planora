@@ -63,7 +63,13 @@ enum ManageBacConnectionStorage {
     }
 
     static func clear() {
-        if let url = fileURL { try? FileManager.default.removeItem(at: url) }
+        if let url = fileURL, FileManager.default.fileExists(atPath: url.path) {
+            do { try FileManager.default.removeItem(at: url) }
+            catch {
+                // Invalidate a connection even if the filesystem refuses deletion.
+                try? Data("null".utf8).write(to: url, options: .atomic)
+            }
+        }
         UserDefaults.standard.removeObject(forKey: key)
         NotificationCenter.default.post(name: .manageBacConnectionDidChange, object: nil)
     }

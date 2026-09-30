@@ -9,6 +9,9 @@ enum ManageBacTaskImporter {
         existingTasks: [PlanoraTask],
         into modelContext: ModelContext
     ) throws -> ManageBacImportSummary {
+        let previousUndo = try ImportRecovery.begin(modelContext)
+        var succeeded = false
+        defer { if !succeeded { ImportRecovery.failed(previousUndo) } }
         let detection = ManageBacProgrammeDetector.detect(programmeText: snapshot.programmeText, courses: snapshot.courses)
         let curriculum = detection.curriculum ?? currentCurriculum
         // Read the store, not a potentially stale UI query. A failed fetch must not look like an empty database.
@@ -238,6 +241,7 @@ enum ManageBacTaskImporter {
             }
 
             try modelContext.save()
+            succeeded = true
             return ManageBacImportSummary(
                 courseCount: coursesByRemoteID.count,
                 unitCount: unitsByRemoteID.count,

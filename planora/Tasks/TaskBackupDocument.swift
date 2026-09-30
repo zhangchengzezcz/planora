@@ -118,7 +118,7 @@ enum TaskBackupCodec {
         try content(from: text).tasks
     }
 
-    static func content(from text: String) throws -> PlanoraBackupContent {
+    static func content(from text: String, allowEmpty: Bool = false) throws -> PlanoraBackupContent {
         let payload = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let data = payload.data(using: .utf8) else {
             throw TaskBackupError.unreadableFile
@@ -168,7 +168,7 @@ enum TaskBackupCodec {
             assessments: backup.assessments.map(\.assessment)
         )
 
-        guard !content.tasks.isEmpty || !content.courses.isEmpty || !content.units.isEmpty ||
+        guard allowEmpty || !content.tasks.isEmpty || !content.courses.isEmpty || !content.units.isEmpty ||
                 !content.topics.isEmpty || !content.assessments.isEmpty else {
             throw TaskBackupError.emptyBackup
         }
@@ -255,6 +255,9 @@ enum TaskBackupImporter {
         existingAssessments: [PlanoraAssessment] = [],
         into modelContext: ModelContext
     ) throws -> TaskImportResult {
+        let previousUndo = try ImportRecovery.begin(modelContext)
+        var succeeded = false
+        defer { if !succeeded { ImportRecovery.failed(previousUndo) } }
         AutomaticTaskBackup.save(
             tasks: existingTasks,
             courses: existingCourses,
@@ -334,6 +337,7 @@ enum TaskBackupImporter {
             }
 
             try modelContext.save()
+            succeeded = true
             return TaskImportResult(importedCount: importedCount, skippedCount: skippedCount)
         } catch {
             modelContext.rollback()
@@ -573,6 +577,13 @@ enum AutomaticTaskBackup {
 
     static var isAvailable: Bool {
         FileManager.default.fileExists(atPath: fileURL.path) || UserDefaults.standard.string(forKey: key) != nil
+    }
+
+    static func clear() throws {
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            try FileManager.default.removeItem(at: fileURL)
+        }
+        UserDefaults.standard.removeObject(forKey: key)
     }
 
     static func write(_ json: String, to url: URL) throws {

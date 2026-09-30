@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.7.16
+## Planora 1.7.17
 
 ### 中文
 
@@ -34,11 +34,15 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 1.7.16 fixes false stale-sync rejection, adds import recovery, and persists profiles outside preferences.
 
-**下载 / Download:** [Planora 1.7.16 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.16) · [更新说明 / Release notes](updates/1.7.16.md)
+1.7.17 新增撤销最近一次导入/同步、清空全部学习数据，以及 Mac 任务页导入入口。个人名称、头像与外观保留。
+
+1.7.17 adds undo for the latest import/sync, a learning-data reset, and an import entry in the Mac task workspace. Your name, avatar and appearance are preserved.
+
+**下载 / Download:** [Planora 1.7.17 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.7.17) · [更新说明 / Release notes](updates/1.7.17.md)
 
 ## 当前版本 / Current Version
 
-- Version: **1.7.16** (build **31**)
+- Version: **1.7.17** (build **32**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle
@@ -243,7 +247,7 @@ Private project. All rights reserved unless a license is added later.
 Mac 正式版只有一个正在使用的任务数据库：
 `~/Library/Application Support/Planora/Planora.store`。
 同目录的 `-wal`、`-shm` 是数据库组成部分，不是可清理缓存。
-`AutomaticBackup.json`、`LearningProfile.json` 和 `ProfileAvatar.png` 也是用户数据。
+`AutomaticBackup.json`、`LatestImport.json`、`LearningProfile.json` 和 `ProfileAvatar.png` 也是用户数据。
 不要让 CleanMyMac 或其他清理工具删除整个 Application Support/Planora。
 
 Only `~/Library/Caches/com.zhangchengze.planora.mac` is disposable app cache.
@@ -259,6 +263,22 @@ WebKit/HTTPStorages 下的应用专属目录包含学校登录网站数据，删
 
 Preferences and website login data are not included in cache cleaning.
 Removing website data can require signing in again; it does not remove the task store.
+
+### 撤销导入与清空学习数据 / Import Recovery
+
+Mac 任务页“导入”、课程页更新入口、设置，以及移动端个人资料的备份区域提供恢复操作。
+“撤销最近一次导入”恢复到最近一次备份导入或 ManageBac 同步之前的完整学习数据；之后的学习数据编辑也会被替换。
+它仅支持 1.7.17 起生成的恢复点，不能回溯升级前的导入。
+“清空全部学习数据”删除任务（包括个人任务）、课程、单元、成绩、教师、消息、课表、出勤及应用内部恢复备份。
+两种操作均保留个人名称、头像和外观，并断开 ManageBac，防止自动同步重新导入。需要时可重新连接。
+清空前请导出备份；应用不会删除你手动导出到外部的文件。
+
+Recovery is available from Mac task import, course updates, Settings and the mobile profile backup area.
+Undo restores all learning data to the point before the latest backup import or ManageBac sync, replacing later learning-data edits too.
+Recovery points start with 1.7.17; earlier imports cannot be individually undone.
+Clear removes all learning records, including personal tasks and internal recovery backups.
+Both actions preserve your name, avatar and appearance and disconnect ManageBac to prevent automatic re-import.
+Export a backup before clearing. Manually exported external files remain untouched.
 
 旧版 `~/Library/Application Support/default.store` 仅作为迁移来源，迁移成功后不再写入。
 为防误删其他应用同名数据库，升级不会自动删除这组旧文件。

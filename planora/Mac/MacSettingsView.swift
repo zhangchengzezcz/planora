@@ -40,6 +40,9 @@ struct MacSettingsView: View {
                         LabeledContent(String(localized: "App"), value: "Planora")
                         LabeledContent(String(localized: "Version"), value: appVersion)
                     }
+                    Section("Import Recovery") {
+                        ImportRecoveryControls(store: store)
+                    }
                 }
                 .formStyle(.grouped)
                 .padding()

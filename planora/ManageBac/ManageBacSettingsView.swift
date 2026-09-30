@@ -14,16 +14,24 @@ struct ManageBacSettingsView: View {
     }
 
     var body: some View {
+        Group {
 #if os(macOS)
         macContent
 #else
         mobileContent
 #endif
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .manageBacConnectionDidChange)) { _ in
+            snapshot = ManageBacConnectionStorage.load()
+        }
     }
 
 #if os(macOS)
     private var macContent: some View {
         Form {
+            Section("Import Recovery") {
+                ImportRecoveryControls(store: store)
+            }
             Section {
                 connectionStatus
                 connectionActions
@@ -75,6 +83,7 @@ struct ManageBacSettingsView: View {
             VStack(alignment: .leading, spacing: 22) {
                 header
                 connectionCard
+                ImportRecoveryControls(store: store)
                 if let snapshot { syncDetails(snapshot) }
             }
             .padding(.top, 18)
