@@ -9,6 +9,37 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.8</title>
+            <pubDate>Wed, 30 Sep 2026 23:23:16 +0800</pubDate>
+            <sparkle:version>33</sparkle:version>
+            <sparkle:shortVersionString>1.8</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.8
+
+## 中文
+
+- 首页出勤改为最近 7 天，不再将历史课次混入当前出勤率；出勤详情默认本周，仍可查看历史周。
+- 新增快速同步与完整同步。快速同步读取全局任务列表、当前消息和当周课表；完整同步补齐课程任务、教师、单元及历史消息。首次连接仍为完整同步。
+- 自动同步改为前台最多每 15 分钟一次，每 24 小时安排完整同步，减少重复扫描。快速扫描保留已有课程单元，不把未扫描项目当作删除。
+- Mac 新增常驻菜单栏入口，透明背景的任务栏图标使用系统模板配色。关闭主窗口后仍可查看近期任务、手动同步、重新打开应用；退出 Planora 才完全结束。
+- 更新中英日帮助说明与同步策略回归测试。
+
+Mac 包使用临时签名，未经过 Apple 公证。真实账户读取与旧版实际升级仍需用户验证。未导入的课次不能纳入最近 7 天统计。常驻不代表关闭窗口后持续进行后台同步，也不会自动加入登录启动项。
+
+## English
+
+- Home attendance now covers the last 7 days. Details defaults to the current week while keeping historical week selection.
+- Added Quick Sync and Full Sync. Quick refreshes global task lists, current messages and this week's timetable. Full also reads course tasks, teachers, units and message history. Initial connections remain full scans.
+- Automatic sync runs only while active, at most every 15 minutes, with a full refresh every 24 hours. Partial scans preserve existing units.
+- Added a resident Mac menu-bar entry with a transparent system-template task-bar icon. Access pending tasks, manual sync and the main window after closing it. Quit Planora to exit.
+- Updated Chinese, English and Japanese help and added sync-policy regression tests.
+
+The Mac distribution is ad-hoc signed, not Apple-notarized. Real-account scans and upgrades require user verification. Unsynced lessons cannot be included in the seven-day rate. Menu-bar residency does not guarantee continuous background sync after closing windows or enable login startup.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8/Planora-1.8-macOS.zip" length="6388341" type="application/octet-stream" sparkle:edSignature="dL4tXmpTJJZwxOGITaYOnAVi2A78NbfBrkcGDlA4SzIJP7TqHqbdWY7r7RhW24CM5557IsCLXHUYoHuzlHtMCQ=="/>
+        </item>
+        <item>
             <title>1.7.17</title>
             <pubDate>Wed, 30 Sep 2026 22:33:18 +0800</pubDate>
             <sparkle:version>32</sparkle:version>
@@ -69,31 +100,6 @@ The Mac package is ad-hoc signed, not Apple-notarized. The existing Sparkle feed
 - External backups remain necessary if a third-party cleaner deletes persistent user data.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.16/Planora-1.7.16-macOS.zip" length="6274727" type="application/octet-stream" sparkle:edSignature="htC+bw44z+MLv2dAmqFsZr/nk5fPBZsZWifWCgFxmLyeYWbHc3SDEelAT7NhESNVRHEl/Cn20ntBYaUn6OOLBw=="/>
-        </item>
-        <item>
-            <title>1.7.15</title>
-            <pubDate>Mon, 28 Sep 2026 19:21:47 +0800</pubDate>
-            <sparkle:version>30</sparkle:version>
-            <sparkle:shortVersionString>1.7.15</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.15
-
-## 中文
-
-- 修复临时签名 Mac 安装包在启动时因 Sparkle 库验证失败而退出的问题。
-- 临时签名构建使用专用库验证例外，保留其余 Hardened Runtime 保护；打包时拦截缺少该配置的临时签名包。
-- 任务数据无需删除。无法启动 1.7.14 的用户请手动下载安装此版本。
-- 此包仍为临时签名，未经过 Developer ID 签名或 Apple 公证。
-
-## English
-
-- Fixed a launch-time Sparkle library-validation failure in ad-hoc signed Mac distributions.
-- Ad-hoc builds use a dedicated library-validation exception while retaining other Hardened Runtime protections. Packaging rejects ad-hoc runtime builds missing this configuration.
-- No task data reset is needed. If 1.7.14 cannot launch, download and install this version manually.
-- This distribution remains ad-hoc signed, without Developer ID signing or Apple notarization.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.15/Planora-1.7.15-macOS.zip" length="6263080" type="application/octet-stream" sparkle:edSignature="sWBVRns1jEnA+/NLt1yuusyc1pBcdtO/aB2SWn1TUJJe/yjYuM5+Oe9tocroMBWkUdt0hDsk8unx7XTqwTdWCg=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -186,6 +192,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: mP2DFzRQAciMNcNjdoY6yoIo7yJMy2+k7ues3VgLaJw18nG7Vhm5Codu1rvS0Srg2dq1yth9Hy2hxrgUiC2fCA==
-length: 14954
+edSignature: gdQN6hOJNPkMnXsdFm0LTUCE+Fko21U4Gaiu5lOYkkWQz6/00Y5qhN7LuOrKzRbvf9OXlyyICtOeGWMvYbdHDw==
+length: 16160
 -->
