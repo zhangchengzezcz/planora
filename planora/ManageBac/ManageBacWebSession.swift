@@ -122,7 +122,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     private var taskPaths: [String] {
         ManageBacSyncPolicy.taskPaths(mode: syncMode, courseIDs: courses.map(\.remoteIdentifier))
     }
-    @ObservationIgnored private let workspacePaths = ["/student/notifications", "/student/timetables"]
+    @ObservationIgnored private var workspacePaths = ["/student/notifications", "/student/timetables"]
     @ObservationIgnored private var currentWorkspacePathIndex = 0
     @ObservationIgnored private var isHandlingPage = false
     @ObservationIgnored private var needsAnotherPageCheck = false
@@ -135,6 +135,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     func startInteractiveConnection() {
         resetForScan(mode: .interactive)
         syncMode = .full
+        workspacePaths = ManageBacSyncPolicy.workspacePaths(mode: .full)
         phase = .authenticating
         guard let signInURL = URL(string: "https://signin.managebac.com/") else {
             phase = .failed(.unsupportedAddress)
@@ -146,6 +147,9 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     func startSilentSync(snapshot: ManageBacConnectionSnapshot, syncMode: ManageBacSyncMode = .full) {
         resetForScan(mode: .silent)
         self.syncMode = syncMode
+        workspacePaths = ManageBacSyncPolicy.workspacePaths(mode: syncMode, defaults: .standard)
+        if !workspacePaths.contains("/student/notifications") { skippedItems.append(String(localized: "Messages")) }
+        if !workspacePaths.contains("/student/timetables") { skippedItems.append(String(localized: "Timetable")) }
         expectedConnection = snapshot
         guard let url = Self.schoolHomeURL(for: snapshot.schoolHost) else {
             phase = .failed(.unsupportedAddress)
@@ -477,8 +481,13 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         } else {
             completedStepCount = 5
             currentWorkspacePathIndex = 0
+            guard let firstPath = workspacePaths.first else {
+                completedStepCount = 6
+                finishImport()
+                return
+            }
             phase = .loadingWorkspace
-            loadStudentPath(workspacePaths[0])
+            loadStudentPath(firstPath)
         }
     }
 
@@ -605,7 +614,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         pageLoadWatchdogTask?.cancel()
         pageLoadGeneration += 1
         let generation = pageLoadGeneration
-        webView.load(URLRequest(url: url, cachePolicy: .reloadRevalidatingCacheData))
+        webView.load(URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData))
         pageLoadWatchdogTask = Task { [weak self] in
             do {
                 try await Task.sleep(for: .seconds(20))
@@ -1195,7 +1204,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
     }
 
     if (path.startsWith('/student/timetables')) {
-      const findTable = () => Array.from(document.querySelectorAll('table')).find(item => /\bPeriod\b/i.test(item.innerText) && /\bMon\b/i.test(item.innerText));
+      const findTable = () => Array.from(document.querySelectorAll('table')).find(item => /\bPeriod\b/i.test(item.innerText) && /\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b/i.test(item.innerText));
       if (!findTable()) {
         await new Promise(resolve => {
           const started = Date.now();
@@ -1205,6 +1214,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
         });
       }
       const table = findTable();
+      if (!table) throw new Error('Timetable has not loaded');
       const rows = Array.from(table?.querySelectorAll('tr') || []);
       const headerCells = Array.from(rows[0]?.querySelectorAll('th,td') || []);
       const rangeText = normalize(document.querySelector('input[aria-label*=date i],input[value*=" - "]')?.value || document.querySelector('input[value*=" - "]')?.value);
@@ -1272,7 +1282,13 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
       };
       const seen = new Set();
       let fullyRead = rows.some(row => /^\d+$/.test(normalize(row.querySelector('th,td')?.textContent)))
-        && /\b20\d{2}\b/.test(rangeText) && headers.length >= 5 && headers.every(Boolean);
+        && /\b20\d{2}\b/.test(rangeText) && headers.length >= 1 && headers.every(Boolean);
+      const contiguousDates = headers.every((day, index) => {
+        if (index === 0) return true;
+        const expected = new Date(`${headers[index - 1]} 00:00:00`);
+        expected.setDate(expected.getDate() + 1);
+        return expected.valueOf() === new Date(`${day} 00:00:00`).valueOf();
+      });
       for (const row of rows.slice(1)) {
         const cells = Array.from(row.querySelectorAll('th,td'));
         const period = normalize(cells[0]?.textContent);
@@ -1315,7 +1331,7 @@ final class ManageBacWebSession: NSObject, WKNavigationDelegate, WKUIDelegate {
           });
         }
       }
-      if (fullyRead && attendancePeriod && !table.querySelector('[aria-busy="true"],.loading')) {
+      if (fullyRead && contiguousDates && !table.querySelector('[aria-busy="true"],.loading')) {
         const start = new Date(`${headers[0]} 00:00:00`);
         const end = new Date(`${headers[headers.length - 1]} 00:00:00`);
         end.setDate(end.getDate() + 1);

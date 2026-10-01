@@ -205,11 +205,8 @@ struct MacTaskWorkspaceView: View {
     private func filters(taskCount: Int) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 12) {
-            Picker(String(localized: "Source"), selection: $source) {
-                ForEach(MacTaskSource.allCases) { value in
-                    Label(value.title, systemImage: value.symbol).tag(value)
-                }
-            }
+            PlanoraChoicePicker(selection: $source, values: MacTaskSource.allCases,
+                title: String(localized: "Source"), label: { $0.title })
             .frame(width: 180)
             .buttonStyle(.glass)
 
@@ -244,7 +241,7 @@ struct MacTaskWorkspaceView: View {
     }
 
     private var taskActions: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 6) {
             Button(String(localized: "Import"), systemImage: "arrow.triangle.2.circlepath") {
                 isShowingImport = true
             }
@@ -263,6 +260,9 @@ struct MacTaskWorkspaceView: View {
             }
         }
         .labelStyle(.iconOnly)
+        .buttonStyle(.glass)
+        .controlSize(.large)
+        .tint(.primary)
         .sheet(isPresented: $isShowingImport) {
             NavigationStack {
                 ManageBacSettingsView(store: store) { isShowingImport = false }

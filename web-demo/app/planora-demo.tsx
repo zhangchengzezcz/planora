@@ -64,6 +64,7 @@ import {
   localeLabel,
   type DemoLocale,
 } from "./planora-copy";
+import { AttendanceSummary, WorkspaceScreen, useDemoWorkspace, workspaceText, type WorkspacePage } from "./workspace-demo";
 
 type Tab = "home" | "tasks" | "search" | "profile";
 type TaskType =
@@ -87,6 +88,7 @@ type Density = "comfortable" | "compact";
 type SortOrder = "smart" | "deadline" | "priority" | "title";
 type Screen =
   | { kind: "tab" }
+  | { kind: "workspace"; page: WorkspacePage; course?: string }
   | { kind: "task"; taskId: string }
   | { kind: "today" }
   | { kind: "week" }
@@ -134,6 +136,17 @@ const dayMs = 86_400_000;
 const deviceWidth = 422;
 const deviceHeight = 894;
 const defaultDeviceScale = 0.78;
+
+function validDemoTask(value: unknown): value is PlanoraItem {
+  if (!value || typeof value !== "object") return false;
+  const task = value as PlanoraItem;
+  const validDate = (date: unknown) => date === undefined || (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(new Date(`${date}T12:00:00`).getTime()));
+  return typeof task.id === "string" && typeof task.title === "string" && typeof task.subject === "string"
+    && Object.hasOwn(taskMeta, task.type) && Object.hasOwn(priorities, task.priority)
+    && typeof task.progress === "number" && Number.isFinite(task.progress) && task.progress >= 0 && task.progress <= 100
+    && ["percentage", "stage"].includes(task.progressKind) && typeof task.stage === "string" && typeof task.notes === "string"
+    && typeof task.completed === "boolean" && typeof task.recurring === "boolean" && validDate(task.deadline) && validDate(task.plannedDate);
+}
 
 const LocaleContext = createContext<DemoLocale>("zh-Hans");
 
@@ -487,6 +500,10 @@ export function PlanoraDemo() {
   const [hydrated, setHydrated] = useState(false);
   const [deviceScale, setDeviceScale] = useState(defaultDeviceScale);
   const [systemDark, setSystemDark] = useState(false);
+  const workspace = useDemoWorkspace();
+  const [syncTasksBefore, setSyncTasksBefore] = useState<PlanoraItem[] | null>(null);
+  const [name, setName] = useState("Mitty");
+  function openWorkspace(page: WorkspacePage, course?: string) { setScreen({ kind: "workspace", page, course }); }
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -499,7 +516,11 @@ export function PlanoraDemo() {
         const savedCurriculum = window.localStorage.getItem(
           STORAGE_CURRICULUM,
         ) as Curriculum | null;
-        if (savedTasks) setTasks(JSON.parse(savedTasks) as PlanoraItem[]);
+        if (savedTasks) {
+          const parsed = JSON.parse(savedTasks);
+          if (Array.isArray(parsed) && parsed.every(validDemoTask)) setTasks(parsed);
+        }
+        setName(window.localStorage.getItem("planora.demo.name.v1") ?? "Mitty");
         if (savedSettings)
           setSettings({
             ...defaultSettings,
@@ -524,6 +545,10 @@ export function PlanoraDemo() {
 
     return () => window.cancelAnimationFrame(frame);
   }, []);
+
+  useEffect(() => {
+    if (hydrated) { try { localStorage.setItem("planora.demo.name.v1", name); } catch { /* Keep session edits available. */ } }
+  }, [name, hydrated]);
 
   useEffect(() => {
     function updateDeviceScale() {
@@ -591,6 +616,8 @@ export function PlanoraDemo() {
     setSettings(defaultSettings);
     setTab("home");
     setScreen({ kind: "tab" });
+    workspace.reset();
+    setSyncTasksBefore(null);
   }
 
   function finishIntro() {
@@ -647,7 +674,7 @@ export function PlanoraDemo() {
             <p className="eyebrow">
               {copy(locale, "IB · IGCSE 学习规划")}
             </p>
-            <h1>{copy(locale, "把 Deadline 变成清晰的行动。")}</h1>
+            <h1>Planora 1.8.4</h1>
             <p>
               {copy(
                 locale,
@@ -693,6 +720,9 @@ export function PlanoraDemo() {
                   <>
                     {screen.kind === "tab" && tab === "home" && (
                       <HomeScreen
+                        name={name}
+                        footer={<AttendanceSummary controller={workspace} locale={locale} onOpen={() => openWorkspace("attendance")}/>}
+                        onOpenMessages={() => openWorkspace("messages")}
                         tasks={tasks}
                         curriculum={curriculum}
                         onCurriculumChange={(nextCurriculum) => {
@@ -701,12 +731,6 @@ export function PlanoraDemo() {
                         }}
                         onOpenTask={(taskId) =>
                           setScreen({ kind: "task", taskId })
-                        }
-                        onToggleTask={(task) =>
-                          updateTask({
-                            ...task,
-                            completed: !task.completed,
-                          })
                         }
                         onOpenToday={() => setScreen({ kind: "today" })}
                         onOpenWeek={() => setScreen({ kind: "week" })}
@@ -732,6 +756,14 @@ export function PlanoraDemo() {
                     )}
                     {screen.kind === "tab" && tab === "profile" && (
                       <ProfileScreen
+                        name={name}
+                        onNameChange={setName}
+                        onOpenWorkspace={openWorkspace}
+                        onExport={() => {
+                          const url = URL.createObjectURL(new Blob([JSON.stringify({ format: "planora-web-demo-v1", tasks }, null, 2)], { type: "application/json" }));
+                          const link = document.createElement("a"); link.href = url; link.download = "planora-demo-tasks.json"; link.click(); URL.revokeObjectURL(url);
+                        }}
+                        onImport={(items) => setTasks(items)}
                         tasks={tasks}
                         curriculum={curriculum}
                         onOpenSettings={(section) =>
@@ -741,6 +773,7 @@ export function PlanoraDemo() {
                     )}
                     {screen.kind === "task" && activeTask && (
                       <TaskDetailScreen
+                        onOpenCourse={() => openWorkspace("course", activeTask.subject)}
                         task={activeTask}
                         onBack={() => setScreen({ kind: "tab" })}
                         onChange={updateTask}
@@ -752,6 +785,15 @@ export function PlanoraDemo() {
                         }}
                       />
                     )}
+                    {screen.kind === "workspace" && <WorkspaceScreen key={`${screen.page}-${screen.course ?? ""}`} page={screen.page} course={screen.course} locale={locale} controller={workspace}
+                      onNavigate={openWorkspace} onBack={() => setScreen({ kind: "tab" })}
+                      onSyncTasks={() => { setSyncTasksBefore(tasks); setTasks(current => {
+                        const incoming = seedTasks(curriculum);
+                        const ids = new Set(current.map(task => task.id));
+                        return [...current, ...incoming.filter(task => !ids.has(task.id))];
+                      }); }}
+                      onUndoTasks={() => { if (syncTasksBefore) setTasks(syncTasksBefore); setSyncTasksBefore(null); }}
+                      onClearTasks={() => { setTasks([]); setSyncTasksBefore(null); }}/ >}
                     {screen.kind === "today" && (
                       <TodayScreen
                         tasks={tasks}
@@ -1000,8 +1042,9 @@ function IntroFeature({
 function LogoMark({ small = false }: { small?: boolean }) {
   return (
     <div className={`logo-mark ${small ? "small" : ""}`} aria-label="Planora">
-      <Sparkles className="logo-spark" />
-      <span>P</span>
+      {/* Static asset avoids framework image processing in the GitHub Pages export. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`${process.env.NODE_ENV === "production" ? "/planora" : ""}/icon.png`} alt="" width={64} height={64}/>
     </div>
   );
 }
@@ -1087,20 +1130,22 @@ function PageHeading({
 }
 
 function HomeScreen({
+  name, footer, onOpenMessages,
   tasks,
   curriculum,
   onCurriculumChange,
   onOpenTask,
-  onToggleTask,
   onOpenToday,
   onOpenWeek,
   onCreate,
 }: {
+  name: string;
+  footer: React.ReactNode;
+  onOpenMessages: () => void;
   tasks: PlanoraItem[];
   curriculum: Curriculum;
   onCurriculumChange: (curriculum: Curriculum) => void;
   onOpenTask: (taskId: string) => void;
-  onToggleTask: (task: PlanoraItem) => void;
   onOpenToday: () => void;
   onOpenWeek: () => void;
   onCreate: () => void;
@@ -1184,10 +1229,10 @@ function HomeScreen({
         <div>
           <h2>
             {locale === "en"
-              ? "Hello, Mitty"
+              ? `Hello, ${name}`
               : locale === "ja"
-                ? "こんにちは、Mitty"
-                : "你好，Mitty"}
+                ? `こんにちは、${name}`
+                : `你好，${name}`}
           </h2>
           <p>
             {locale === "en"
@@ -1236,6 +1281,7 @@ function HomeScreen({
           )}
         </div>
       </div>
+      <div className="home-workspace-actions"><button className="glass-action" onClick={onOpenMessages}><Bell size={18}/>{workspaceText(locale, "消息")}</button></div>
 
       <div className="planning-strip">
         <PlanningButton
@@ -1280,17 +1326,6 @@ function HomeScreen({
               <PriorityBadge priority={focus.priority} />
             </div>
             <div className="focus-main">
-              <button
-                className="focus-complete"
-                type="button"
-                aria-label={t("完成任务")}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onToggleTask(focus);
-                }}
-              >
-                <Circle />
-              </button>
               <div>
                 <h3>{focus.title}</h3>
                 <p>{focus.subject}</p>
@@ -1335,7 +1370,6 @@ function HomeScreen({
               <HomeTaskList
                 tasks={upcomingProgressTasks}
                 onOpenTask={onOpenTask}
-                onToggleTask={onToggleTask}
               />
             </>
           )}
@@ -1346,7 +1380,6 @@ function HomeScreen({
               <HomeTaskList
                 tasks={upcomingTimelineItems}
                 onOpenTask={onOpenTask}
-                onToggleTask={onToggleTask}
               />
             </>
           )}
@@ -1424,6 +1457,7 @@ function HomeScreen({
             </div>
           </section>
 
+          {footer}
           {tasks.some((task) => task.deadline) && (
             <>
               <SectionTitle title={t("日历预览")} />
@@ -1432,6 +1466,7 @@ function HomeScreen({
           )}
         </>
       )}
+      {!focus && footer}
     </div>
   );
 }
@@ -1439,11 +1474,9 @@ function HomeScreen({
 function HomeTaskList({
   tasks,
   onOpenTask,
-  onToggleTask,
 }: {
   tasks: PlanoraItem[];
   onOpenTask: (taskId: string) => void;
-  onToggleTask: (task: PlanoraItem) => void;
 }) {
   return (
     <div className="home-task-list">
@@ -1452,7 +1485,6 @@ function HomeTaskList({
           key={task.id}
           task={task}
           onOpen={() => onOpenTask(task.id)}
-          onToggle={() => onToggleTask(task)}
         />
       ))}
     </div>
@@ -1462,11 +1494,9 @@ function HomeTaskList({
 function HomeTaskRow({
   task,
   onOpen,
-  onToggle,
 }: {
   task: PlanoraItem;
   onOpen: () => void;
-  onToggle: () => void;
 }) {
   const { locale, t } = useDemoCopy();
   const meta = taskMeta[task.type];
@@ -1483,17 +1513,6 @@ function HomeTaskRow({
       tabIndex={0}
     >
       <div className="home-task-heading">
-        <button
-          className="home-task-complete"
-          type="button"
-          aria-label={t("完成任务")}
-          onClick={(event) => {
-            event.stopPropagation();
-            onToggle();
-          }}
-        >
-          <Circle />
-        </button>
 
         <span className={`home-task-icon tone-${meta.color}`}>
           <FileSearch />
@@ -1910,10 +1929,16 @@ function FilterSelect({
 }
 
 function ProfileScreen({
+  name, onNameChange, onOpenWorkspace, onExport, onImport,
   tasks,
   curriculum,
   onOpenSettings,
 }: {
+  name: string;
+  onNameChange: (name: string) => void;
+  onOpenWorkspace: (page: WorkspacePage, course?: string) => void;
+  onExport: () => void;
+  onImport: (tasks: PlanoraItem[]) => void;
   tasks: PlanoraItem[];
   curriculum: Curriculum;
   onOpenSettings: (
@@ -1922,6 +1947,8 @@ function ProfileScreen({
 }) {
   const { locale, t } = useDemoCopy();
   const [notice, setNotice] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
   const subjects = [...new Set(tasks.map((task) => task.subject))];
   return (
     <div className="screen scroll-screen">
@@ -1929,7 +1956,7 @@ function ProfileScreen({
       <section className="profile-card">
         <LogoMark small />
         <div>
-          <h3>Mitty</h3>
+          <h3>{name}</h3>
           <p>
             {curriculum.toUpperCase()} {t("学习空间")}
           </p>
@@ -1941,12 +1968,8 @@ function ProfileScreen({
         <SettingsRow
           icon={CircleUserRound}
           title={t("姓名")}
-          value="Mitty"
-          onClick={() =>
-            setNotice(
-              t("网页演示中暂不支持修改姓名，请在 iOS App 中体验完整功能。"),
-            )
-          }
+          value={name}
+          onClick={() => setEditingName(value => !value)}
         />
         <SettingsRow
           icon={BookOpen}
@@ -1972,6 +1995,17 @@ function ProfileScreen({
           value=""
           onClick={() => onOpenSettings("home")}
         />
+      </section>
+
+      {editingName && <label className="workspace-search"><UserRound size={18}/><input aria-label={t("姓名")} maxLength={40} value={name} onChange={e => onNameChange(e.target.value)}/><button className="glass-action" onClick={() => setEditingName(false)}>{t("完成")}</button></label>}
+      <SectionTitle title={workspaceText(locale, "课程与时间表")}/>
+      <section className="settings-list">
+        <SettingsRow icon={BookOpen} title={workspaceText(locale, "课程")} value="" onClick={() => onOpenWorkspace("courses")}/>
+        <SettingsRow icon={CalendarDays} title={workspaceText(locale, "时间表")} value="" onClick={() => onOpenWorkspace("timetable")}/>
+        <SettingsRow icon={CheckCircle2} title={workspaceText(locale, "出勤")} value="" onClick={() => onOpenWorkspace("attendance")}/>
+        <SettingsRow icon={Bell} title={workspaceText(locale, "消息")} value="" onClick={() => onOpenWorkspace("messages")}/>
+        <SettingsRow icon={RotateCcw} title="ManageBac" value={workspaceText(locale, "同步")} onClick={() => onOpenWorkspace("sync")}/>
+        <SettingsRow icon={CircleAlert} title={workspaceText(locale, "帮助中心")} value="" onClick={() => onOpenWorkspace("help")}/>
       </section>
 
       <SectionTitle title={t("任务存储")} />
@@ -2000,26 +2034,14 @@ function ProfileScreen({
         <div className="backup-actions">
           <button
             type="button"
-            onClick={() =>
-              setNotice(
-                t(
-                  "网页演示不会创建或读取本地备份文件，请在 iOS App 中使用任务备份。",
-                ),
-              )
-            }
+            onClick={onExport}
           >
             <Download />
             <span>{t("保存备份")}</span>
           </button>
           <button
             type="button"
-            onClick={() =>
-              setNotice(
-                t(
-                  "网页演示不会创建或读取本地备份文件，请在 iOS App 中使用任务备份。",
-                ),
-              )
-            }
+            onClick={() => fileInput.current?.click()}
           >
             <Upload />
             <span>{t("导入备份")}</span>
@@ -2035,6 +2057,17 @@ function ProfileScreen({
           <span>{t("恢复最近自动备份")}</span>
         </button>
       </section>
+      <input ref={fileInput} hidden type="file" accept="application/json,.json" onChange={async e => {
+        const file = e.target.files?.[0]; e.target.value = "";
+        if (!file) return;
+        try {
+          if (file.size > 2_000_000) throw new Error("size");
+          const backup = JSON.parse(await file.text());
+          if (backup.format !== "planora-web-demo-v1" || !Array.isArray(backup.tasks) || backup.tasks.length > 1000 || !backup.tasks.every(validDemoTask)) throw new Error("format");
+          if (new Set(backup.tasks.map((task: PlanoraItem) => task.id)).size !== backup.tasks.length) throw new Error("duplicates");
+          onImport(backup.tasks);
+        } catch { setNotice(locale === "zh-Hans" ? "请选择有效的网页演示任务备份。" : locale === "en" ? "Choose a valid demo task backup." : "有効なウェブ版バックアップを選択してください。"); }
+      }}/>
 
       <SectionTitle title={t("当前科目")} value={`${subjects.length}`} />
       <section className="subject-list">
@@ -2361,11 +2394,13 @@ function ToggleRow({
 }
 
 function TaskDetailScreen({
+  onOpenCourse,
   task,
   onBack,
   onChange,
   onDelete,
 }: {
+  onOpenCourse: () => void;
   task: PlanoraItem;
   onBack: () => void;
   onChange: (task: PlanoraItem) => void;
@@ -2469,6 +2504,7 @@ function TaskDetailScreen({
       ) : (
         <>
           <section className="detail-list">
+            <button className="course-link" onClick={onOpenCourse}><BookOpen size={20}/><span>{workspaceText(locale, "课程")}</span><strong>{task.subject}</strong><ChevronRight size={16}/></button>
             <DetailLine icon={LayoutGrid} title={t("类型")} value={t(meta.title)} />
             <DetailLine
               icon={CalendarDays}
@@ -2776,7 +2812,7 @@ function PlanningTaskRow({
       type="button"
       onClick={onClick}
     >
-      <Circle className="planning-complete-icon" />
+      <BookMarked className="planning-complete-icon" />
       <span className="planning-task-copy">
         <strong>{task.title}</strong>
         <small>

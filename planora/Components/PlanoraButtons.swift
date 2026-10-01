@@ -19,16 +19,11 @@ struct PlanoraPrimaryButton: View {
                 Image(systemName: systemImage)
                     .font(.headline.weight(.bold))
             }
-            .foregroundStyle(Color.planoraOnAccent)
+            .foregroundStyle(Color.planoraInk)
             .frame(maxWidth: .infinity, minHeight: 56)
-            .background {
-                shape
-                    .fill(LinearGradient.planoraAccent)
-                    .opacity(isDisabled ? 0.36 : 0.74)
-            }
             .glassEffect(
                 .regular
-                    .tint(Color.planoraBlue.opacity(isDisabled ? 0.12 : 0.24))
+                    .tint(Color.planoraBlue.opacity(isDisabled ? 0.04 : 0.10))
                     .interactive(!isDisabled),
                 in: shape
             )
@@ -36,7 +31,6 @@ struct PlanoraPrimaryButton: View {
                 shape
                     .stroke(Color.planoraButtonStroke.opacity(isDisabled ? 0.48 : 1), lineWidth: 1)
             )
-            .shadow(color: Color.planoraBlue.opacity(isDisabled ? 0.08 : 0.22), radius: 18, x: 0, y: 10)
             .opacity(isDisabled ? 0.45 : 1)
             .contentShape(shape)
         }
@@ -71,13 +65,13 @@ struct SelectableChip: View {
                         .font(.caption2.weight(.bold))
                 }
             }
-            .foregroundStyle(isSelected ? Color.planoraOnAccent : Color.planoraInk)
+            .foregroundStyle(Color.planoraInk)
             .frame(maxWidth: .infinity, minHeight: 50)
             .padding(.horizontal, 12)
-            .background(isSelected ? Color.planoraBlue : Color.planoraControlFill, in: Capsule())
+            .glassEffect(.regular.tint(isSelected ? Color.planoraBlue.opacity(0.12) : .clear).interactive(), in: Capsule())
             .overlay(
                 Capsule()
-                    .stroke(isSelected ? Color.clear : Color.planoraControlStroke, lineWidth: 1)
+                    .stroke(isSelected ? Color.planoraBlue.opacity(0.3) : Color.planoraControlStroke, lineWidth: 1)
             )
             .contentShape(Capsule())
         }

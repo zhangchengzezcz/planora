@@ -29,6 +29,13 @@ final class SyncPolicyTests: XCTestCase {
         XCTAssertFalse(ManageBacSyncPolicy.taskPaths(mode: .quick, courseIDs: ids).contains { $0.contains("core_tasks") })
     }
 
+    func testFullSyncReadsTimetableByDefaultAndSupportsOptionalModules() {
+        XCTAssertEqual(ManageBacSyncPolicy.workspacePaths(mode: .full), ["/student/notifications", "/student/timetables"])
+        XCTAssertEqual(ManageBacSyncPolicy.workspacePaths(mode: .full, messages: false), ["/student/timetables"])
+        XCTAssertTrue(ManageBacSyncPolicy.workspacePaths(mode: .full, messages: false, timetable: false).isEmpty)
+        XCTAssertEqual(ManageBacSyncPolicy.workspacePaths(mode: .quick, messages: false, timetable: false).count, 2)
+    }
+
     func testRecentAttendanceExcludesOldAndFutureLessons() {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 8 * 3600)!

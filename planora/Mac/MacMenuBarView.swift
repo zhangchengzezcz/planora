@@ -11,16 +11,17 @@ enum PlanoraMenuBarIcon {
             transform.translate(x: 9.5, y: 9)
             transform.rotate(byDegrees: 12)
             transform.translate(x: -9.5, y: -9)
-            for row in 0..<4 {
-                let y = CGFloat(row) * 3.8 + 0.8
-                let widths: [CGFloat] = row.isMultiple(of: 2) ? [4.2, 10.2] : [10.2, 4.2]
-                var x: CGFloat = 1.8
-                for width in widths {
-                    let path = NSBezierPath(roundedRect: NSRect(x: x, y: y, width: width, height: 2.8), xRadius: 1, yRadius: 1)
+            let bars: [(CGFloat, CGFloat, CGFloat)] = [
+                (205, 230, 190), (435, 230, 395), (140, 390, 450), (630, 390, 255),
+                (125, 550, 175), (340, 550, 510), (190, 710, 315), (545, 710, 235)
+            ]
+            // Original Flow01...Flow08 icon geometry, without its background.
+            for (x, y, width) in bars {
+                    let path = NSBezierPath(roundedRect: NSRect(x: x / 1024 * 19,
+                        y: (1024 - y - 102) / 1024 * 18, width: width / 1024 * 19,
+                        height: 102 / 1024 * 18), xRadius: 36 / 1024 * 19, yRadius: 36 / 1024 * 18)
                     path.transform(using: transform)
                     path.fill()
-                    x += width + 1.6
-                }
             }
             return true
         }
@@ -34,7 +35,6 @@ struct MacMenuBarView: View {
     @Query(sort: \PlanoraTask.createdDate) private var tasks: [PlanoraTask]
     @Environment(\.openWindow) private var openWindow
     @State private var connection = ManageBacConnectionStorage.load()
-    @State private var flow: ManageBacFlow?
 
     private var upcoming: [PlanoraTask] {
         Array(tasks.filter { !$0.isCompleted && !$0.isDeleted && !$0.isArchived }
@@ -43,13 +43,6 @@ struct MacMenuBarView: View {
 
     var body: some View {
         Group {
-            if let flow {
-                ManageBacConnectionFlowView(store: store, flow: flow) { snapshot in
-                    connection = snapshot
-                    self.flow = nil
-                } onCancel: { self.flow = nil }
-                .frame(width: 700, height: 640)
-            } else {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack {
                         Text("Planora").font(.headline)
@@ -83,7 +76,10 @@ struct MacMenuBarView: View {
                     if let connection {
                         HStack {
                             ForEach(ManageBacSyncMode.allCases) { mode in
-                                Button { flow = .sync(connection, mode) } label: {
+                                Button {
+                                    MacSyncRoute.request(.sync(connection, mode))
+                                    showMainWindow()
+                                } label: {
                                     Label(mode.title, systemImage: mode.symbol)
                                 }
                             }
@@ -103,7 +99,6 @@ struct MacMenuBarView: View {
                 }
                 .padding(18)
                 .frame(width: 360)
-            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .manageBacConnectionDidChange)) { _ in
             connection = ManageBacConnectionStorage.load()
@@ -111,8 +106,19 @@ struct MacMenuBarView: View {
     }
 
     private func showMainWindow() {
+        NSApp.setActivationPolicy(.regular)
         openWindow(id: "main")
         NSApp.activate(ignoringOtherApps: true)
+    }
+}
+
+@MainActor
+enum MacSyncRoute {
+    static var pending: ManageBacFlow?
+    static let notification = Notification.Name("planora.open-sync")
+    static func request(_ flow: ManageBacFlow) {
+        pending = flow
+        NotificationCenter.default.post(name: notification, object: nil)
     }
 }
 #endif

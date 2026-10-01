@@ -181,6 +181,7 @@ struct ManageBacCourseDetailView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(16)
                 }
             }

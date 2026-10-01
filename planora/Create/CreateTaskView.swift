@@ -364,12 +364,8 @@ private struct CreateTaskFormView: View {
 
                         if tracksProgress {
                             PlanoraFieldLabel(String(localized: "Progress"))
-                            Picker(String(localized: "Progress Type"), selection: $progressKind) {
-                                ForEach(ProgressKind.allCases) { kind in
-                                    Text(kind.title).tag(kind)
-                                }
-                            }
-                            .pickerStyle(.segmented)
+                            PlanoraSegmentedPicker(selection: $progressKind, values: ProgressKind.allCases,
+                                title: String(localized: "Progress Type"), label: { $0.title })
 
                             if progressKind == .percentage {
                                 PercentageProgressEditor(value: $percentageProgress, tint: taskType.tint)

@@ -15,4 +15,7 @@
 **/out/
 **/next-env.d.ts
 *.log
+*.profraw
+**/.gradle/
+**/.kotlin/
 /planora/Build planora_*.txt

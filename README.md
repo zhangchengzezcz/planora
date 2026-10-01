@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.8.3
+## Planora 1.8.4
 
 ### 中文
 
@@ -38,19 +38,23 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 1.7.17 adds undo for the latest import/sync, a learning-data reset, and an import entry in the Mac task workspace. Your name, avatar and appearance are preserved.
 
-1.8.3 在 macOS 27 使用原生 NSSegmentedControl 的 tabs 角色，点击、横向拖动和玻璃材质转换由系统处理；macOS 26 保留兼容实现。侧栏/新建放在窗口顶栏左侧，通知/头像采用系统工具栏布局；手机与 iPad 界面不变。
+1.8.4 在 macOS 27 使用原生 NSSegmentedControl 的 tabs 角色，点击、横向拖动和玻璃材质转换由系统处理；macOS 26 保留兼容实现。侧栏/新建放在窗口顶栏左侧，通知/头像采用系统工具栏布局；手机与 iPad 界面不变。
 
-1.8.3 uses the native NSSegmentedControl tabs role on macOS 27, letting the system handle clicks, horizontal dragging and glass transitions. macOS 26 retains the compatibility implementation. Sidebar/new-task actions sit on the left; notification/avatar actions use system toolbar layout. iPhone/iPad layouts remain unchanged.
+1.8.4 uses the native NSSegmentedControl tabs role on macOS 27, letting the system handle clicks, horizontal dragging and glass transitions. macOS 26 retains the compatibility implementation. Sidebar/new-task actions sit on the left; notification/avatar actions use system toolbar layout. iPhone/iPad layouts remain unchanged.
 
 菜单栏采用透明交错任务条图标；截止前 24 小时及逾期任务自动显示高优先级，保留手动设置。任务详情可点击课程跳转。
 
 The menu bar uses a transparent task-bar template icon. Tasks due within 24 hours or overdue display automatic high priority without overwriting manual settings. Course rows in task details open the associated course.
 
-**下载 / Download:** [Planora 1.8.3 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.3) · [更新说明 / Release notes](updates/1.8.3.md)
+**下载 / Download:** [Planora 1.8.4 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.4) · [更新说明 / Release notes](updates/1.8.4.md)
+
+1.8.4 统一克制配色的玻璃按钮，菜单栏同步复用主窗口流程，首次关闭可选择后台运行或退出。完整同步可选择是否更新消息与课表，并修复三天课表漏读及跨周混用；任务检查器支持直接打开课程详情。
+
+1.8.4 adds restrained glass actions, routes menu-bar sync through the main window, and lets you choose background mode or quitting on first close. Full sync offers optional message/timetable modules, fixes three-day timetable parsing and mixed-week displays, and supports course links in the task inspector.
 
 ## 当前版本 / Current Version
 
-- Version: **1.8.3** (build **36**)
+- Version: **1.8.4** (build **37**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle
@@ -60,20 +64,20 @@ The menu bar uses a transparent task-bar template icon. Tasks due within 24 hour
 快速同步更新全局任务列表、当前消息页、当周时间表与出勤，不逐课程扫描单元、教师详情及历史消息。
 完整同步保留所有读取流程，适用于首次连接、补全历史与核查课程内容。两种方式均合并更新，不因未扫描而删除现有单元。
 自动同步仅在前台活动时运行，最多每15分钟一次，每24小时安排完整同步；关闭应用或没有活动窗口时不承诺持续后台网络读取。
-Mac 菜单栏使用系统模板图标自动适配明暗颜色；关闭主窗口后，菜单栏仍可打开应用、查看待办任务、手动同步。选择“退出 Planora”才完全退出。不自动设置登录启动。
+Mac 菜单栏使用系统模板图标自动适配明暗颜色；首次关闭主窗口时选择后台运行或退出，可在设置中更改。后台模式隐藏 Dock 图标，菜单栏仍可打开应用、查看待办任务、手动同步。选择“退出 Planora”才完全退出。不自动设置登录启动。
 
 Quick sync refreshes global task lists, the current notification page and this week's timetable/attendance without scanning every course's units, teacher details or message history.
 Full sync retains the complete scan for initial connection, history and course verification. Unscanned existing units remain intact.
 Automatic sync runs only while active, at most every 15 minutes, with a full refresh every 24 hours. Continuous network activity is not promised while closed or without an active window.
-The Mac menu-bar template icon follows system colors. Closing the main window leaves access to pending tasks, manual sync and reopening Planora. Choose Quit Planora to exit. Login startup is not enabled automatically.
+The Mac menu-bar template icon follows system colors. On first close, choose background mode or quitting; change this in Settings. Background mode hides the Dock icon and retains pending tasks, manual sync and reopening through the menu bar. Choose Quit Planora to exit. Login startup is not enabled automatically.
 
 ## 交互式演示 / Interactive Demo
 
 [打开 Planora 交互式网页演示 / Open the interactive web demo](https://zhangchengzezcz.github.io/planora/)
 
-网页演示展示 Planora 的部分交互；它与原生 App 的最新界面和功能可能不同。演示数据仅保存在当前浏览器，不会写入真实 App。
+网页演示现已更新到 1.8.4 的主要手机流程：任务、课程与成绩三种视图、时间表、最近七天出勤、消息、同步演示与撤销、帮助搜索和任务备份。手机使用全屏界面。数据只保存在当前浏览器，同步为示例模拟，不连接学校账号；网页材质不等于 Apple 原生 Liquid Glass。
 
-The browser demo presents selected Planora interactions and may differ from the latest native app. Demo data stays in the current browser and does not modify the app.
+The browser demo now covers the main 1.8.4 mobile flows: tasks, courses and three grade views, timetable, last-seven-day attendance, messages, simulated sync/undo, help search and task backups. Mobile uses a full-screen interface. Data stays in this browser; sync is a sample simulation without a school account. Web materials are not native Apple Liquid Glass.
 
 [![Planora interactive demo](https://zhangchengzezcz.github.io/planora/og.png)](https://zhangchengzezcz.github.io/planora/)
 

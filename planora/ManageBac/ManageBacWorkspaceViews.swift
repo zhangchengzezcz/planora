@@ -194,7 +194,18 @@ struct ManageBacTimetableList: View {
 
 enum ManageBacWeeklyTimetable {
     static func days(events: [PlanoraScheduleEvent], calendar: Calendar = .current) -> [(Int, [PlanoraScheduleEvent])] {
-        let byWeekday = Dictionary(grouping: events) { calendar.component(.weekday, from: $0.startDate) }
+        var calendar = calendar
+        calendar.firstWeekday = 2
+        // Choose one source week before grouping, so stale weekdays cannot leak in.
+        let newest = events.max { lhs, rhs in
+            lhs.lastSyncDate == rhs.lastSyncDate ? lhs.startDate < rhs.startDate : lhs.lastSyncDate < rhs.lastSyncDate
+        }
+        let latestWeek = newest.flatMap { calendar.dateInterval(of: .weekOfYear, for: $0.startDate) }
+        let current = events.filter { event in
+            guard let latestWeek else { return false }
+            return event.startDate >= latestWeek.start && event.startDate < latestWeek.end
+        }
+        let byWeekday = Dictionary(grouping: current) { calendar.component(.weekday, from: $0.startDate) }
         return (2...6).map { weekday in
             let byDate = Dictionary(grouping: byWeekday[weekday] ?? []) { calendar.startOfDay(for: $0.startDate) }
             // Stored snapshots can span several weeks. Show the most recently synced

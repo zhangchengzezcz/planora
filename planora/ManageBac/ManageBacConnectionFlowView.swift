@@ -48,6 +48,9 @@ struct ManageBacConnectionFlowView: View {
                         if isCompleted {
                             Button(String(localized: "Done"), action: finish)
                         } else {
+                            if case .failed = session.phase {
+                                Button(String(localized: "Try Again"), action: retry)
+                            }
                             Button(String(localized: "Cancel"), action: cancel)
                         }
                     }
@@ -113,8 +116,11 @@ struct ManageBacConnectionFlowView: View {
                 }
                 .buttonStyle(.plain)
             } else {
+                if case .failed = session.phase {
+                    Button(String(localized: "Try Again"), action: retry).buttonStyle(.glass)
+                }
                 Button(String(localized: "Cancel"), action: cancel)
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.glass)
             }
         }
         .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
@@ -301,7 +307,7 @@ struct ManageBacConnectionFlowView: View {
             Button(String(localized: "Connect Again")) {
                 session.startInteractiveConnection()
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.glass)
             .controlSize(.large)
         } else if case .failed = session.phase {
             VStack(alignment: .leading, spacing: 12) {
@@ -311,17 +317,12 @@ struct ManageBacConnectionFlowView: View {
                         .foregroundStyle(.secondary)
                 }
                 HStack {
-                    Button(String(localized: "Try Again")) {
-                        if session.recoveryPhase != nil { session.retryFailedStep() }
-                        else { start() }
-                    }
-                    .buttonStyle(.borderedProminent)
                     if session.recoveryPhase != nil && session.recoveryPhase != .importing {
                         Button(String(localized: "Skip This Item")) { session.skipFailedStep() }
-                            .buttonStyle(.bordered)
+                            .buttonStyle(.glass)
                     }
                     Button(String(localized: "Cancel"), action: cancel)
-                        .buttonStyle(.bordered)
+                        .buttonStyle(.glass)
                 }
                 .controlSize(.large)
             }
@@ -336,6 +337,11 @@ struct ManageBacConnectionFlowView: View {
             }
             .foregroundStyle(.secondary)
         }
+    }
+
+    private func retry() {
+        if session.recoveryPhase != nil { session.retryFailedStep() }
+        else { start() }
     }
 
     private var isCompleted: Bool {

@@ -14,6 +14,7 @@ struct MacMainView: View {
     @State private var isShowingCreateFlow = false
     @State private var searchText = ""
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var syncFlow: ManageBacFlow?
     @Query(filter: #Predicate<PlanoraMessage> { $0.isUnread }) private var unreadMessages: [PlanoraMessage]
 
     var body: some View {
@@ -91,6 +92,21 @@ struct MacMainView: View {
             if tab == .tasks { selection = .tasks }
         }
         .background { ManageBacAutomaticSyncHost(store: store) }
+        .onAppear(perform: acceptPendingSync)
+        .onReceive(NotificationCenter.default.publisher(for: MacSyncRoute.notification)) { _ in
+            acceptPendingSync()
+        }
+        .sheet(item: $syncFlow) { flow in
+            ManageBacConnectionFlowView(store: store, flow: flow,
+                onComplete: { _ in syncFlow = nil }, onCancel: { syncFlow = nil })
+                .frame(minWidth: 700, idealWidth: 760, minHeight: 600, idealHeight: 700)
+        }
+    }
+
+    private func acceptPendingSync() {
+        guard let pending = MacSyncRoute.pending else { return }
+        syncFlow = pending
+        MacSyncRoute.pending = nil
     }
 
     @ToolbarContentBuilder
@@ -601,15 +617,10 @@ private struct MacProfileView: View {
                         HStack(spacing: 18) {
                             Text(String(localized: "Curriculum"))
                             Spacer()
-                            Picker(String(localized: "Curriculum"), selection: Binding(
+                            PlanoraChoicePicker(selection: Binding(
                                 get: { store.curriculum },
                                 set: { store.selectCurriculum($0) }
-                            )) {
-                                ForEach(Curriculum.allCases) { curriculum in
-                                    Text(curriculum.title).tag(curriculum)
-                                }
-                            }
-                            .labelsHidden()
+                            ), values: Curriculum.allCases, title: String(localized: "Curriculum"), label: { $0.title })
                             .frame(width: 300)
                         }
                         .padding(.horizontal, 10)
@@ -704,7 +715,7 @@ private struct MacDeletedTaskUndoBanner: View {
             Image(systemName: "trash")
             Text(PlanoraLocalization.format(String(localized: "tasks_deleted_format"), count))
             Button(String(localized: "Undo"), action: undo)
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.glass)
         }
         .padding(10)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))

@@ -18,6 +18,7 @@ struct MacSettingsView: View {
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var isShowingAlert = false
+    @AppStorage(MacCloseBehavior.key) private var closeBehavior = MacCloseBehavior.ask.rawValue
 
     var body: some View {
         TabView {
@@ -28,17 +29,21 @@ struct MacSettingsView: View {
                             get: { store.userName },
                             set: { store.updateUserName($0) }
                         ))
-                        Picker(String(localized: "Curriculum"), selection: Binding(
+                        PlanoraChoicePicker(selection: Binding(
                             get: { store.curriculum },
                             set: { store.selectCurriculum($0) }
-                        )) {
-                            ForEach(Curriculum.allCases) { Text($0.title).tag($0) }
-                        }
+                        ), values: Curriculum.allCases, title: String(localized: "Curriculum"), label: { $0.title })
                     }
 
                     Section(String(localized: "About")) {
                         LabeledContent(String(localized: "App"), value: "Planora")
                         LabeledContent(String(localized: "Version"), value: appVersion)
+                    }
+                    Section(String(localized: "General")) {
+                        Picker(PlanoraLocalization.preferredLocale.language.languageCode?.identifier == "zh"
+                            ? "关闭主窗口" : "When Closing the Main Window", selection: $closeBehavior) {
+                            ForEach(MacCloseBehavior.allCases) { Text($0.title).tag($0.rawValue) }
+                        }
                     }
                     Section("Import Recovery") {
                         ImportRecoveryControls(store: store)
@@ -51,12 +56,8 @@ struct MacSettingsView: View {
             Tab(String(localized: "Appearance"), systemImage: "paintpalette") {
                 Form {
                     Section(String(localized: "Display Mode")) {
-                        Picker(String(localized: "Display Mode"), selection: appearanceBinding(\.displayMode)) {
-                            ForEach(PlanoraDisplayMode.allCases) { mode in
-                                Text(mode.title).tag(mode)
-                            }
-                        }
-                        .pickerStyle(.segmented)
+                        PlanoraSegmentedPicker(selection: appearanceBinding(\.displayMode), values: PlanoraDisplayMode.allCases,
+                            title: String(localized: "Display Mode"), label: { $0.title })
                     }
 
                     Section(String(localized: "Accent Color")) {

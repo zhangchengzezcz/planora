@@ -193,7 +193,7 @@ final class ManageBacIntegrationTests: XCTestCase {
             let start = try XCTUnwrap(ManageBacDateParser.date(from: date, calendar: calendar))
             return PlanoraScheduleEvent(externalIdentifier: id, title: id, startDate: start, endDate: start.addingTimeInterval(2400), lastSyncDate: sync)
         }
-        let events = try [event("old", "2026-08-31 08:00", oldSync), event("new", "2026-09-07 08:00", newSync), event("next", "2026-09-07 09:00", newSync), event("weekend", "2026-09-06 09:00", newSync)]
+        let events = try [event("old", "2026-08-31 08:00", oldSync), event("old-tuesday", "2026-09-01 08:00", oldSync), event("new", "2026-09-07 08:00", newSync), event("next", "2026-09-07 09:00", newSync), event("weekend", "2026-09-06 09:00", newSync)]
         let days = ManageBacWeeklyTimetable.days(events: events, calendar: calendar)
         XCTAssertEqual(days.map(\.0), [2, 3, 4, 5, 6])
         XCTAssertEqual(days[0].1.map(\.externalIdentifier), ["new", "next"])
@@ -813,6 +813,26 @@ final class ManageBacIntegrationTests: XCTestCase {
         XCTAssertEqual(payload.schedule[1].teacherNames, ["Marce Steyn"])
         XCTAssertEqual(payload.schedule[1].location, "536")
         XCTAssertTrue(payload.messages.isEmpty)
+    }
+
+    func testThreeDayTimetableWithoutMondayIsRead() async throws {
+        let html = #"""
+        <!doctype html><html><body>
+        <input aria-label="Select Date" value="Sep 1, 2026 - Sep 3, 2026">
+        <table><tr><th>Period</th><th>Sep 1, Tue</th><th>Sep 2, Wed</th><th>Sep 3, Thu</th></tr>
+        <tr><th>1</th><td>7:30 AM - 8:10 AM Physics</td><td>Free</td><td>Free</td></tr></table>
+        </body></html>
+        """#
+        let webView = try await loadedWebView(html: html, url: "https://school.managebac.cn/student/timetables")
+        let result = try await webView.callAsyncJavaScript(ManageBacWebSession.workspaceScript,
+            arguments: ["courseRecords": []], in: nil, contentWorld: .page)
+        let json = try XCTUnwrap(result as? String)
+        let payload = try JSONDecoder().decode(WorkspaceFixturePayload.self, from: Data(json.utf8))
+        XCTAssertEqual(payload.schedule.count, 1)
+        XCTAssertEqual(payload.schedule.first?.title, "Physics")
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any])
+        let coverage = try XCTUnwrap(object["scheduleCoverage"] as? [String: Any])
+        XCTAssertEqual(coverage["isComplete"] as? Bool, true)
     }
 
     func testRedesignedUnitGridIsReadWithoutCoursePageNavigation() async throws {

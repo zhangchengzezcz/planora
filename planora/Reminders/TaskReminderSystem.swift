@@ -436,6 +436,10 @@ final class PlanoraAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificat
 }
 #elseif os(macOS)
 final class PlanoraAppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDelegate {
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        MacMainWindowLifecycle.isTerminating = true
+        return .terminateNow
+    }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationDidFinishLaunching(_ notification: Notification) {

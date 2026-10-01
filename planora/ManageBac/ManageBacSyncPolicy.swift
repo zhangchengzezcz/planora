@@ -8,6 +8,21 @@ enum ManageBacSyncMode: String, Codable, CaseIterable, Identifiable {
 }
 
 enum ManageBacSyncPolicy {
+    static let messagesKey = "planora.full-sync.messages"
+    static let timetableKey = "planora.full-sync.timetable"
+
+    static func workspacePaths(mode: ManageBacSyncMode, messages: Bool = true, timetable: Bool = true) -> [String] {
+        var paths: [String] = []
+        if mode == .quick || messages { paths.append("/student/notifications") }
+        if mode == .quick || timetable { paths.append("/student/timetables") }
+        return paths
+    }
+
+    static func workspacePaths(mode: ManageBacSyncMode, defaults: UserDefaults) -> [String] {
+        workspacePaths(mode: mode,
+            messages: defaults.object(forKey: messagesKey) as? Bool ?? true,
+            timetable: defaults.object(forKey: timetableKey) as? Bool ?? true)
+    }
     static let quickInterval: TimeInterval = 15 * 60
     static let fullInterval: TimeInterval = 24 * 60 * 60
 

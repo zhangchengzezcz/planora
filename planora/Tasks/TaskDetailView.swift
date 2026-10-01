@@ -15,6 +15,7 @@ struct TaskDetailView: View {
     @State private var isShowingEditor = false
     @State private var isShowingIncompleteSubtasksConfirmation = false
     @State private var operationError: String?
+    @State private var presentedCourse: PlanoraCourse?
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -81,6 +82,17 @@ struct TaskDetailView: View {
             }
         }
         #if os(macOS)
+        .sheet(item: $presentedCourse) { course in
+            NavigationStack {
+                ManageBacCourseDetailView(store: store, course: course)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button(String(localized: "Done")) { presentedCourse = nil }
+                        }
+                    }
+            }
+            .frame(minWidth: 480, idealWidth: 720, minHeight: 420, idealHeight: 720)
+        }
         .sheet(isPresented: $isShowingEditor) {
             NavigationStack {
                 EditTaskView(store: store, task: task)
@@ -162,12 +174,19 @@ struct TaskDetailView: View {
                 DetailRow(icon: "square.grid.2x2.fill", title: String(localized: "Type"), value: task.type.title, tint: task.type.tint)
                 if let course = courses.first(where: { $0.id == task.courseID }) {
                     Divider().padding(.leading, 50)
+                    #if os(macOS)
+                    Button { presentedCourse = course } label: {
+                        DetailRow(icon: "book.pages.fill", title: String(localized: "ManageBac Course"), value: course.displayName, tint: .planoraBlue, showsChevron: true)
+                    }
+                    .buttonStyle(.plain)
+                    #else
                     NavigationLink {
                         ManageBacCourseDetailView(store: store, course: course)
                     } label: {
                         DetailRow(icon: "book.pages.fill", title: String(localized: "ManageBac Course"), value: course.displayName, tint: .planoraBlue, showsChevron: true)
                     }
                     .buttonStyle(.plain)
+                    #endif
                 }
                 if let unit = units.first(where: { $0.id == task.unitID }) {
                     Divider().padding(.leading, 50)
@@ -976,12 +995,8 @@ private struct EditTaskView: View {
                     .tint(selectedType.tint)
 
                 if tracksProgress {
-                    Picker(String(localized: "Progress Type"), selection: $progressKind) {
-                        ForEach(ProgressKind.allCases) { kind in
-                            Text(kind.title).tag(kind)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                    PlanoraSegmentedPicker(selection: $progressKind, values: ProgressKind.allCases,
+                        title: String(localized: "Progress Type"), label: { $0.title })
 
                     if progressKind == .percentage {
                         VStack(alignment: .leading, spacing: 8) {

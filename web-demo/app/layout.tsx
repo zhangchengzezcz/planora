@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./workspace.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://zhangchengzezcz.github.io/planora/"),
   title: "Planora 交互式演示",
   description:
-    "体验面向 IB 与 IGCSE 学生的 Planora 学习规划 App：任务、Deadline、今日计划、进度与搜索。",
+    "体验 Planora 1.8.4：任务、课程、成绩图表、时间表、出勤、消息、同步与帮助中心。",
   icons: {
     icon: "https://zhangchengzezcz.github.io/planora/icon.png",
   },

@@ -15,7 +15,7 @@ struct PlanoraApp: App {
     private func storedContent<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         switch persistence {
         case .success(let container):
-            content().modelContainer(container)
+            content().buttonStyle(.glass).modelContainer(container)
         case .failure(let error):
             ContentUnavailableView {
                 Label("Unable to Open Local Data", systemImage: "externaldrive.badge.exclamationmark")
@@ -31,7 +31,7 @@ struct PlanoraApp: App {
 
     var body: some Scene {
         WindowGroup(id: "main") {
-            storedContent { ContentView(store: store) }
+            storedContent { ContentView(store: store).background(MacMainWindowLifecycle()) }
         }
         .defaultSize(width: 1180, height: 760)
         .windowToolbarStyle(.unified)

@@ -5,6 +5,8 @@ struct ManageBacSettingsView: View {
     @State private var flow: ManageBacFlow?
     @State private var isShowingDisconnectConfirmation = false
     @State private var syncMode: ManageBacSyncMode = .quick
+    @AppStorage(ManageBacSyncPolicy.messagesKey) private var syncMessages = true
+    @AppStorage(ManageBacSyncPolicy.timetableKey) private var syncTimetable = true
 
     let store: PlanoraStore
     var onClose: (() -> Void)?
@@ -35,7 +37,7 @@ struct ManageBacSettingsView: View {
             }
             Section {
                 connectionStatus
-                if snapshot != nil { syncModePicker }
+                if snapshot != nil { syncModePicker; fullSyncOptions }
                 connectionActions
             } header: {
                 Text(verbatim: "ManageBac")
@@ -145,12 +147,16 @@ struct ManageBacSettingsView: View {
     }
 
     private var syncModePicker: some View {
-        Picker("Sync Mode", selection: $syncMode) {
-            ForEach(ManageBacSyncMode.allCases) { mode in
-                Label(mode.title, systemImage: mode.symbol).tag(mode)
-            }
+        PlanoraSegmentedPicker(selection: $syncMode, values: ManageBacSyncMode.allCases,
+            title: String(localized: "Sync Mode"), label: { $0.title })
+    }
+
+    @ViewBuilder
+    private var fullSyncOptions: some View {
+        if syncMode == .full {
+            Toggle(String(localized: "Messages"), isOn: $syncMessages)
+            Toggle(String(localized: "Timetable"), isOn: $syncTimetable)
         }
-        .pickerStyle(.segmented)
     }
 
     @ViewBuilder
@@ -201,13 +207,14 @@ struct ManageBacSettingsView: View {
                 if let snapshot {
                     VStack(spacing: 12) {
                         syncModePicker
+                        fullSyncOptions
                         Button {
                             flow = .sync(snapshot, syncMode)
                         } label: {
                             Label(syncMode.title, systemImage: syncMode.symbol)
                                 .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.glass)
 
                         Button(role: .destructive) {
                             isShowingDisconnectConfirmation = true
@@ -215,7 +222,7 @@ struct ManageBacSettingsView: View {
                             Label(String(localized: "Disconnect"), systemImage: "link.badge.minus")
                                 .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(.glass)
                         .tint(.red)
                     }
                 } else {
@@ -225,7 +232,7 @@ struct ManageBacSettingsView: View {
                         Label(String(localized: "Connect Account"), systemImage: "arrow.up.right.square")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glass)
                 }
             }
         }

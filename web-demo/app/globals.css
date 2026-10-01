@@ -967,27 +967,10 @@ textarea:focus-visible,
 
 .focus-main {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) 42px;
+  grid-template-columns: minmax(0, 1fr) 42px;
   align-items: center;
   gap: 13px;
   margin-top: 13px;
-}
-
-.focus-complete {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 0;
-  color: #899198;
-  background: transparent;
-}
-
-.focus-complete svg {
-  width: 28px;
-  height: 28px;
-  stroke-width: 2.4;
 }
 
 .focus-main h3 {
@@ -1238,26 +1221,9 @@ textarea:focus-visible,
 
 .home-task-heading {
   display: grid;
-  grid-template-columns: 30px 42px minmax(0, 1fr) auto;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-}
-
-.home-task-complete {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 0;
-  color: #899198;
-  background: transparent;
-}
-
-.home-task-complete svg {
-  width: 25px;
-  height: 25px;
-  stroke-width: 2.35;
 }
 
 .home-task-icon {
@@ -1314,7 +1280,7 @@ textarea:focus-visible,
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  padding-left: 42px;
+  padding-left: 54px;
 }
 
 .home-task-status > span {
