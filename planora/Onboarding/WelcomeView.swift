@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct WelcomeView: View {
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.locale) private var locale
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let onComplete: () -> Void
 
     @State private var logoVisible = false
@@ -8,57 +11,42 @@ struct WelcomeView: View {
     @State private var lifted = false
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-
-            PlanoraLogoMark(size: 104)
-                .scaleEffect(logoVisible ? 1 : 0.78)
+        VStack(spacing: 28) {
+            PlanoraLogoMark(size: 116)
+                .scaleEffect(logoVisible || reduceMotion ? 1 : 0.92)
                 .opacity(logoVisible ? 1 : 0)
-                .offset(y: lifted ? -26 : 0)
-
-            VStack(spacing: 8) {
-                Text(String(localized: "Welcome to"))
-                    .font(.title3.weight(.medium))
-                    .foregroundStyle(.secondary)
-
+            VStack(spacing: 12) {
                 Text(verbatim: "Planora")
-                    .font(.system(size: 48, weight: .bold))
-                    .foregroundStyle(Color.planoraInk)
+                    .font(.system(size: 44, weight: .bold))
+                    .foregroundStyle(.primary)
+                Text(OnboardingCopy(locale: locale).subtitle)
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .opacity(textVisible ? 1 : 0)
-            .offset(y: lifted ? -26 : 0)
-
-            Spacer()
-
-            Text(String(localized: "Study planning, simple and clear."))
-                .font(.footnote.weight(.medium))
-                .foregroundStyle(.secondary)
-                .opacity(textVisible ? 0.75 : 0)
-                .padding(.bottom, 36)
         }
-        .padding(.horizontal, 28)
-        .task {
-            await runWelcomeAnimation()
-        }
+        .offset(y: lifted && !reduceMotion ? -10 : 0)
+        .padding(28)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(OnboardingBrand.background(for: colorScheme).ignoresSafeArea())
+        .task { await runWelcomeAnimation() }
     }
 
     @MainActor
     private func runWelcomeAnimation() async {
-        withAnimation(.spring(response: 0.7, dampingFraction: 0.78)) {
+        withAnimation(reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.64, dampingFraction: 0.88)) {
             logoVisible = true
         }
-        try? await Task.sleep(for: .milliseconds(520))
-
-        withAnimation(.easeOut(duration: 0.58)) {
-            textVisible = true
-        }
-        try? await Task.sleep(for: .milliseconds(1_150))
-
-        withAnimation(.spring(response: 0.64, dampingFraction: 0.82)) {
-            lifted = true
-        }
-        try? await Task.sleep(for: .milliseconds(430))
-
+        do {
+            try await Task.sleep(for: .milliseconds(220))
+            withAnimation(.easeOut(duration: 0.45)) { textVisible = true }
+            try await Task.sleep(for: .milliseconds(1_200))
+            withAnimation(.smooth(duration: 0.5)) { lifted = true }
+            try await Task.sleep(for: .milliseconds(400))
+        } catch { return }
+        guard !Task.isCancelled else { return }
         onComplete()
     }
 }

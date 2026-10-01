@@ -674,7 +674,7 @@ export function PlanoraDemo() {
             <p className="eyebrow">
               {copy(locale, "IB · IGCSE 学习规划")}
             </p>
-            <h1>Planora 1.8.4</h1>
+            <h1>Planora 1.8.5</h1>
             <p>
               {copy(
                 locale,
@@ -942,9 +942,25 @@ function Onboarding({
   onComplete: () => void;
 }) {
   const [phase, setPhase] = useState<"welcome" | "features">("welcome");
+  const wording = locale === "zh-Hans" ? {
+    subtitle: "把学习，清晰地放在一起。", intro: "任务、课程与学习进度。清晰安排下一步。",
+    tasks: "把重点放在眼前", tasksDetail: "截止日期、每天的计划与任务进度，一起掌握。",
+    courses: "看清每一门课程", coursesDetail: "课程、成绩与最新时间表，随时查看。",
+    attendance: "了解这一周的状态", attendanceDetail: "最近七天出勤与课程消息，不错过重要更新。",
+  } : locale === "ja" ? {
+    subtitle: "学びを、ひとつの場所に。", intro: "タスク、コース、学習の進捗。次の一歩をわかりやすく。",
+    tasks: "大切なことを、目の前に", tasksDetail: "期限、日々の予定、タスクの進捗をまとめて確認。",
+    courses: "コースごとの学びを確認", coursesDetail: "コース、成績、最新の時間割をいつでも確認。",
+    attendance: "今週の状況を把握", attendanceDetail: "最近7日間の出席とコースのメッセージをひとつに。",
+  } : {
+    subtitle: "Your learning, brought together.", intro: "Tasks, courses and progress. One clear place to plan your next step.",
+    tasks: "Make room for what matters", tasksDetail: "Deadlines, daily plans and task progress, together.",
+    courses: "See your learning clearly", coursesDetail: "Courses, grades and your latest timetable.",
+    attendance: "Stay connected to your week", attendanceDetail: "Recent attendance and course messages in one place.",
+  };
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setPhase("features"), 2350);
+    const timer = window.setTimeout(() => setPhase("features"), 1820);
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -959,47 +975,35 @@ function Onboarding({
         <div className="welcome-stage">
           <LogoMark />
           <div className="welcome-copy">
-            <span>{copy(locale, "欢迎使用")}</span>
             <strong>Planora</strong>
+            <span>{wording.subtitle}</span>
           </div>
-          <p>{copy(locale, "学习规划，简单清晰。")}</p>
         </div>
       ) : (
         <div className="feature-intro">
           <div className="feature-intro-heading">
             <LogoMark small />
-            <h2>{copy(locale, "欢迎使用 Planora")}</h2>
-            <p>
-              {copy(
-                locale,
-                "一款为 IB 和 IGCSE 学生设计的学习规划工具。先选择课程体系与科目，再清晰查看任务、进度和重要日期。",
-              )}
-            </p>
+            <h2>Planora</h2>
+            <p>{wording.intro}</p>
           </div>
           <div className="feature-intro-list">
             <IntroFeature
+              icon={ListChecks}
+              tone="teal"
+              title={wording.tasks}
+              description={wording.tasksDetail}
+            />
+            <IntroFeature
               icon={BookOpen}
-              tone="blue"
-              title={copy(locale, "管理课程")}
-              description={copy(locale, "按课程体系整理科目与学习内容。")}
+              tone="teal"
+              title={wording.courses}
+              description={wording.coursesDetail}
             />
             <IntroFeature
-              icon={CalendarDays}
-              tone="amber"
-              title={copy(locale, "掌握节点")}
-              description={copy(
-                locale,
-                "把作业、考试和长期项目放进清晰时间线。",
-              )}
-            />
-            <IntroFeature
-              icon={Gauge}
-              tone="green"
-              title={copy(locale, "推进进度")}
-              description={copy(
-                locale,
-                "用百分比或阶段追踪每一项学习任务。",
-              )}
+              icon={CheckCircle2}
+              tone="teal"
+              title={wording.attendance}
+              description={wording.attendanceDetail}
             />
           </div>
           <button
@@ -1044,7 +1048,9 @@ function LogoMark({ small = false }: { small?: boolean }) {
     <div className={`logo-mark ${small ? "small" : ""}`} aria-label="Planora">
       {/* Static asset avoids framework image processing in the GitHub Pages export. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`${process.env.NODE_ENV === "production" ? "/planora" : ""}/icon.png`} alt="" width={64} height={64}/>
+      <img className="brand-light" src={`${process.env.NODE_ENV === "production" ? "/planora" : ""}/brand-light.png`} alt="" width={384} height={384}/>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="brand-dark" src={`${process.env.NODE_ENV === "production" ? "/planora" : ""}/brand-dark.png`} alt="" width={384} height={384}/>
     </div>
   );
 }

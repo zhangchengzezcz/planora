@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.8.4
+## Planora 1.8.5
 
 ### 中文
 
@@ -46,7 +46,11 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 The menu bar uses a transparent task-bar template icon. Tasks due within 24 hours or overdue display automatic high priority without overwriting manual settings. Course rows in task details open the associated course.
 
-**下载 / Download:** [Planora 1.8.4 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.4) · [更新说明 / Release notes](updates/1.8.4.md)
+**下载 / Download:** [Planora 1.8.5 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.5) · [更新说明 / Release notes](updates/1.8.5.md)
+
+1.8.5 更新首次启动与介绍页，使用当前 Icon Composer 图标的浅深色版本，以冷白、石墨灰和克制的蓝绿配色统一原生 App 与网页演示。已完成引导的用户仍直接进入主页。
+
+1.8.5 refreshes the first-launch welcome and introduction using light/dark renditions of the current Icon Composer artwork. Cool-white, graphite and restrained blue-green accents align the native app and browser demo. Returning users still open Home directly.
 
 1.8.4 统一克制配色的玻璃按钮，菜单栏同步复用主窗口流程，首次关闭可选择后台运行或退出。完整同步可选择是否更新消息与课表，并修复三天课表漏读及跨周混用；任务检查器支持直接打开课程详情。
 
@@ -54,7 +58,7 @@ The menu bar uses a transparent task-bar template icon. Tasks due within 24 hour
 
 ## 当前版本 / Current Version
 
-- Version: **1.8.4** (build **37**)
+- Version: **1.8.5** (build **38**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle
