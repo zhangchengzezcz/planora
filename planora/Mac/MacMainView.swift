@@ -24,6 +24,8 @@ struct MacMainView: View {
                 selectedTaskID: $selectedTaskID,
                 searchText: $searchText
             )
+                .toolbar(removing: .sidebarToggle)
+                .toolbar { navigationControls }
                 .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
         } detail: {
             destinationView
@@ -31,7 +33,6 @@ struct MacMainView: View {
         }
         .navigationSplitViewStyle(.balanced)
         .windowToolbarFullScreenVisibility(.visible)
-        .toolbar(removing: .sidebarToggle)
         .onChange(of: searchText) { _, value in
             if !value.isEmpty {
                 selectedTaskID = nil
@@ -39,24 +40,7 @@ struct MacMainView: View {
             }
         }
         .toolbar {
-            ToolbarItemGroup(placement: .navigation) {
-                Button {
-                    withAnimation(.snappy) {
-                        columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
-                    }
-                } label: {
-                    Image(systemName: "sidebar.leading")
-                }
-                .help(String(localized: "Toggle Sidebar"))
-                .accessibilityLabel(String(localized: "Toggle Sidebar"))
-                Button { isShowingCreateFlow = true } label: {
-                    Image(systemName: "plus")
-                }
-                .help(String(localized: "New Task"))
-                .accessibilityLabel(String(localized: "New Task"))
-            }
-            ToolbarItem(placement: .primaryAction) {
-                HStack(spacing: 8) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button {
                     selection = .messages
                 } label: {
@@ -66,20 +50,17 @@ struct MacMainView: View {
                                 Circle().fill(.red).frame(width: 6, height: 6).offset(x: 3, y: -3)
                             }
                         }
-                        .frame(width: 32, height: 32)
                 }
                 .help(String(localized: "Messages"))
                 .accessibilityLabel(String(localized: "Messages"))
                 .accessibilityValue(Text(unreadMessages.count, format: .number))
                 Button { selection = .profile } label: {
-                    ProfileAvatarView(name: store.userName, size: 28)
-                        .frame(width: 32, height: 32)
+                    ProfileAvatarView(name: store.userName, size: 24)
+                        .padding(2)
                         .contentShape(Circle())
                 }
                 .help(String(localized: "Profile"))
                 .accessibilityLabel(String(localized: "Profile"))
-                }
-                .buttonStyle(.plain)
             }
         }
         .sheet(isPresented: $isShowingCreateFlow) {
@@ -110,6 +91,22 @@ struct MacMainView: View {
             if tab == .tasks { selection = .tasks }
         }
         .background { ManageBacAutomaticSyncHost(store: store) }
+    }
+
+    @ToolbarContentBuilder
+    private var navigationControls: some ToolbarContent {
+        ToolbarItemGroup(placement: columnVisibility == .detailOnly ? .navigation : .automatic) {
+            Button {
+                withAnimation(.snappy) {
+                    columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
+                }
+            } label: { Image(systemName: "sidebar.leading") }
+            .help(String(localized: "Toggle Sidebar"))
+            .accessibilityLabel(String(localized: "Toggle Sidebar"))
+            Button { isShowingCreateFlow = true } label: { Image(systemName: "plus") }
+                .help(String(localized: "New Task"))
+                .accessibilityLabel(String(localized: "New Task"))
+        }
     }
 
     @ViewBuilder

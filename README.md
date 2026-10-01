@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.8.2
+## Planora 1.8.3
 
 ### 中文
 
@@ -38,19 +38,19 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 1.7.17 adds undo for the latest import/sync, a learning-data reset, and an import entry in the Mac task workspace. Your name, avatar and appearance are preserved.
 
-1.8.2 使用原生 Mac 分段控件（macOS 27 的 valueSelection 角色）与原生工具栏分组，移除自绘玻璃滑块和额外标题栏附件；手机与 iPad 界面不变。
+1.8.3 在 macOS 27 使用原生 NSSegmentedControl 的 tabs 角色，点击、横向拖动和玻璃材质转换由系统处理；macOS 26 保留兼容实现。侧栏/新建放在窗口顶栏左侧，通知/头像采用系统工具栏布局；手机与 iPad 界面不变。
 
-1.8.2 adopts native Mac segmented controls (the valueSelection role on macOS 27) and toolbar groups, removing custom glass thumbs and title-bar accessories. iPhone/iPad layouts remain unchanged.
+1.8.3 uses the native NSSegmentedControl tabs role on macOS 27, letting the system handle clicks, horizontal dragging and glass transitions. macOS 26 retains the compatibility implementation. Sidebar/new-task actions sit on the left; notification/avatar actions use system toolbar layout. iPhone/iPad layouts remain unchanged.
 
 菜单栏采用透明交错任务条图标；截止前 24 小时及逾期任务自动显示高优先级，保留手动设置。任务详情可点击课程跳转。
 
 The menu bar uses a transparent task-bar template icon. Tasks due within 24 hours or overdue display automatic high priority without overwriting manual settings. Course rows in task details open the associated course.
 
-**下载 / Download:** [Planora 1.8.2 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.2) · [更新说明 / Release notes](updates/1.8.2.md)
+**下载 / Download:** [Planora 1.8.3 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.3) · [更新说明 / Release notes](updates/1.8.3.md)
 
 ## 当前版本 / Current Version
 
-- Version: **1.8.2** (build **35**)
+- Version: **1.8.3** (build **36**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle
