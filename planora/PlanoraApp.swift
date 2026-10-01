@@ -34,6 +34,7 @@ struct PlanoraApp: App {
             storedContent { ContentView(store: store) }
         }
         .defaultSize(width: 1180, height: 760)
+        .windowToolbarStyle(.unified)
         .commands {
             ToolbarCommands()
             CommandGroup(after: .appInfo) {

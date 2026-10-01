@@ -230,12 +230,12 @@ struct MacTaskWorkspaceView: View {
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 10) {
                     MacLiquidGlassStatusPicker(selection: $status)
-                        .frame(minWidth: 240, idealWidth: 330, maxWidth: 330, minHeight: 34, maxHeight: 34)
+                        .frame(width: 328, height: 38)
                     taskActions
                 }
                 VStack(alignment: .leading, spacing: 8) {
                     MacLiquidGlassStatusPicker(selection: $status)
-                        .frame(height: 34)
+                        .frame(height: 38)
                     taskActions
                 }
             }
@@ -274,62 +274,11 @@ struct MacTaskWorkspaceView: View {
 
 private struct MacLiquidGlassStatusPicker: View {
     @Binding var selection: MacTaskStatus
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        GeometryReader { geometry in
-            GlassEffectContainer(spacing: 6) {
-                HStack(spacing: 6) {
-                    ForEach(MacTaskStatus.allCases) { value in
-                        Group {
-                            if reduceTransparency {
-                                control(value)
-                                    .buttonStyle(.bordered)
-                                    .tint(selection == value ? value.tint : .secondary)
-                            } else {
-                                control(value)
-                                    .buttonStyle(.glass(.regular.tint(value.tint.opacity(selection == value ? 0.4 : 0.08))))
-                            }
-                        }
-                        .buttonBorderShape(.capsule)
-                        .frame(maxWidth: .infinity)
-                        .accessibilityAddTraits(selection == value ? [.isSelected] : [])
-                    }
-                }
-            }
-            .accessibilityLabel(String(localized: "Status"))
-            .onMoveCommand { direction in
-                let values = MacTaskStatus.allCases
-                guard let index = values.firstIndex(of: selection) else { return }
-                if direction == .left { selection = values[max(0, index - 1)] }
-                if direction == .right { selection = values[min(values.count - 1, index + 1)] }
-            }
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 4)
-                    .onChanged { gesture in
-                        let values = MacTaskStatus.allCases
-                        let segmentWidth = geometry.size.width / CGFloat(values.count)
-                        let index = min(max(Int(gesture.location.x / segmentWidth), 0), values.count - 1)
-                        if selection != values[index] {
-                            withAnimation(reduceMotion ? nil : .snappy) { selection = values[index] }
-                        }
-                    }
-            )
-        }
-    }
-
-    private func control(_ value: MacTaskStatus) -> some View {
-        Button {
-            withAnimation(reduceMotion ? nil : .snappy) { selection = value }
-        } label: {
-            Text(value.title)
-                .font(.system(size: 13, weight: selection == value ? .bold : .medium))
-                .lineLimit(1)
-                .minimumScaleFactor(0.75)
-                .frame(maxWidth: .infinity, minHeight: 24)
-        }
-        .help(value.title)
+        MacModePicker(selection: $selection, values: MacTaskStatus.allCases,
+                      title: String(localized: "Status"),
+                      label: { $0.title }, symbol: { _ in "circle" }, showsLabels: true)
     }
 }
 

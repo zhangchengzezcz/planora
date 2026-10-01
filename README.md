@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.8.1
+## Planora 1.8.2
 
 ### 中文
 
@@ -38,19 +38,19 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 1.7.17 adds undo for the latest import/sync, a learning-data reset, and an import entry in the Mac task workspace. Your name, avatar and appearance are preserved.
 
-1.8.1 修正同步界面字段，区分快速与完整同步的实际步骤、本次读取数量和本地总数；未读取出勤不再显示为零。
+1.8.2 使用原生 Mac 分段控件（macOS 27 的 valueSelection 角色）与原生工具栏分组，移除自绘玻璃滑块和额外标题栏附件；手机与 iPad 界面不变。
 
-1.8.1 refreshes sync labels, separates scanned records from local totals, and distinguishes unavailable attendance from zero.
+1.8.2 adopts native Mac segmented controls (the valueSelection role on macOS 27) and toolbar groups, removing custom glass thumbs and title-bar accessories. iPhone/iPad layouts remain unchanged.
 
 菜单栏采用透明交错任务条图标；截止前 24 小时及逾期任务自动显示高优先级，保留手动设置。任务详情可点击课程跳转。
 
 The menu bar uses a transparent task-bar template icon. Tasks due within 24 hours or overdue display automatic high priority without overwriting manual settings. Course rows in task details open the associated course.
 
-**下载 / Download:** [Planora 1.8.1 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.1) · [更新说明 / Release notes](updates/1.8.1.md)
+**下载 / Download:** [Planora 1.8.2 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.2) · [更新说明 / Release notes](updates/1.8.2.md)
 
 ## 当前版本 / Current Version
 
-- Version: **1.8.1** (build **34**)
+- Version: **1.8.2** (build **35**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle

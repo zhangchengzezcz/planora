@@ -1,4 +1,5 @@
 #if os(macOS)
+import AppKit
 import SwiftUI
 
 struct MacModePicker<Value: Hashable>: View {
@@ -8,74 +9,80 @@ struct MacModePicker<Value: Hashable>: View {
     let label: (Value) -> String
     let symbol: (Value) -> String
     var showsLabels = false
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @FocusState private var focused: Value?
-    @Namespace private var coordinateSpace
-    @State private var frames: [Value: CGRect] = [:]
 
     var body: some View {
-        GlassEffectContainer(spacing: 4) {
-            HStack(spacing: 4) {
-                ForEach(values, id: \.self) { value in
-                    Group {
-                        if reduceTransparency {
-                            control(value).buttonStyle(.bordered)
-                                .tint(selection == value ? .accentColor : .secondary)
-                        } else {
-                            control(value).buttonStyle(.glass(selection == value ? .regular.tint(.accentColor).interactive() : .regular.interactive()))
-                        }
-                    }
-                    .buttonBorderShape(.capsule)
-                    .onGeometryChange(for: CGRect.self) { proxy in
-                        proxy.frame(in: .named(coordinateSpace))
-                    } action: { frame in
-                        frames[value] = frame
-                    }
-                    .focused($focused, equals: value)
-                    .accessibilityLabel(label(value))
-                    .accessibilityAddTraits(selection == value ? [.isSelected] : [])
-                    .help(label(value))
-                }
-            }
+        NativeMacModePicker(selection: $selection, values: values, title: title,
+                            label: label, symbol: symbol, showsLabels: showsLabels)
+            .controlSize(.large)
+    }
+}
+
+private struct NativeMacModePicker<Value: Hashable>: NSViewRepresentable {
+    @Binding var selection: Value
+    let values: [Value]
+    let title: String
+    let label: (Value) -> String
+    let symbol: (Value) -> String
+    var showsLabels = false
+
+    func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
+
+    func makeNSView(context: Context) -> NSSegmentedControl {
+        let control = NSSegmentedControl()
+        control.controlSize = .large
+        control.segmentStyle = .automatic
+        control.borderShape = .capsule
+        control.segmentDistribution = .fillEqually
+        control.trackingMode = .selectOne
+        control.prefersCompactControlSizeMetrics = false
+        if #available(macOS 27, *) {
+            control.role = .valueSelection
         }
-        .coordinateSpace(name: coordinateSpace)
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 4, coordinateSpace: .named(coordinateSpace))
-                .onChanged { gesture in
-                    guard abs(gesture.translation.width) > abs(gesture.translation.height),
-                          frames.values.contains(where: { $0.contains(gesture.startLocation) }),
-                          let value = values.first(where: { frames[$0]?.contains(gesture.location) == true }),
-                          selection != value else { return }
-                    select(value)
-                    focused = value
-                }
-        )
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(title)
-        .onMoveCommand { direction in
-            guard let index = values.firstIndex(of: selection) else { return }
-            let delta = direction == .left ? -1 : direction == .right ? 1 : 0
-            let next = index + delta
-            guard delta != 0, values.indices.contains(next) else { return }
-            select(values[next])
-            focused = values[next]
-        }
+        control.target = context.coordinator
+        control.action = #selector(Coordinator.changed(_:))
+        updateNSView(control, context: context)
+        return control
     }
 
-    private func control(_ value: Value) -> some View {
-        Button { select(value) } label: {
-            if showsLabels {
-                Text(label(value)).frame(minWidth: 32, minHeight: 22)
-            } else {
-                Image(systemName: symbol(value)).frame(width: 24, height: 22)
+    func updateNSView(_ control: NSSegmentedControl, context: Context) {
+        context.coordinator.parent = self
+        let configuration = values.map { label($0) + "|" + (showsLabels ? "" : symbol($0)) }
+        if context.coordinator.configuration != configuration {
+            control.segmentCount = values.count
+            for (index, value) in values.enumerated() {
+                control.setWidth(showsLabels ? 82 : 52, forSegment: index)
+                control.setToolTip(label(value), forSegment: index)
+                if showsLabels {
+                    control.setImage(nil, forSegment: index)
+                    control.setLabel(label(value), forSegment: index)
+                } else {
+                    let image = NSImage(systemSymbolName: symbol(value), accessibilityDescription: label(value))
+                    image?.isTemplate = true
+                    control.setLabel("", forSegment: index)
+                    control.setImage(image, forSegment: index)
+                    control.setImageScaling(.scaleProportionallyDown, forSegment: index)
+                }
             }
+            context.coordinator.configuration = configuration
         }
-        .controlSize(.regular)
+        control.setAccessibilityLabel(title)
+        let index = values.firstIndex(of: selection) ?? -1
+        if control.selectedSegment != index { control.selectedSegment = index }
     }
 
-    private func select(_ value: Value) {
-        withAnimation(reduceMotion ? nil : .smooth(duration: 0.2)) { selection = value }
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSSegmentedControl, context: Context) -> CGSize? {
+        CGSize(width: CGFloat(values.count) * (showsLabels ? 82 : 52), height: 38)
+    }
+
+    final class Coordinator: NSObject {
+        var parent: NativeMacModePicker
+        var configuration: [String] = []
+        init(parent: NativeMacModePicker) { self.parent = parent }
+
+        @objc func changed(_ control: NSSegmentedControl) {
+            guard parent.values.indices.contains(control.selectedSegment) else { return }
+            parent.selection = parent.values[control.selectedSegment]
+        }
     }
 }
 #endif

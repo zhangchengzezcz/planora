@@ -24,13 +24,13 @@ struct MacMainView: View {
                 selectedTaskID: $selectedTaskID,
                 searchText: $searchText
             )
-                .toolbar(removing: .sidebarToggle)
                 .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 280)
         } detail: {
             destinationView
                 .navigationTitle((selection ?? .home).title)
         }
         .navigationSplitViewStyle(.balanced)
+        .windowToolbarFullScreenVisibility(.visible)
         .toolbar(removing: .sidebarToggle)
         .onChange(of: searchText) { _, value in
             if !value.isEmpty {
@@ -39,6 +39,22 @@ struct MacMainView: View {
             }
         }
         .toolbar {
+            ToolbarItemGroup(placement: .navigation) {
+                Button {
+                    withAnimation(.snappy) {
+                        columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
+                    }
+                } label: {
+                    Image(systemName: "sidebar.leading")
+                }
+                .help(String(localized: "Toggle Sidebar"))
+                .accessibilityLabel(String(localized: "Toggle Sidebar"))
+                Button { isShowingCreateFlow = true } label: {
+                    Image(systemName: "plus")
+                }
+                .help(String(localized: "New Task"))
+                .accessibilityLabel(String(localized: "New Task"))
+            }
             ToolbarItem(placement: .primaryAction) {
                 HStack(spacing: 8) {
                 Button {
@@ -94,16 +110,6 @@ struct MacMainView: View {
             if tab == .tasks { selection = .tasks }
         }
         .background { ManageBacAutomaticSyncHost(store: store) }
-        .background {
-            MacWindowNavigationControls(
-                toggleSidebar: {
-                    withAnimation(.snappy) {
-                        columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
-                    }
-                },
-                createTask: { isShowingCreateFlow = true }
-            )
-        }
     }
 
     @ViewBuilder
