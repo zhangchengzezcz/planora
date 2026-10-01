@@ -9,6 +9,45 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.8.1</title>
+            <pubDate>Thu, 01 Oct 2026 09:43:53 +0800</pubDate>
+            <sparkle:version>34</sparkle:version>
+            <sparkle:shortVersionString>1.8.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.1
+
+## 中文
+
+- Mac 常驻菜单栏图标采用应用图标的交错圆角任务条轮廓，去除背景并跟随系统深浅配色。
+- 未完成任务在截止前 24 小时及逾期时自动显示高优先级；详情标注“自动”，保留原手动优先级，不修改学校端数据。
+- iOS、iPadOS 与 macOS 的任务详情可点击课程行进入相应课程。
+
+- 同步完成标题改为快速/完整同步完成，摘要显示本次读取课程、单元、消息及课次，不再混用本地课程与单元总数。
+- 快速同步仅显示实际执行的 7 项步骤；单元显示“未重新扫描”，不再暗示已读取全部内容。
+- 已有任务计数改为“刷新已有任务”，避免将每次重新读取都描述成内容发生变化。
+- 出勤区分“未读取”和“未记录”，不再显示误导性的零；标签明确为本次同步周出勤，区别于首页最近 7 天。
+- 连接页增加同步方式与上次完整同步时间，更新中英日文案。
+
+Mac 包为临时签名，未经过 Apple 公证。真实账户同步和实际旧版升级仍需用户验证。
+
+## English
+
+- The Mac menu-bar template icon uses Planora's alternating rounded task bars without a background and follows system appearance.
+- Incomplete tasks become visually high priority within 24 hours of their deadline or when overdue. Details identify automatic priority; manual values and school data remain unchanged.
+- Task details link directly to the associated course on iOS, iPadOS and macOS.
+
+- Completion titles distinguish quick and full sync. Results show records read in this scan rather than local course/unit totals.
+- Quick sync shows its seven executed steps; units are marked Not Rescanned.
+- Existing task counts now say Tasks Refreshed rather than implying every reread changed the content.
+- Attendance distinguishes Not Read from Not Recorded instead of displaying zero. The label identifies the synced week, separate from Home's seven-day window.
+- Connection details show the latest sync mode and last full sync time. Chinese, English and Japanese labels are updated.
+
+The Mac package is ad-hoc signed, not Apple-notarized. Real-account syncing and real-device upgrades still require user verification.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.1/Planora-1.8.1-macOS.zip" length="6443462" type="application/octet-stream" sparkle:edSignature="aklKVTjgAfSvYDZohaYB51yoyw1Yko5mz7ISbSd1Oafs347qwrj/62qlomMLlB1UoeTU5zRto7BmDQXFKR33Cw=="/>
+        </item>
+        <item>
             <title>1.8</title>
             <pubDate>Wed, 30 Sep 2026 23:23:16 +0800</pubDate>
             <sparkle:version>33</sparkle:version>
@@ -71,35 +110,6 @@ Recovery points begin with this version. Undo replaces learning-data edits made 
 The Mac package is ad-hoc signed, not Apple-notarized. The existing Sparkle feed and signing key are retained; real-device upgrades still require user verification.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.17/Planora-1.7.17-macOS.zip" length="6337687" type="application/octet-stream" sparkle:edSignature="PxB7jGVEan80MlVaEc4nxtY4TrTR2S4oB+rSybLmxW0fNx2Rlz4Kn6dtbrNO/ZZ1/GrVv3AjCb/jO+3GEwmxBw=="/>
-        </item>
-        <item>
-            <title>1.7.16</title>
-            <pubDate>Tue, 29 Sep 2026 18:54:16 +0800</pubDate>
-            <sparkle:version>31</sparkle:version>
-            <sparkle:shortVersionString>1.7.16</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.7.16
-
-## 中文
-
-- 修复前后台同步更新同一连接的统计信息后，导入被错误拒绝的问题。真正的连接更换仍会取消旧同步。
-- 导入失败可直接重试，并显示具体错误；失败页提供取消入口，不会把跳过导入伪装为成功。
-- 个人资料从偏好设置迁入 Application Support/Planora/LearningProfile.json，兼容旧版迁移，降低清除偏好后重新进入引导的风险。
-- 明确数据库、备份、头像、个人资料与缓存的区别，提供仅清理应用缓存的脚本和卸载说明。
-- 保留 1.7.15 的 Mac 签名修复。升级替换应用，不重置数据，无需 PKG。
-- 第三方清理工具若删除持久数据目录，仍需外部备份恢复；不能保证恢复已经删除的数据。
-
-## English
-
-- Fixed false stale-connection rejection when another sync updates metadata for the same connection. Account changes still invalidate old sessions.
-- Failed imports can retry directly and display the underlying error. A cancel action is available without falsely reporting a skipped import as successful.
-- Migrated profile persistence from preferences to Application Support/Planora/LearningProfile.json with legacy compatibility.
-- Documented persistent data versus disposable cache and added an app-cache-only cleanup script.
-- Retains the 1.7.15 Mac signing fix. Updates replace the app without resetting data; no PKG is needed.
-- External backups remain necessary if a third-party cleaner deletes persistent user data.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.7.16/Planora-1.7.16-macOS.zip" length="6274727" type="application/octet-stream" sparkle:edSignature="htC+bw44z+MLv2dAmqFsZr/nk5fPBZsZWifWCgFxmLyeYWbHc3SDEelAT7NhESNVRHEl/Cn20ntBYaUn6OOLBw=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -192,6 +202,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: gdQN6hOJNPkMnXsdFm0LTUCE+Fko21U4Gaiu5lOYkkWQz6/00Y5qhN7LuOrKzRbvf9OXlyyICtOeGWMvYbdHDw==
-length: 16160
+edSignature: qn3NjBhnrRQfyDja3ZGNj0KeoaELEOxkIe84b8lH3Mwg+LT29ZPWHN8l0VtLPBg8WP9eQcdd3P3RZB5Klmf+Cg==
+length: 16889
 -->
