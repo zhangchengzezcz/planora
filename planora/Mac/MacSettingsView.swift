@@ -29,10 +29,12 @@ struct MacSettingsView: View {
                             get: { store.userName },
                             set: { store.updateUserName($0) }
                         ))
-                        PlanoraChoicePicker(selection: Binding(
+                        Picker(String(localized: "Curriculum"), selection: Binding(
                             get: { store.curriculum },
                             set: { store.selectCurriculum($0) }
-                        ), values: Curriculum.allCases, title: String(localized: "Curriculum"), label: { $0.title })
+                        )) {
+                            ForEach(Curriculum.allCases) { Text($0.title).tag($0) }
+                        }
                     }
 
                     Section(String(localized: "About")) {

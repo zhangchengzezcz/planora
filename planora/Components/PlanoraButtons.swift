@@ -19,18 +19,34 @@ struct PlanoraPrimaryButton: View {
                 Image(systemName: systemImage)
                     .font(.headline.weight(.bold))
             }
+            #if os(macOS)
+            .foregroundStyle(Color.planoraOnAccent)
+            #else
             .foregroundStyle(Color.planoraInk)
+            #endif
             .frame(maxWidth: .infinity, minHeight: 56)
+            #if os(macOS)
+            .background {
+                shape.fill(LinearGradient.planoraAccent)
+                    .opacity(isDisabled ? 0.36 : 0.74)
+            }
+            .glassEffect(.regular.tint(Color.planoraBlue.opacity(isDisabled ? 0.12 : 0.24))
+                .interactive(!isDisabled), in: shape)
+            #else
             .glassEffect(
                 .regular
                     .tint(Color.planoraBlue.opacity(isDisabled ? 0.04 : 0.10))
                     .interactive(!isDisabled),
                 in: shape
             )
+            #endif
             .overlay(
                 shape
                     .stroke(Color.planoraButtonStroke.opacity(isDisabled ? 0.48 : 1), lineWidth: 1)
             )
+            #if os(macOS)
+            .shadow(color: Color.planoraBlue.opacity(isDisabled ? 0.08 : 0.22), radius: 18, x: 0, y: 10)
+            #endif
             .opacity(isDisabled ? 0.45 : 1)
             .contentShape(shape)
         }
@@ -65,13 +81,25 @@ struct SelectableChip: View {
                         .font(.caption2.weight(.bold))
                 }
             }
+            #if os(macOS)
+            .foregroundStyle(isSelected ? Color.planoraOnAccent : Color.planoraInk)
+            #else
             .foregroundStyle(Color.planoraInk)
+            #endif
             .frame(maxWidth: .infinity, minHeight: 50)
             .padding(.horizontal, 12)
+            #if os(macOS)
+            .background(isSelected ? Color.planoraBlue : Color.planoraControlFill, in: Capsule())
+            #else
             .glassEffect(.regular.tint(isSelected ? Color.planoraBlue.opacity(0.12) : .clear).interactive(), in: Capsule())
+            #endif
             .overlay(
                 Capsule()
+                    #if os(macOS)
+                    .stroke(isSelected ? Color.clear : Color.planoraControlStroke, lineWidth: 1)
+                    #else
                     .stroke(isSelected ? Color.planoraBlue.opacity(0.3) : Color.planoraControlStroke, lineWidth: 1)
+                    #endif
             )
             .contentShape(Capsule())
         }

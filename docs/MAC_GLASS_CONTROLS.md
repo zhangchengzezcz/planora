@@ -4,8 +4,8 @@
 
 - `MacModePicker` is the single implementation for horizontal mode switching.
 - `PlanoraSegmentedPicker` uses it on Mac and keeps the native segmented Picker on iOS/iPadOS.
-- `PlanoraChoicePicker` is a neutral glass menu for discrete selections.
-- 普通命令使用 `.buttonStyle(.glass)`，避免深蓝渐变或高饱和度的 `.glassProminent`。选择项保留勾选和辅助功能标签，不只靠颜色表达状态。
+- `PlanoraChoicePicker` preserves the standard Picker on Mac; it is not a horizontal mode switch.
+- 只对横向模式切换应用本文的玻璃方案。普通按钮、菜单、选择项和页面必须保留原有材质与颜色：原本无玻璃的不添加玻璃，原本有玻璃的不重设 tint、渐变或阴影。不得把 `.buttonStyle(.glass)` 扩散到所有控件。
 
 ## macOS 27
 

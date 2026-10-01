@@ -117,10 +117,19 @@ struct ManageBacConnectionFlowView: View {
                 .buttonStyle(.plain)
             } else {
                 if case .failed = session.phase {
-                    Button(String(localized: "Try Again"), action: retry).buttonStyle(.glass)
+                    Button(String(localized: "Try Again"), action: retry)
+                        #if os(macOS)
+                        .buttonStyle(.borderedProminent)
+                        #else
+                        .buttonStyle(.glass)
+                        #endif
                 }
                 Button(String(localized: "Cancel"), action: cancel)
+                    #if os(macOS)
+                    .buttonStyle(.bordered)
+                    #else
                     .buttonStyle(.glass)
+                    #endif
             }
         }
         .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)
@@ -307,7 +316,11 @@ struct ManageBacConnectionFlowView: View {
             Button(String(localized: "Connect Again")) {
                 session.startInteractiveConnection()
             }
+            #if os(macOS)
+            .buttonStyle(.borderedProminent)
+            #else
             .buttonStyle(.glass)
+            #endif
             .controlSize(.large)
         } else if case .failed = session.phase {
             VStack(alignment: .leading, spacing: 12) {
@@ -319,10 +332,18 @@ struct ManageBacConnectionFlowView: View {
                 HStack {
                     if session.recoveryPhase != nil && session.recoveryPhase != .importing {
                         Button(String(localized: "Skip This Item")) { session.skipFailedStep() }
+                            #if os(macOS)
+                            .buttonStyle(.bordered)
+                            #else
                             .buttonStyle(.glass)
+                            #endif
                     }
                     Button(String(localized: "Cancel"), action: cancel)
+                        #if os(macOS)
+                        .buttonStyle(.bordered)
+                        #else
                         .buttonStyle(.glass)
+                        #endif
                 }
                 .controlSize(.large)
             }

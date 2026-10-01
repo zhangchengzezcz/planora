@@ -576,7 +576,11 @@ private struct AppearanceSettingsView: View {
                         .font(.headline)
                         .frame(maxWidth: .infinity, minHeight: 48)
                 }
+                #if os(macOS)
+                .buttonStyle(.bordered)
+                #else
                 .buttonStyle(.glass)
+                #endif
                 .tint(store.appearanceSettings.accent.color)
             }
             .padding(.bottom, 32)
@@ -630,7 +634,11 @@ private struct TaskDisplaySettingsView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    #if os(macOS)
+                    .buttonStyle(.bordered)
+                    #else
                     .buttonStyle(.glass)
+                    #endif
                 }
 
                 AppearanceControlSection(title: String(localized: "Visible Content")) {
@@ -651,7 +659,11 @@ private struct TaskDisplaySettingsView: View {
                         .font(.headline)
                         .frame(maxWidth: .infinity, minHeight: 48)
                 }
+                #if os(macOS)
+                .buttonStyle(.bordered)
+                #else
                 .buttonStyle(.glass)
+                #endif
             }
             .padding(.bottom, 32)
         }
@@ -1023,7 +1035,11 @@ private struct TaskBackupCard: View {
                     .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity, minHeight: 42)
             }
+            #if os(macOS)
+            .buttonStyle(.bordered)
+            #else
             .buttonStyle(.glass)
+            #endif
             .tint(Color.planoraAmber)
             .disabled(!canRestoreAutomatic)
         }

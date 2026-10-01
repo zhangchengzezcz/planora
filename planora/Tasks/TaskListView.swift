@@ -123,7 +123,11 @@ struct TaskListView: View {
                     Button(String(localized: "Actions"), systemImage: "ellipsis.circle") {
                         isShowingBulkActions = true
                     }
+                    #if os(macOS)
+                    .buttonStyle(.borderedProminent)
+                    #else
                     .buttonStyle(.glass)
+                    #endif
                     .disabled(selectedTaskIDs.isEmpty)
                 }
                 .padding(.horizontal, PlanoraTheme.pageHorizontalPadding)

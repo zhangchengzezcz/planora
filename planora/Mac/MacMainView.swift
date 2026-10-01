@@ -617,10 +617,15 @@ private struct MacProfileView: View {
                         HStack(spacing: 18) {
                             Text(String(localized: "Curriculum"))
                             Spacer()
-                            PlanoraChoicePicker(selection: Binding(
+                            Picker(String(localized: "Curriculum"), selection: Binding(
                                 get: { store.curriculum },
                                 set: { store.selectCurriculum($0) }
-                            ), values: Curriculum.allCases, title: String(localized: "Curriculum"), label: { $0.title })
+                            )) {
+                                ForEach(Curriculum.allCases) { curriculum in
+                                    Text(curriculum.title).tag(curriculum)
+                                }
+                            }
+                            .labelsHidden()
                             .frame(width: 300)
                         }
                         .padding(.horizontal, 10)
@@ -715,7 +720,7 @@ private struct MacDeletedTaskUndoBanner: View {
             Image(systemName: "trash")
             Text(PlanoraLocalization.format(String(localized: "tasks_deleted_format"), count))
             Button(String(localized: "Undo"), action: undo)
-                .buttonStyle(.glass)
+                .buttonStyle(.borderedProminent)
         }
         .padding(10)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))

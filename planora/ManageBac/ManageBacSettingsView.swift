@@ -214,7 +214,11 @@ struct ManageBacSettingsView: View {
                             Label(syncMode.title, systemImage: syncMode.symbol)
                                 .frame(maxWidth: .infinity)
                         }
+                        #if os(macOS)
+                        .buttonStyle(.borderedProminent)
+                        #else
                         .buttonStyle(.glass)
+                        #endif
 
                         Button(role: .destructive) {
                             isShowingDisconnectConfirmation = true
@@ -222,7 +226,11 @@ struct ManageBacSettingsView: View {
                             Label(String(localized: "Disconnect"), systemImage: "link.badge.minus")
                                 .frame(maxWidth: .infinity)
                         }
+                        #if os(macOS)
+                        .buttonStyle(.bordered)
+                        #else
                         .buttonStyle(.glass)
+                        #endif
                         .tint(.red)
                     }
                 } else {
@@ -232,7 +240,11 @@ struct ManageBacSettingsView: View {
                         Label(String(localized: "Connect Account"), systemImage: "arrow.up.right.square")
                             .frame(maxWidth: .infinity)
                     }
+                    #if os(macOS)
+                    .buttonStyle(.borderedProminent)
+                    #else
                     .buttonStyle(.glass)
+                    #endif
                 }
             }
         }

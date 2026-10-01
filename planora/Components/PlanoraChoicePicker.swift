@@ -7,6 +7,13 @@ struct PlanoraChoicePicker<Value: Hashable>: View {
     let label: (Value) -> String
 
     var body: some View {
+        #if os(macOS)
+        Picker(title, selection: $selection) {
+            ForEach(values, id: \.self) { value in
+                Text(label(value)).tag(value)
+            }
+        }
+        #else
         Menu {
             ForEach(values, id: \.self) { value in
                 Button { selection = value } label: {
@@ -21,5 +28,6 @@ struct PlanoraChoicePicker<Value: Hashable>: View {
         .tint(.primary)
         .accessibilityLabel(title)
         .accessibilityValue(label(selection))
+        #endif
     }
 }

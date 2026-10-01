@@ -170,7 +170,11 @@ struct AcademicPlanningSection: View {
             Button(action: action) {
                 Image(systemName: "plus")
             }
+            #if os(macOS)
+            .buttonStyle(.bordered)
+            #else
             .buttonStyle(.glass)
+            #endif
             .accessibilityLabel(PlanoraLocalization.format(String(localized: "Add %@"), title))
         }
     }
