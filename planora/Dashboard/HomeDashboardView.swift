@@ -467,7 +467,7 @@ private struct HomeDashboardSnapshot {
                     upcomingSevenDayEstimatedMinutes += max(task.estimatedMinutes, 0)
                     let baselineMinutes = Double(max(task.estimatedMinutes, 30))
                     let priorityMultiplier: Double
-                    switch task.priority {
+                    switch task.displayPriority {
                     case .low: priorityMultiplier = 0.8
                     case .medium: priorityMultiplier = 1
                     case .high: priorityMultiplier = 1.35
@@ -631,7 +631,7 @@ private struct TodayFocusCard: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 8) {
-                    PriorityPill(priority: task.priority)
+                    PriorityPill(priority: task.displayPriority)
 
                     Image(systemName: "chevron.right")
                         .font(.headline.weight(.bold))
@@ -830,7 +830,7 @@ private struct TaskRow: View {
                     Spacer()
 
                     VStack(alignment: .trailing, spacing: 8) {
-                        PriorityPill(priority: task.priority)
+                        PriorityPill(priority: task.displayPriority)
 
                         Image(systemName: "chevron.right")
                             .font(.caption.weight(.bold))
@@ -1447,7 +1447,7 @@ private struct CalendarTaskRow: View {
 
             Spacer()
 
-            PriorityPill(priority: task.priority)
+            PriorityPill(priority: task.displayPriority)
 
             Image(systemName: "chevron.right")
                 .font(.caption2.weight(.bold))

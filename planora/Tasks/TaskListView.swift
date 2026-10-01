@@ -349,7 +349,7 @@ private struct TaskListRow: View {
 
                     VStack(alignment: .trailing, spacing: 6) {
                         MiniStatusPill(title: task.type.title, tint: task.type.tint)
-                        PriorityPill(priority: task.priority)
+                        PriorityPill(priority: task.displayPriority)
                     }
                 }
 

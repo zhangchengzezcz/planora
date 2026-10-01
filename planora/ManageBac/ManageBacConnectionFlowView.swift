@@ -148,7 +148,7 @@ struct ManageBacConnectionFlowView: View {
     private var courseSummary: some View {
         if isCompleted, !session.courses.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                Text(String(localized: "Courses"))
+                Text(String(localized: "Courses Read"))
                     .font(.headline)
                 ForEach(session.courses, id: \.remoteIdentifier) { course in
                     Text(verbatim: course.name)
@@ -166,7 +166,7 @@ struct ManageBacConnectionFlowView: View {
                 Text(statusTitle)
                     .font(.title.weight(.semibold))
                 Spacer()
-                Text("\(min(session.completedStepCount, syncSteps.count)) / \(syncSteps.count)")
+                Text("\(displayedProgress) / \(displayedStepIndices.count)")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .monospacedDigit()
@@ -178,8 +178,8 @@ struct ManageBacConnectionFlowView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             ProgressView(
-                value: Double(min(session.completedStepCount, syncSteps.count)),
-                total: Double(syncSteps.count)
+                value: Double(displayedProgress),
+                total: Double(displayedStepIndices.count)
             )
         }
     }
@@ -199,15 +199,15 @@ struct ManageBacConnectionFlowView: View {
 
     private var stepRows: some View {
         VStack(spacing: 0) {
-            ForEach(Array(syncSteps.enumerated()), id: \.offset) { index, title in
-                ManageBacSyncStepRow(title: title, state: stepState(at: index))
-                if index < syncSteps.count - 1 {
+            ForEach(displayedStepIndices, id: \.self) { index in
+                ManageBacSyncStepRow(title: syncSteps[index], state: stepState(at: index))
+                if index != displayedStepIndices.last {
                     Divider().padding(.leading, 42)
                 }
             }
             Divider().padding(.leading, 42)
             HStack {
-                Label(String(localized: "Attendance"), systemImage: "person.badge.clock")
+                Label(String(localized: "Synced Week Attendance"), systemImage: "person.badge.clock")
                 Spacer()
                 Text(attendanceText(session.attendanceOverview))
                     .foregroundStyle(.secondary)
@@ -221,7 +221,7 @@ struct ManageBacConnectionFlowView: View {
     private var completionSummary: some View {
         if case .completed(let summary) = session.phase {
 #if os(macOS)
-            GroupBox(String(localized: "Imported Content")) {
+            GroupBox(String(localized: "Sync Results")) {
                 summaryGrid(summary).padding(8)
             }
 #else
@@ -236,13 +236,14 @@ struct ManageBacConnectionFlowView: View {
     private func summaryGrid(_ summary: ManageBacImportSummary) -> some View {
 #if os(iOS)
         VStack(alignment: .leading, spacing: 12) {
-            LabeledContent(String(localized: "Courses"), value: "\(summary.courseCount)")
-            LabeledContent(String(localized: "Units"), value: "\(summary.unitCount)")
+            LabeledContent(String(localized: "Sync Mode"), value: session.syncMode.title)
+            LabeledContent(String(localized: "Courses Read"), value: "\(session.courses.count)")
+            LabeledContent(String(localized: "Units Read"), value: unitsReadText)
             LabeledContent(String(localized: "New Tasks"), value: "\(summary.importedCount)")
-            LabeledContent(String(localized: "Updated Tasks"), value: "\(summary.updatedCount)")
-            LabeledContent(String(localized: "Messages"), value: "\(summary.messageCount)")
-            LabeledContent(String(localized: "Timetable"), value: "\(summary.scheduleCount)")
-            LabeledContent(String(localized: "Attendance"), value: attendanceText(summary.attendanceOverview))
+            LabeledContent(String(localized: "Tasks Refreshed"), value: "\(summary.updatedCount)")
+            LabeledContent(String(localized: "Messages Read"), value: messagesReadText(summary))
+            LabeledContent(String(localized: "Lessons Read"), value: lessonsReadText(summary))
+            LabeledContent(String(localized: "Synced Week Attendance"), value: attendanceText(summary.attendanceOverview))
             if summary.reviewCount > 0 {
                 LabeledContent(String(localized: "Needs Review"), value: "\(summary.reviewCount)")
             }
@@ -251,19 +252,22 @@ struct ManageBacConnectionFlowView: View {
 #else
         Grid(alignment: .leading, horizontalSpacing: 26, verticalSpacing: 10) {
             GridRow {
-                LabeledContent(String(localized: "Courses"), value: "\(summary.courseCount)")
-                LabeledContent(String(localized: "Units"), value: "\(summary.unitCount)")
+                LabeledContent(String(localized: "Sync Mode"), value: session.syncMode.title)
+            }
+            GridRow {
+                LabeledContent(String(localized: "Courses Read"), value: "\(session.courses.count)")
+                LabeledContent(String(localized: "Units Read"), value: unitsReadText)
             }
             GridRow {
                 LabeledContent(String(localized: "New Tasks"), value: "\(summary.importedCount)")
-                LabeledContent(String(localized: "Updated Tasks"), value: "\(summary.updatedCount)")
+                LabeledContent(String(localized: "Tasks Refreshed"), value: "\(summary.updatedCount)")
             }
             GridRow {
-                LabeledContent(String(localized: "Messages"), value: "\(summary.messageCount)")
-                LabeledContent(String(localized: "Timetable"), value: "\(summary.scheduleCount)")
+                LabeledContent(String(localized: "Messages Read"), value: messagesReadText(summary))
+                LabeledContent(String(localized: "Lessons Read"), value: lessonsReadText(summary))
             }
             GridRow {
-                LabeledContent(String(localized: "Attendance"), value: attendanceText(summary.attendanceOverview))
+                LabeledContent(String(localized: "Synced Week Attendance"), value: attendanceText(summary.attendanceOverview))
             }
             if summary.reviewCount > 0 {
                 GridRow {
@@ -276,8 +280,19 @@ struct ManageBacConnectionFlowView: View {
     }
 
     private func attendanceText(_ overview: ManageBacAttendanceOverview?) -> String {
-        guard let overview, let rate = overview.rate else { return "0" }
-        return "\(overview.recorded) · \(rate.formatted(.percent.precision(.fractionLength(0))))"
+        ManageBacSyncPresentation.attendance(overview)
+    }
+
+    private var unitsReadText: String {
+        session.syncMode == .quick ? String(localized: "Not Rescanned") : "\(session.units.count)"
+    }
+
+    private func messagesReadText(_ summary: ManageBacImportSummary) -> String {
+        session.skippedItems.contains(String(localized: "Messages")) ? String(localized: "Not Read") : "\(summary.messageCount)"
+    }
+
+    private func lessonsReadText(_ summary: ManageBacImportSummary) -> String {
+        session.skippedItems.contains(String(localized: "Timetable")) ? String(localized: "Not Read") : "\(summary.scheduleCount)"
     }
 
     @ViewBuilder
@@ -336,10 +351,15 @@ struct ManageBacConnectionFlowView: View {
             session.syncMode == .quick ? String(localized: "Keep existing teachers and units") : String(localized: "Read teachers and units"),
             String(localized: "Read tasks and deadlines"),
             String(localized: "Read messages and timetable"),
-            String(localized: "Compare with Planora"),
-            String(localized: "Apply safe updates"),
+            String(localized: "Prepare Local Update"),
+            String(localized: "Save Changes"),
             String(localized: "Finish sync")
         ]
+    }
+
+    private var displayedStepIndices: [Int] { ManageBacSyncPresentation.stepIndices(mode: session.syncMode) }
+    private var displayedProgress: Int {
+        ManageBacSyncPresentation.progress(mode: session.syncMode, completed: session.completedStepCount)
     }
 
     private func stepState(at index: Int) -> ManageBacSyncStepState {
@@ -361,9 +381,9 @@ struct ManageBacConnectionFlowView: View {
         case .loadingUnits: String(localized: "Reading Teachers and Units")
         case .loadingTasks: String(localized: "Reading Tasks and Deadlines")
         case .loadingWorkspace: String(localized: "Reading Messages and Timetable")
-        case .comparing: String(localized: "Comparing Changes")
+        case .comparing: String(localized: "Prepare Local Update")
         case .importing: String(localized: "Updating Planora")
-        case .completed: String(localized: "ManageBac Connected")
+        case .completed: session.syncMode == .quick ? String(localized: "Quick Sync Complete") : String(localized: "Full Sync Complete")
         case .needsLogin: String(localized: "Sign In Required")
         case .failed: String(localized: "Sync Paused")
         }
@@ -373,8 +393,8 @@ struct ManageBacConnectionFlowView: View {
         switch session.phase {
         case .completed(let summary):
             PlanoraLocalization.format(
-                String(localized: "managebac_import_summary_format"),
-                summary.courseCount,
+                String(localized: "managebac_sync_results_format"),
+                session.courses.count,
                 summary.importedCount,
                 summary.updatedCount
             )
@@ -383,7 +403,9 @@ struct ManageBacConnectionFlowView: View {
         case .failed(let error):
             error.localizedDescription
         default:
-            String(localized: "Planora is reading only the courses and tasks shown to your student account.")
+            session.syncMode == .quick
+                ? String(localized: "Refreshing task lists, current messages and this week's timetable.")
+                : String(localized: "Reading course tasks, teachers, units, messages and timetable.")
         }
     }
 

@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.8
+## Planora 1.8.1
 
 ### 中文
 
@@ -38,11 +38,19 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 1.7.17 adds undo for the latest import/sync, a learning-data reset, and an import entry in the Mac task workspace. Your name, avatar and appearance are preserved.
 
-**下载 / Download:** [Planora 1.8 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8) · [更新说明 / Release notes](updates/1.8.md)
+1.8.1 修正同步界面字段，区分快速与完整同步的实际步骤、本次读取数量和本地总数；未读取出勤不再显示为零。
+
+1.8.1 refreshes sync labels, separates scanned records from local totals, and distinguishes unavailable attendance from zero.
+
+菜单栏采用透明交错任务条图标；截止前 24 小时及逾期任务自动显示高优先级，保留手动设置。任务详情可点击课程跳转。
+
+The menu bar uses a transparent task-bar template icon. Tasks due within 24 hours or overdue display automatic high priority without overwriting manual settings. Course rows in task details open the associated course.
+
+**下载 / Download:** [Planora 1.8.1 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.1) · [更新说明 / Release notes](updates/1.8.1.md)
 
 ## 当前版本 / Current Version
 
-- Version: **1.8** (build **33**)
+- Version: **1.8.1** (build **34**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle

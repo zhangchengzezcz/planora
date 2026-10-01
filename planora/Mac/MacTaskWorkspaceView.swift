@@ -116,7 +116,7 @@ struct MacTaskWorkspaceView: View {
                     .width(110)
 
                     TableColumn(String(localized: "Priority")) { task in
-                        Label(task.priority.title, systemImage: task.priority.symbol)
+                        Label(task.priorityDisplayTitle, systemImage: task.displayPriority.symbol)
                     }
                     .width(90)
                 }

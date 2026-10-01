@@ -49,7 +49,11 @@ struct ManageBacSettingsView: View {
                         String(localized: "Updated"),
                         value: snapshot.lastSyncDate.formatted(date: .abbreviated, time: .shortened)
                     )
-                    LabeledContent(String(localized: "Courses"), value: "\(snapshot.courseCount)")
+                    LabeledContent(String(localized: "Sync Mode"), value: (snapshot.lastSyncMode ?? .full).title)
+                    if let lastFull = snapshot.lastFullSyncDate {
+                        LabeledContent(String(localized: "Last Full Sync"), value: lastFull.formatted(date: .abbreviated, time: .shortened))
+                    }
+                    LabeledContent(String(localized: "Stored Courses"), value: "\(snapshot.courseCount)")
                     LabeledContent(String(localized: "Tasks Read"), value: "\(snapshot.taskCount)")
                     if let skipped = snapshot.skippedItems, !skipped.isEmpty {
                         LabeledContent(String(localized: "Skipped Items"), value: skipped.joined(separator: ", "))
@@ -242,12 +246,20 @@ struct ManageBacSettingsView: View {
                     showsChevron: false
                 )
                 Divider().padding(.leading, 52)
+                SettingsRow(icon: "arrow.triangle.2.circlepath", title: String(localized: "Sync Mode"),
+                    value: (snapshot.lastSyncMode ?? .full).title, showsChevron: false)
+                if let lastFull = snapshot.lastFullSyncDate {
+                    Divider().padding(.leading, 52)
+                    SettingsRow(icon: "clock", title: String(localized: "Last Full Sync"),
+                        value: lastFull.formatted(date: .abbreviated, time: .shortened), showsChevron: false)
+                }
+                Divider().padding(.leading, 52)
                 NavigationLink {
                     ManageBacCoursesView(store: store)
                 } label: {
                     SettingsRow(
                         icon: "book.pages.fill",
-                        title: String(localized: "Courses"),
+                        title: String(localized: "Stored Courses"),
                         value: "\(snapshot.courseCount)",
                         showsChevron: true
                     )

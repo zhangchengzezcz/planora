@@ -7,14 +7,20 @@ enum PlanoraMenuBarIcon {
     static let image: NSImage = {
         let image = NSImage(size: NSSize(width: 19, height: 18), flipped: false) { _ in
             NSColor.black.setFill()
-            for y in [2.0, 7.0, 12.0] {
-                let path = NSBezierPath()
-                path.move(to: NSPoint(x: 2, y: y))
-                path.line(to: NSPoint(x: 14, y: y))
-                path.line(to: NSPoint(x: 17, y: y + 3))
-                path.line(to: NSPoint(x: 5, y: y + 3))
-                path.close()
-                path.fill()
+            var transform = AffineTransform()
+            transform.translate(x: 9.5, y: 9)
+            transform.rotate(byDegrees: 12)
+            transform.translate(x: -9.5, y: -9)
+            for row in 0..<4 {
+                let y = CGFloat(row) * 3.8 + 0.8
+                let widths: [CGFloat] = row.isMultiple(of: 2) ? [4.2, 10.2] : [10.2, 4.2]
+                var x: CGFloat = 1.8
+                for width in widths {
+                    let path = NSBezierPath(roundedRect: NSRect(x: x, y: y, width: width, height: 2.8), xRadius: 1, yRadius: 1)
+                    path.transform(using: transform)
+                    path.fill()
+                    x += width + 1.6
+                }
             }
             return true
         }

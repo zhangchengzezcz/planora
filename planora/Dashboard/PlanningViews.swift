@@ -340,7 +340,7 @@ private struct PlanningTaskRow: View {
                 }
 
                 Spacer()
-                PriorityPill(priority: task.priority)
+                PriorityPill(priority: task.displayPriority)
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(.secondary)

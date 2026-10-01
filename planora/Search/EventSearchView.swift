@@ -250,7 +250,7 @@ struct EventSearchView: View {
             return false
         }
 
-        if let selectedPriority, task.priority != selectedPriority {
+        if let selectedPriority, task.displayPriority != selectedPriority {
             return false
         }
 
@@ -432,7 +432,7 @@ private struct EventSearchRow: View {
 
                 Spacer()
 
-                PriorityPill(priority: task.priority)
+                PriorityPill(priority: task.displayPriority)
 
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.bold))

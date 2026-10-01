@@ -151,7 +151,8 @@ struct TaskDetailView: View {
 
             Spacer(minLength: 8)
 
-            PriorityPill(priority: task.priority)
+            PriorityPill(priority: task.displayPriority)
+                .accessibilityLabel(task.priorityDisplayTitle)
         }
     }
 
@@ -161,7 +162,12 @@ struct TaskDetailView: View {
                 DetailRow(icon: "square.grid.2x2.fill", title: String(localized: "Type"), value: task.type.title, tint: task.type.tint)
                 if let course = courses.first(where: { $0.id == task.courseID }) {
                     Divider().padding(.leading, 50)
-                    DetailRow(icon: "book.pages.fill", title: String(localized: "ManageBac Course"), value: course.displayName, tint: .planoraBlue)
+                    NavigationLink {
+                        ManageBacCourseDetailView(store: store, course: course)
+                    } label: {
+                        DetailRow(icon: "book.pages.fill", title: String(localized: "ManageBac Course"), value: course.displayName, tint: .planoraBlue, showsChevron: true)
+                    }
+                    .buttonStyle(.plain)
                 }
                 if let unit = units.first(where: { $0.id == task.unitID }) {
                     Divider().padding(.leading, 50)
@@ -174,7 +180,7 @@ struct TaskDetailView: View {
                 Divider().padding(.leading, 50)
                 DetailRow(icon: "repeat", title: String(localized: "Repeat"), value: task.recurrenceSummary, tint: .planoraBlue)
                 Divider().padding(.leading, 50)
-                DetailRow(icon: "flag.fill", title: String(localized: "Priority"), value: task.priority.title, tint: task.priority.tint)
+                DetailRow(icon: "flag.fill", title: String(localized: "Priority"), value: task.priorityDisplayTitle, tint: task.displayPriority.tint)
                 Divider().padding(.leading, 50)
                 DetailRow(
                     icon: "hourglass",
