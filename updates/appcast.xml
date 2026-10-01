@@ -9,6 +9,35 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.8.5</title>
+            <pubDate>Thu, 01 Oct 2026 16:56:40 +0800</pubDate>
+            <sparkle:version>38</sparkle:version>
+            <sparkle:shortVersionString>1.8.5</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.5
+
+## 中文
+
+- 首次启动与引导使用当前 Icon Composer 图标的真实浅色、深色渲染，替换旧 P 字母标识。
+- 冷白与石墨灰背景、克制的蓝绿强调色，柔和的显现与过渡，不增加已完成引导用户的启动等待。
+- 介绍页更新为任务计划、课程成绩及最近七天出勤和消息；可滚动内容与底部开始按钮适配小屏及大字体。
+- 网页演示同步更新图标、深浅色与首次启动设计。原有 Entrance Film 源码保持不变。
+
+Mac 安装包使用临时签名，未经过 Apple 公证。
+
+## English
+
+- First-launch welcome and introduction now use actual light/dark renders of the current Icon Composer artwork instead of the old P mark.
+- Cool-white and graphite surfaces, restrained blue-green accents and gentle transitions. Returning users still open Home directly.
+- The introduction now covers task planning, courses/grades and recent attendance/messages. Scrollable content and a bottom action accommodate small screens and larger text.
+- The browser demo matches the updated artwork, appearances and first-launch design. Existing Entrance Film source is unchanged.
+
+The Mac package is ad-hoc signed, not Apple-notarized.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.5/Planora-1.8.5-macOS.zip" length="7112274" type="application/octet-stream" sparkle:edSignature="rzPJZ/Wvv1VpTbImFhWX5MgyE9JYWalyFRe4hw4FJXk009QJhHjZrzgOUMqzL9yC14CjFfdFlmgpe8yKeEBGDQ=="/>
+        </item>
+        <item>
             <title>1.8.4</title>
             <pubDate>Thu, 01 Oct 2026 16:13:57 +0800</pubDate>
             <sparkle:version>37</sparkle:version>
@@ -81,35 +110,6 @@ Validation: five Mac regression tests passed, and the production and local Vlog 
 The Mac package is ad-hoc signed, not Apple-notarized.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.3/Planora-1.8.3-macOS.zip" length="6442893" type="application/octet-stream" sparkle:edSignature="6bUaBoYSqefqql3UChGgU6tnWCq+DPupZEHniSFJeql3vdvM8eqIYT2MDuJ69hl/DIzPxpwiEc+NNxOjzJHiBw=="/>
-        </item>
-        <item>
-            <title>1.8.2</title>
-            <pubDate>Thu, 01 Oct 2026 10:23:41 +0800</pubDate>
-            <sparkle:version>35</sparkle:version>
-            <sparkle:shortVersionString>1.8.2</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.2
-
-## 中文
-
-- Mac 横向切换改为原生 NSSegmentedControl，采用大尺寸胶囊、新版尺寸参数，以及 macOS 27 的 valueSelection 角色；点击、按压、拖动与键盘行为由系统控制，不叠加自绘玻璃滑块。
-- 成绩、课程分区、周/月日历和任务状态使用统一原生控件。macOS 26 使用兼容系统参数，不调用 27 专属 API。
-- 左上角侧栏/新建操作改为原生工具栏分组，移除额外标题栏附件和固定留白。
-- 使用统一窗口工具栏与系统全屏常显参数，减少全屏悬停时的布局变化。iPhone/iPad 侧栏和原有分段控件保持不变。
-
-Mac 安装包为临时签名，未经过 Apple 公证。全屏悬停流畅度仍需在用户的实际设备上验证。
-
-## English
-
-- Mac mode switches use native NSSegmentedControl with large capsule controls, modern size metrics and the macOS 27 valueSelection role. The system handles click, press, drag and keyboard interaction without custom glass thumb overlays.
-- Grades, course sections, week/month calendar and task status share the native control. macOS 26 uses compatible system settings without calling 27-only APIs.
-- Sidebar/new-task actions use a native toolbar group instead of a fixed-width title-bar accessory.
-- Unified window toolbars remain visible in full screen using the system API, reducing hover-related layout changes. iPhone/iPad sidebars and segmented pickers are unchanged.
-
-The Mac package is ad-hoc signed, not Apple-notarized. Full-screen hover smoothness still requires verification on the user's actual device.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.2/Planora-1.8.2-macOS.zip" length="6406589" type="application/octet-stream" sparkle:edSignature="y279o/Xj1oDvrM/Q1+MMQ+smw5EmN/281NZmBI/UtYDPYZiWstvFCExaiaQLyHzaO5c5eo2AgcrjXNdPpcPNBg=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -202,6 +202,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: KdXBFDuwBbt016NAWrFE33JYIYU9XmVb9yIC6OYsKtx4dbUKvy8lQtM9OTv4IxjNR4a9c5qvfwHCVWX+9kzLCw==
-length: 18511
+edSignature: b1jxQIoOemhKyZK2SpbIZd5AeiMQ81pm9FeveBWZyFkFpG5s9lSCd7t26KF2TRE6nk5zfGCvO1bhmgGripMmBw==
+length: 18138
 -->
