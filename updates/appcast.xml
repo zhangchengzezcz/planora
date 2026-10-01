@@ -9,6 +9,47 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.8.4</title>
+            <pubDate>Thu, 01 Oct 2026 16:13:57 +0800</pubDate>
+            <sparkle:version>37</sparkle:version>
+            <sparkle:shortVersionString>1.8.4</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.4
+
+## 中文
+
+- 普通操作统一采用系统玻璃按钮，主要按钮和选择项去掉高饱和蓝色渐变。任务页操作按钮、课程体系选择、学习进度类型与同步模式复用玻璃组件。
+- 菜单栏图标使用原始图标中八条任务栏的形状、圆角和斜度，不带背景；系统自动处理深浅色。
+- 菜单栏同步打开主窗口的同步流程，不再嵌入第二套界面。失败时重试位于顶部取消旁边。
+- 第一次关闭最后一个主窗口时可选择后台运行或退出，后续在设置中修改。后台模式隐藏 Dock 图标，菜单栏保留；重新打开主窗口恢复普通应用模式。后台模式仍有进程运行。
+- 完整同步默认更新消息与课表，也可分别关闭；基础课程与任务继续读取。同步不使用本地网页缓存。
+- 修复不含 Monday 的三天课表视图漏读。完整读到的日期范围会清理已被远端移除的课程记录，课表展示不再混用不同周的星期。
+- 课程来源内容铺满可用宽度。任务检查器中的课程按钮改为打开课程详情窗口，单击选中任务也可跳转。
+- 增加 `docs/MAC_GLASS_CONTROLS.md`，记录原生横向玻璃控件、版本兼容和验证规则。文档不作为 Release 附件。
+- 网页演示更新主要手机流程，新增课程、成绩三种视图、出勤、消息、同步模拟与撤销、帮助搜索及任务 JSON 备份。教师使用匿名示例，移除旧任务确认圆圈。
+
+验证：45 项 ManageBac 集成回归与 12 项定向测试均通过，正式版 Mac、iOS 模拟器及 Vlog Mac 构建通过。真实账户端到端课表同步、首次关闭选择和最终按钮视觉仍需用户验证。
+Mac 安装包为临时签名，未经过 Apple 公证。
+
+## English
+
+- Standard actions use system glass buttons with restrained colors. Removed saturated blue gradients from primary actions and selection chips. Task actions, curriculum menus, progress types and sync modes share glass components.
+- The menu bar symbol follows the eight original task bars, including their corners and tilt, without a background. System template rendering adapts to light/dark appearance.
+- Menu bar sync opens the main-window sync flow instead of embedding a separate UI. Retry is next to Cancel at the top when sync fails.
+- Closing the last main window asks whether to keep running or quit. The preference is editable in Settings. Background mode hides the Dock icon and retains the menu bar; reopening the main window restores regular app mode. A background process still runs.
+- Full sync reads messages and the timetable by default, with individual opt-out switches. Core courses and tasks remain included. Sync bypasses the local web cache.
+- Fixed three-day timetables that do not include Monday. Fully read date ranges reconcile removed lessons, and the timetable no longer mixes weekdays from different source weeks.
+- Course-source content fills the available width. Course links in the task inspector open course details, including after single-click task selection.
+- Added `docs/MAC_GLASS_CONTROLS.md` with native glass implementation and verification guidance. Documentation is not a Release attachment.
+- Updated the browser demo with core mobile flows: courses, three grade views, attendance, messages, simulated sync/undo, searchable help and demo task JSON backups. Teachers are anonymous samples; obsolete task completion circles are removed.
+
+Validation: 45 ManageBac integration regressions and 12 focused tests passed. Production Mac, iOS simulator and Vlog Mac builds passed. Real-account end-to-end timetable sync, first-close behavior and final button visuals still need user verification.
+The Mac package is ad-hoc signed, not Apple-notarized.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.4/Planora-1.8.4-macOS.zip" length="6468062" type="application/octet-stream" sparkle:edSignature="8CPgGjB1/jEz5ifbmAW2eE9elY8YqJI73vtLFaUWFhR0cBtzZ0q0jQqf3r4+nrjp6HW/oGYoek7w9VqjFkdFCQ=="/>
+        </item>
+        <item>
             <title>1.8.3</title>
             <pubDate>Thu, 01 Oct 2026 13:58:43 +0800</pubDate>
             <sparkle:version>36</sparkle:version>
@@ -69,45 +110,6 @@ Mac 安装包为临时签名，未经过 Apple 公证。全屏悬停流畅度仍
 The Mac package is ad-hoc signed, not Apple-notarized. Full-screen hover smoothness still requires verification on the user's actual device.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.2/Planora-1.8.2-macOS.zip" length="6406589" type="application/octet-stream" sparkle:edSignature="y279o/Xj1oDvrM/Q1+MMQ+smw5EmN/281NZmBI/UtYDPYZiWstvFCExaiaQLyHzaO5c5eo2AgcrjXNdPpcPNBg=="/>
-        </item>
-        <item>
-            <title>1.8.1</title>
-            <pubDate>Thu, 01 Oct 2026 09:43:53 +0800</pubDate>
-            <sparkle:version>34</sparkle:version>
-            <sparkle:shortVersionString>1.8.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.1
-
-## 中文
-
-- Mac 常驻菜单栏图标采用应用图标的交错圆角任务条轮廓，去除背景并跟随系统深浅配色。
-- 未完成任务在截止前 24 小时及逾期时自动显示高优先级；详情标注“自动”，保留原手动优先级，不修改学校端数据。
-- iOS、iPadOS 与 macOS 的任务详情可点击课程行进入相应课程。
-
-- 同步完成标题改为快速/完整同步完成，摘要显示本次读取课程、单元、消息及课次，不再混用本地课程与单元总数。
-- 快速同步仅显示实际执行的 7 项步骤；单元显示“未重新扫描”，不再暗示已读取全部内容。
-- 已有任务计数改为“刷新已有任务”，避免将每次重新读取都描述成内容发生变化。
-- 出勤区分“未读取”和“未记录”，不再显示误导性的零；标签明确为本次同步周出勤，区别于首页最近 7 天。
-- 连接页增加同步方式与上次完整同步时间，更新中英日文案。
-
-Mac 包为临时签名，未经过 Apple 公证。真实账户同步和实际旧版升级仍需用户验证。
-
-## English
-
-- The Mac menu-bar template icon uses Planora's alternating rounded task bars without a background and follows system appearance.
-- Incomplete tasks become visually high priority within 24 hours of their deadline or when overdue. Details identify automatic priority; manual values and school data remain unchanged.
-- Task details link directly to the associated course on iOS, iPadOS and macOS.
-
-- Completion titles distinguish quick and full sync. Results show records read in this scan rather than local course/unit totals.
-- Quick sync shows its seven executed steps; units are marked Not Rescanned.
-- Existing task counts now say Tasks Refreshed rather than implying every reread changed the content.
-- Attendance distinguishes Not Read from Not Recorded instead of displaying zero. The label identifies the synced week, separate from Home's seven-day window.
-- Connection details show the latest sync mode and last full sync time. Chinese, English and Japanese labels are updated.
-
-The Mac package is ad-hoc signed, not Apple-notarized. Real-account syncing and real-device upgrades still require user verification.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.1/Planora-1.8.1-macOS.zip" length="6443462" type="application/octet-stream" sparkle:edSignature="aklKVTjgAfSvYDZohaYB51yoyw1Yko5mz7ISbSd1Oafs347qwrj/62qlomMLlB1UoeTU5zRto7BmDQXFKR33Cw=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -200,6 +202,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: q/42bzQfDdq8oOooFJLrSKM0DY6hVDrkCyOFKkUP5cQCNIqkb6yPsXfoYusxondy+ifWsb5g7f1aJYqRLxHOBA==
-length: 16981
+edSignature: KdXBFDuwBbt016NAWrFE33JYIYU9XmVb9yIC6OYsKtx4dbUKvy8lQtM9OTv4IxjNR4a9c5qvfwHCVWX+9kzLCw==
+length: 18511
 -->
