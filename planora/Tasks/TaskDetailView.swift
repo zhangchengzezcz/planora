@@ -64,7 +64,7 @@ struct TaskDetailView: View {
             }
         }
         .toolbar {
-            if !task.isDeleted {
+            if !task.isDeleted && !usesUnifiedMacToolbar {
                 ToolbarItem(placement: pinToolbarPlacement) {
                 Button {
                     task.isPinned.toggle()

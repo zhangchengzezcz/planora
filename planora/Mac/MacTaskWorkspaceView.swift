@@ -262,12 +262,6 @@ struct MacTaskWorkspaceView: View {
                 isShowingImport = true
             }
             .help(String(localized: "Connect or sync ManageBac"))
-            if let selectedTask {
-                Button(String(localized: "Task Details"), systemImage: "doc.text") {
-                    detailTask = selectedTask
-                }
-                .help(String(localized: "Task Details"))
-            }
             if !tableSelection.isEmpty && status != .deleted {
                 Button(String(localized: "Actions"), systemImage: "ellipsis.circle") {
                     isShowingBulkActions = true

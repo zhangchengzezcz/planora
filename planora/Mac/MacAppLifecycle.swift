@@ -2,6 +2,60 @@
 import AppKit
 import SwiftUI
 
+@MainActor
+final class MacMainWindowPresenter {
+    static let shared = MacMainWindowPresenter()
+    private let notificationCenter: NotificationCenter
+    private let prepareApplication: () -> Void
+    private let isApplicationActive: () -> Bool
+    private let activateApplication: () -> Void
+    private let showExistingWindow: () -> Bool
+    private var pendingOpenWindow: (() -> Void)?
+    private var activationObserver: NSObjectProtocol?
+
+    init(notificationCenter: NotificationCenter = .default,
+         prepareApplication: @escaping () -> Void = {
+             if NSApp.activationPolicy() != .regular { NSApp.setActivationPolicy(.regular) }
+         },
+         isApplicationActive: @escaping () -> Bool = { NSApp.isActive },
+         activateApplication: @escaping () -> Void = { NSApp.activate() },
+         showExistingWindow: @escaping () -> Bool = { MacMainWindowLifecycle.WindowObserver.showExistingWindow() }) {
+        self.notificationCenter = notificationCenter
+        self.prepareApplication = prepareApplication
+        self.isApplicationActive = isApplicationActive
+        self.activateApplication = activateApplication
+        self.showExistingWindow = showExistingWindow
+    }
+
+    func request(openWindow: @escaping () -> Void) {
+        pendingOpenWindow = openWindow
+        prepareApplication()
+        if isApplicationActive() {
+            presentPendingWindow()
+        } else if activationObserver == nil {
+            // App activation is asynchronous. Do not restore a window in the previous app's Space.
+            activationObserver = notificationCenter.addObserver(
+                forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated { self?.presentPendingWindow() }
+            }
+            activateApplication()
+        }
+    }
+
+    private func presentPendingWindow() {
+        guard isApplicationActive(), let openWindow = pendingOpenWindow else { return }
+        pendingOpenWindow = nil
+        if let activationObserver { notificationCenter.removeObserver(activationObserver) }
+        activationObserver = nil
+        if !showExistingWindow() { openWindow() }
+    }
+
+    deinit {
+        if let activationObserver { notificationCenter.removeObserver(activationObserver) }
+    }
+}
+
 enum MacCloseBehavior: String, CaseIterable, Identifiable {
     case ask, background, quit
     var id: String { rawValue }
@@ -30,6 +84,16 @@ struct MacMainWindowLifecycle: NSViewRepresentable {
         private static let mainWindows = NSHashTable<NSWindow>.weakObjects()
         static var hasKeyMainWindow: Bool {
             mainWindows.allObjects.contains(where: { $0.isKeyWindow })
+        }
+        static func showExistingWindow() -> Bool {
+            let windows = mainWindows.allObjects.filter { $0.isVisible || $0.isMiniaturized }
+            guard let window = windows.first(where: { $0.isKeyWindow }) ?? windows.first else { return false }
+            if window.isMiniaturized {
+                window.deminiaturize(nil)
+            } else {
+                window.makeKeyAndOrderFront(nil)
+            }
+            return true
         }
         private var observers: [NSObjectProtocol] = []
         private weak var observedWindow: NSWindow?

@@ -42,6 +42,7 @@ struct MacMenuBarView: View {
     @Query(sort: \PlanoraTask.createdDate) private var tasks: [PlanoraTask]
     @Environment(\.openWindow) private var openWindow
     @State private var connection = ManageBacConnectionStorage.load()
+    @State private var presentation = MacMenuBarPresentation()
 
     private var upcoming: [PlanoraTask] {
         Array(tasks.filter { !$0.isCompleted && !$0.isDeleted && !$0.isArchived }
@@ -131,14 +132,37 @@ struct MacMenuBarView: View {
         .onReceive(NotificationCenter.default.publisher(for: .manageBacConnectionDidChange)) { _ in
             connection = ManageBacConnectionStorage.load()
         }
+        .background { MacMenuBarWindowReader(presentation: presentation) }
     }
 
     private func showMainWindow() {
-        if NSApp.activationPolicy() != .regular {
-            NSApp.setActivationPolicy(.regular)
+        presentation.dismiss()
+        MacMainWindowPresenter.shared.request { openWindow(id: "main") }
+    }
+}
+
+@MainActor
+final class MacMenuBarPresentation {
+    weak var window: NSWindow?
+    func dismiss() { window?.orderOut(nil) }
+}
+
+private struct MacMenuBarWindowReader: NSViewRepresentable {
+    let presentation: MacMenuBarPresentation
+    func makeNSView(context: Context) -> WindowReader { WindowReader(presentation: presentation) }
+    func updateNSView(_ view: WindowReader, context: Context) {}
+
+    final class WindowReader: NSView {
+        let presentation: MacMenuBarPresentation
+        init(presentation: MacMenuBarPresentation) {
+            self.presentation = presentation
+            super.init(frame: .zero)
         }
-        openWindow(id: "main")
-        NSApp.activate(ignoringOtherApps: true)
+        required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            presentation.window = window
+        }
     }
 }
 

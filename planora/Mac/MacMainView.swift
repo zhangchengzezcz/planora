@@ -29,6 +29,11 @@ struct MacMainView: View {
         _selection = State(initialValue: initialTaskID == nil ? .home : .tasks)
     }
 
+    private var selectedEditableTask: PlanoraTask? {
+        guard selection == .tasks, let selectedTaskID else { return nil }
+        return editableTasks.first { $0.id == selectedTaskID }
+    }
+
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             MacSidebar(
@@ -54,12 +59,6 @@ struct MacMainView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                if selection == .tasks, let selectedTaskID,
-                   editableTasks.contains(where: { $0.id == selectedTaskID }) {
-                    Button(String(localized: "Edit")) {
-                        NotificationCenter.default.post(name: .planoraEditTask, object: selectedTaskID)
-                    }
-                }
                 Button {
                     selection = .messages
                 } label: {
@@ -84,8 +83,30 @@ struct MacMainView: View {
                 }
                 .help(String(localized: "Profile"))
                 .accessibilityLabel(String(localized: "Profile"))
+                if let task = selectedEditableTask {
+                    Button {
+                        NotificationCenter.default.post(name: .planoraEditTask, object: task.id)
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                            .frame(width: 32, height: 32)
+                            .fixedSize()
+                    }
+                    .help(String(localized: "Edit"))
+                    .accessibilityLabel(String(localized: "Edit"))
+                }
             }
             .sharedBackgroundVisibility(.visible)
+            if let task = selectedEditableTask {
+                ToolbarItem(placement: .principal) {
+                    Button {
+                        task.isPinned.toggle()
+                        PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+                    } label: {
+                        Label(task.isPinned ? String(localized: "Unpin Task") : String(localized: "Pin Task"),
+                              systemImage: task.isPinned ? "pin.slash" : "pin")
+                    }
+                }
+            }
         }
         .sheet(isPresented: $isShowingCreateFlow) {
             NavigationStack {

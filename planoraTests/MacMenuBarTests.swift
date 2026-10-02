@@ -6,6 +6,69 @@ import XCTest
 
 @MainActor
 final class MacMenuBarTests: XCTestCase {
+    func testWindowPresentationWaitsForActivationAndReusesExistingWindow() {
+        let center = NotificationCenter()
+        var isActive = false
+        var events: [String] = []
+        let presenter = MacMainWindowPresenter(notificationCenter: center,
+            prepareApplication: { events.append("prepare") },
+            isApplicationActive: { isActive },
+            activateApplication: { events.append("activate") },
+            showExistingWindow: { events.append("restore"); return true })
+        presenter.request { events.append("open") }
+        XCTAssertEqual(events, ["prepare", "activate"])
+        center.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+        XCTAssertEqual(events, ["prepare", "activate"])
+        isActive = true
+        center.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+        XCTAssertEqual(events, ["prepare", "activate", "restore"])
+        center.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+        XCTAssertEqual(events, ["prepare", "activate", "restore"])
+    }
+
+    func testRepeatedRequestsOpenOnlyLatestWindowAfterActivation() {
+        let center = NotificationCenter()
+        var isActive = false
+        var activationCount = 0
+        var opened: [Int] = []
+        let presenter = MacMainWindowPresenter(notificationCenter: center,
+            prepareApplication: {}, isApplicationActive: { isActive },
+            activateApplication: { activationCount += 1 }, showExistingWindow: { false })
+        presenter.request { opened.append(1) }
+        presenter.request { opened.append(2) }
+        XCTAssertEqual(activationCount, 1)
+        XCTAssertTrue(opened.isEmpty)
+        isActive = true
+        center.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+        XCTAssertEqual(opened, [2])
+    }
+
+    func testActiveApplicationPresentsWindowWithoutAnotherActivation() {
+        var opened = false
+        let presenter = MacMainWindowPresenter(prepareApplication: {},
+            isApplicationActive: { true },
+            activateApplication: { XCTFail("Do not reactivate an active app") },
+            showExistingWindow: { false })
+        presenter.request { opened = true }
+        XCTAssertTrue(opened)
+    }
+
+    func testPopoverDismissalDoesNotHideMainWindow() {
+        let frame = NSRect(x: 0, y: 0, width: 200, height: 120)
+        let popover = NSWindow(contentRect: frame, styleMask: [.borderless], backing: .buffered, defer: false)
+        let main = NSWindow(contentRect: frame, styleMask: [.titled], backing: .buffered, defer: false)
+        popover.isReleasedWhenClosed = false
+        main.isReleasedWhenClosed = false
+        defer { popover.close(); main.close() }
+        popover.orderFront(nil)
+        main.orderFront(nil)
+        let presentation = MacMenuBarPresentation()
+        presentation.window = popover
+        presentation.dismiss()
+        XCTAssertFalse(popover.isVisible)
+        XCTAssertTrue(main.isVisible)
+    }
+
     func testToolbarTaskQueryUsesPersistedDeletionField() throws {
         let container = try ModelContainer(for: Schema(PlanoraPersistence.models),
             configurations: ModelConfiguration(isStoredInMemoryOnly: true))
