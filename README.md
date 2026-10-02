@@ -46,9 +46,9 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 The menu bar uses a transparent task-bar template icon. Tasks due within 24 hours or overdue display automatic high priority without overwriting manual settings. Course rows in task details open the associated course.
 
-**下载 / Download:** [Planora 1.8.12 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.12) · [更新说明 / Release notes](updates/1.8.12.md)
+**下载 / Download:** [Planora 1.8.13 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.13) · [更新说明 / Release notes](updates/1.8.13.md)
 
-1.8.12 统一 Mac 首页与任务列表的完整详情页，移除任务检查器副栏与双击弹窗。双击或右键进入详情；宽窗口内容居中收窄，单击仍用于选择与批量操作。
+1.8.13 修复 Mac 单选任务的编辑入口，并统一首页与任务整页详情的顶栏：消息、头像、图标编辑在右侧共框，置顶独立居中。保留 1.8.12 的整页导航与居中阅读宽度，双击进入详情，不恢复任务副栏。
 
 1.8.11 修复菜单栏打开任务时窗口闪烁和桌面来回切换。任务页右侧共框显示消息、头像和选中任务的编辑入口，置顶独立居中；移除重复的详情按钮，保留双击打开。
 
