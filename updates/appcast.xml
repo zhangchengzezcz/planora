@@ -9,6 +9,35 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.8.13</title>
+            <pubDate>Fri, 02 Oct 2026 18:56:14 +0800</pubDate>
+            <sparkle:version>46</sparkle:version>
+            <sparkle:shortVersionString>1.8.13</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.13
+
+## 中文
+
+- 修复 Mac 任务列表单选后缺少编辑入口的问题。右侧图标编辑直接打开所选任务，多选或未选择时不显示单任务编辑。
+- 统一首页任务详情与任务列表双击详情的顶栏：消息、头像、图标编辑在右侧原生玻璃共框内，置顶独立居中，移除重复的旧文字编辑按钮。
+- 保留完整详情页、返回导航和居中阅读宽度，不恢复任务检查器副栏或详情弹窗。保持头像大小、紧凑按钮间距和系统原生按压反馈。
+- 无需清除数据或重新导入；未完成的启动页改动不包含在发布包内。
+
+## English
+
+- Restore the Mac task editor for a single selected row. Hide single-task actions when no task or multiple tasks are selected.
+- Home task details and double-click task details share the same toolbar: Messages, Profile and icon-only Edit on the right, with Pin centered separately. Remove the duplicate legacy text Edit button.
+- Keep full-page navigation, Back, centered reading width, avatar size and native control feedback. Do not restore the task inspector or detail sheet.
+- No data reset or reimport is required.
+
+## Distribution
+
+- This Mac distribution is ad-hoc signed and is not Apple-notarized.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.13/Planora-1.8.13-macOS.zip" length="7183759" type="application/octet-stream" sparkle:edSignature="mcK/2TQfkrjssJlSGT3twgyEyWYPPtxwnqOOO38TnM2T9988rYGpiWPQZ+6e+iIyRxkKKFameAXw8en2SsKCDg=="/>
+        </item>
+        <item>
             <title>1.8.12</title>
             <pubDate>Fri, 02 Oct 2026 14:50:09 +0800</pubDate>
             <sparkle:version>45</sparkle:version>
@@ -69,33 +98,6 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
 - This Mac distribution is ad-hoc signed and is not Apple-notarized.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.11/Planora-1.8.11-macOS.zip" length="7177064" type="application/octet-stream" sparkle:edSignature="xPux8LaH+D1CMAwNh0759gvQmS7qsOwUyETVFiskYIl80asWYvFyDvnz7AdMAWj60G3NtCqHlKB8lO2/j9IUBg=="/>
-        </item>
-        <item>
-            <title>1.8.10</title>
-            <pubDate>Fri, 02 Oct 2026 12:08:46 +0800</pubDate>
-            <sparkle:version>43</sparkle:version>
-            <sparkle:shortVersionString>1.8.10</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.10
-
-## Critical Fix
-
-- Fixes the 1.8.9 Mac crash when selecting a task. The toolbar query now filters on the persisted `deletedDate` field instead of the computed `isDeleted` property.
-- Adds database regression coverage for active, deleted and restored tasks using the exact toolbar predicate.
-- No task data migration, deletion or reset is required. Existing 1.8.9 installations can update in place.
-- The separately reported menu-bar window flashing is still under investigation. This release does not claim to resolve it.
-
-## 严重问题修复
-
-- 修复 1.8.9 在 Mac 单击任务时崩溃：顶栏查询改用数据库存储字段 `deletedDate`，不再查询计算属性 `isDeleted`。
-- 为同一顶栏查询补上正常、删除及恢复任务的数据库回归测试。
-- 不需要清除数据、重新导入或迁移。已安装 1.8.9 的用户可以直接更新。
-- 菜单栏打开窗口的闪烁问题仍在排查，本版不宣称已解决。
-
-This Mac distribution is ad-hoc signed and is not Apple-notarized.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.10/Planora-1.8.10-macOS.zip" length="7160861" type="application/octet-stream" sparkle:edSignature="68+3ajSjVr2WyqSP+bjT5cwlXlgJCrMjREIVt1DMkkWg5qSeSYKFrhHOx513Gw8QfQANAfl9ZdBcoMonn8kiDg=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -188,6 +190,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: rqpj3bjeobM09UrlSr+1IqKlfKuIFbS8BKa9WSfW+aXq/6zXrDhSKf+EqCWTrwGTuQskQ5hX/XkLWPKEeKTnBQ==
-length: 14649
+edSignature: cusrpgI4nIvqva9TEN2lDjYrjXLq8a9myluIhd9EcuHVyc+v/DvyxEUJqFDQI+eCneFnGyD6e/U4GfTAteaEAQ==
+length: 14878
 -->
