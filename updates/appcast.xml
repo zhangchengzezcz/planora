@@ -9,6 +9,39 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.8.11</title>
+            <pubDate>Fri, 02 Oct 2026 13:51:51 +0800</pubDate>
+            <sparkle:version>44</sparkle:version>
+            <sparkle:shortVersionString>1.8.11</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.11
+
+## 中文
+
+- 修复从其他应用通过菜单栏打开任务时，窗口恢复后消失、重现及桌面来回切换的问题。先收起菜单栏弹窗，等待应用激活，再恢复已有主窗口；仅在没有已有窗口时打开窗口。
+- 任务页右侧采用原生消息、头像、编辑共框。编辑仅在选中可编辑任务时出现，置顶独立居中。
+- 移除与双击重复的任务详情按钮，保留双击及右键详情入口。
+- 继承 1.8.10 的任务选择崩溃修复，无需重置或重新导入数据。
+
+## English
+
+- Fix menu-bar task activation flicker by dismissing the popover, waiting for application activation and restoring the existing main window instead of reopening it while inactive.
+- Group notifications, profile and selected-task Edit in the native right-hand toolbar. Keep Pin centered separately.
+- Remove the redundant detail button while retaining double-click and context-menu detail actions.
+- Include the 1.8.10 task-selection crash fix. No data reset or reimport is required.
+
+## Verification
+
+- Eleven focused Mac regression tests passed before packaging, including activation sequencing, repeated requests, task-query safety and selected-task toolbar rendering.
+- Native toolbar appearance and Edit opening/cancellation were checked in the local build. The user confirmed the menu-bar activation no longer flickered.
+- Double-click implementation is unchanged; computer-use tooling did not complete a double-click runtime check.
+- Vlog fixes remain local and are not distributed.
+- This Mac distribution is ad-hoc signed and is not Apple-notarized.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.11/Planora-1.8.11-macOS.zip" length="7177064" type="application/octet-stream" sparkle:edSignature="xPux8LaH+D1CMAwNh0759gvQmS7qsOwUyETVFiskYIl80asWYvFyDvnz7AdMAWj60G3NtCqHlKB8lO2/j9IUBg=="/>
+        </item>
+        <item>
             <title>1.8.10</title>
             <pubDate>Fri, 02 Oct 2026 12:08:46 +0800</pubDate>
             <sparkle:version>43</sparkle:version>
@@ -160,6 +193,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: J73btf+g+WRNSsMqlFokvdWXy7D/pXI9gqyC0KFkVxTZQnYC2oXuF8qINX7aa08RMg6rVX1t89eHlX4LG89xAA==
-length: 12521
+edSignature: 6BBk55R+h0pbWwzu5aaughOo+4pZ1RJkhluTnhkhgZsyawrGK6wDlVv29NUEDT1kUmPgLF2ZsO9hw9qaeFFqAA==
+length: 14927
 -->
