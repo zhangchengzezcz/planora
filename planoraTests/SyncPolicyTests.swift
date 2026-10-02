@@ -71,7 +71,7 @@ final class SyncPolicyTests: XCTestCase {
 #if os(macOS)
     func testMenuBarUsesSystemTemplateAndKeepsAppResident() {
         XCTAssertTrue(PlanoraMenuBarIcon.image.isTemplate)
-        XCTAssertEqual(PlanoraMenuBarIcon.image.size.width, 19)
+        XCTAssertEqual(PlanoraMenuBarIcon.image.size, NSSize(width: 22, height: 18))
         XCTAssertFalse(PlanoraAppDelegate().applicationShouldTerminateAfterLastWindowClosed(NSApplication.shared))
     }
 #endif
