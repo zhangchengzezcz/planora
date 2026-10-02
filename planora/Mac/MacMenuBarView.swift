@@ -4,25 +4,32 @@ import SwiftData
 import SwiftUI
 
 enum PlanoraMenuBarIcon {
+    static let size = NSSize(width: 22, height: 18)
     static let image: NSImage = {
-        let image = NSImage(size: NSSize(width: 19, height: 18), flipped: false) { _ in
+        let image = NSImage(size: size, flipped: false) { _ in
             NSColor.black.setFill()
-            var transform = AffineTransform()
-            transform.translate(x: 9.5, y: 9)
-            transform.rotate(byDegrees: 12)
-            transform.translate(x: -9.5, y: -9)
+            let artwork = NSBezierPath()
             let bars: [(CGFloat, CGFloat, CGFloat)] = [
                 (205, 230, 190), (435, 230, 395), (140, 390, 450), (630, 390, 255),
                 (125, 550, 175), (340, 550, 510), (190, 710, 315), (545, 710, 235)
             ]
             // Original Flow01...Flow08 icon geometry, without its background.
             for (x, y, width) in bars {
-                    let path = NSBezierPath(roundedRect: NSRect(x: x / 1024 * 19,
-                        y: (1024 - y - 102) / 1024 * 18, width: width / 1024 * 19,
-                        height: 102 / 1024 * 18), xRadius: 36 / 1024 * 19, yRadius: 36 / 1024 * 18)
-                    path.transform(using: transform)
-                    path.fill()
+                artwork.append(NSBezierPath(roundedRect: NSRect(x: x,
+                    y: 1024 - y - 102, width: width, height: 102),
+                    xRadius: 36, yRadius: 36))
             }
+            var rotation = AffineTransform()
+            rotation.rotate(byDegrees: 12)
+            artwork.transform(using: rotation)
+            let bounds = artwork.bounds
+            let scale = min((size.width - 1) / bounds.width, (size.height - 1) / bounds.height)
+            var placement = AffineTransform()
+            placement.translate(x: size.width / 2, y: size.height / 2)
+            placement.scale(scale)
+            placement.translate(x: -bounds.midX, y: -bounds.midY)
+            artwork.transform(using: placement)
+            artwork.fill()
             return true
         }
         image.isTemplate = true
@@ -55,14 +62,28 @@ struct MacMenuBarView: View {
                         Text("No Upcoming Tasks").foregroundStyle(.secondary)
                     }
                     ForEach(upcoming) { task in
-                        Button { showMainWindow() } label: {
+                        Button {
+                            MacTaskRoute.request(task.id)
+                            showMainWindow()
+                        } label: {
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(task.title).font(.subheadline.weight(.semibold)).lineLimit(2)
+                                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                    Text(task.title).font(.subheadline.weight(.semibold)).lineLimit(2)
+                                    Spacer(minLength: 4)
+                                    if task.displayPriority == .high {
+                                        Label(task.priorityDisplayTitle, systemImage: "flag.fill")
+                                            .labelStyle(.iconOnly)
+                                            .font(.caption)
+                                            .foregroundStyle(Color.planoraAmber)
+                                            .help(task.priorityDisplayTitle)
+                                    }
+                                }
                                 HStack {
                                     Text(task.subject).lineLimit(1)
                                     Spacer()
                                     if let deadline = task.deadline {
                                         Text(deadline, format: .dateTime.month().day().hour().minute())
+                                            .foregroundStyle(deadline < Date() ? Color.planoraAmber : Color.secondary)
                                     }
                                 }
                                 .font(.caption).foregroundStyle(.secondary)
@@ -119,6 +140,22 @@ enum MacSyncRoute {
     static func request(_ flow: ManageBacFlow) {
         pending = flow
         NotificationCenter.default.post(name: notification, object: nil)
+    }
+}
+
+@MainActor
+enum MacTaskRoute {
+    private static var pendingTaskID: UUID?
+    static let notification = Notification.Name("planora.open-task")
+
+    static func request(_ taskID: UUID, notificationCenter: NotificationCenter = .default) {
+        pendingTaskID = taskID
+        notificationCenter.post(name: notification, object: nil)
+    }
+
+    static func takePendingTask() -> UUID? {
+        defer { pendingTaskID = nil }
+        return pendingTaskID
     }
 }
 #endif

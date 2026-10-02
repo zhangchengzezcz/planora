@@ -34,7 +34,7 @@ struct PlanoraApp: App {
     @StateObject private var softwareUpdater = MacSoftwareUpdater.shared
 
     var body: some Scene {
-        WindowGroup(id: "main") {
+        Window("Planora", id: "main") {
             storedContent { ContentView(store: store).background(MacMainWindowLifecycle()) }
         }
         .defaultSize(width: 1180, height: 760)

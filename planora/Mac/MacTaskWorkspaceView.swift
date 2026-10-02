@@ -176,8 +176,17 @@ struct MacTaskWorkspaceView: View {
         }
         .onChange(of: selection) { _, id in
             guard let id else { return }
+            if let task = tasks.first(where: { $0.id == id }),
+               !filteredTasks.contains(where: { $0.id == id }) {
+                source = .all
+                selectedSubject = ""
+                status = task.isDeleted ? .deleted : task.isArchived ? .archived : task.isCompleted ? .completed : .active
+            }
             let desired = Set([id])
             if tableSelection != desired { tableSelection = desired }
+        }
+        .onAppear {
+            if let selection { tableSelection = [selection] }
         }
         .sheet(isPresented: $isShowingBulkActions) {
             BulkTaskActionsView(

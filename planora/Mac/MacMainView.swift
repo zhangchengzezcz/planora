@@ -98,6 +98,10 @@ struct MacMainView: View {
         }
         .background { ManageBacAutomaticSyncHost(store: store) }
         .onAppear(perform: acceptPendingSync)
+        .onAppear(perform: acceptPendingTask)
+        .onReceive(NotificationCenter.default.publisher(for: MacTaskRoute.notification)) { _ in
+            acceptPendingTask()
+        }
         .onReceive(NotificationCenter.default.publisher(for: MacSyncRoute.notification)) { _ in
             acceptPendingSync()
         }
@@ -112,6 +116,13 @@ struct MacMainView: View {
         guard let pending = MacSyncRoute.pending else { return }
         syncFlow = pending
         MacSyncRoute.pending = nil
+    }
+
+    private func acceptPendingTask() {
+        guard let taskID = MacTaskRoute.takePendingTask() else { return }
+        searchText = ""
+        selection = .tasks
+        selectedTaskID = taskID
     }
 
     @ToolbarContentBuilder
