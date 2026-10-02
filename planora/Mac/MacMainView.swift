@@ -21,17 +21,11 @@ struct MacMainView: View {
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var syncFlow: ManageBacFlow?
     @Query(filter: #Predicate<PlanoraMessage> { $0.isUnread }) private var unreadMessages: [PlanoraMessage]
-    @Query(filter: MacTaskToolbarQuery.editableTasks) private var editableTasks: [PlanoraTask]
 
     init(store: PlanoraStore, initialTaskID: PlanoraTask.ID? = nil) {
         self.store = store
         _selectedTaskID = State(initialValue: initialTaskID)
         _selection = State(initialValue: initialTaskID == nil ? .home : .tasks)
-    }
-
-    private var selectedEditableTask: PlanoraTask? {
-        guard selection == .tasks, let selectedTaskID else { return nil }
-        return editableTasks.first { $0.id == selectedTaskID }
     }
 
     var body: some View {
@@ -83,30 +77,8 @@ struct MacMainView: View {
                 }
                 .help(String(localized: "Profile"))
                 .accessibilityLabel(String(localized: "Profile"))
-                if let task = selectedEditableTask {
-                    Button {
-                        NotificationCenter.default.post(name: .planoraEditTask, object: task.id)
-                    } label: {
-                        Image(systemName: "square.and.pencil")
-                            .frame(width: 24, height: 32)
-                            .fixedSize()
-                    }
-                    .help(String(localized: "Edit"))
-                    .accessibilityLabel(String(localized: "Edit"))
-                }
             }
             .sharedBackgroundVisibility(.visible)
-            if let task = selectedEditableTask {
-                ToolbarItem(placement: .principal) {
-                    Button {
-                        task.isPinned.toggle()
-                        PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
-                    } label: {
-                        Label(task.isPinned ? String(localized: "Unpin Task") : String(localized: "Pin Task"),
-                              systemImage: task.isPinned ? "pin.slash" : "pin")
-                    }
-                }
-            }
         }
         .sheet(isPresented: $isShowingCreateFlow) {
             NavigationStack {

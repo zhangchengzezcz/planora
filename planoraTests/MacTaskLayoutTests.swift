@@ -34,16 +34,16 @@ final class MacTaskLayoutTests: XCTestCase {
         }
     }
 
-    func testTaskWorkspaceWithInspectorCanShrink() async throws {
+    func testTaskWorkspaceWithFullPageDetailCanShrink() async throws {
         let container = try ModelContainer(for: Schema(PlanoraPersistence.models), configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         let task = PlanoraTask(title: "Workspace layout", subject: "Physics", type: .assignment,
                                deadline: Date(), hasDeadline: true, progressState: .percentage(0.4), notes: "", isCompleted: false)
         container.mainContext.insert(task)
         try container.mainContext.save()
         let store = PlanoraStore(storage: .preview, loadSavedProfile: false)
-        let controller = NSHostingController(rootView: NavigationStack {
+        let controller = NSHostingController(rootView:
             MacTaskWorkspaceView(store: store, searchText: "", selection: .constant(task.id))
-        }.modelContainer(container))
+        .modelContainer(container))
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1100, height: 650), styleMask: [.titled, .resizable], backing: .buffered, defer: false)
         window.isReleasedWhenClosed = false
         window.contentViewController = controller
@@ -55,6 +55,7 @@ final class MacTaskLayoutTests: XCTestCase {
             controller.view.layoutSubtreeIfNeeded()
             XCTAssertEqual(controller.view.bounds.width, width, accuracy: 1)
             XCTAssertLessThanOrEqual(window.contentMinSize.width, 650)
+            XCTAssertTrue(window.sheets.isEmpty, "Task details must navigate in-place, not open a sheet")
             if let bitmap = controller.view.bitmapImageRepForCachingDisplay(in: controller.view.bounds) {
                 controller.view.cacheDisplay(in: controller.view.bounds, to: bitmap)
                 let image = NSImage(size: controller.view.bounds.size)
@@ -82,7 +83,7 @@ final class MacTaskLayoutTests: XCTestCase {
         window.contentViewController = controller
         window.orderFront(nil)
         defer { window.close() }
-        for width in [700.0, 380.0, 520.0] {
+        for width in [1400.0, 700.0, 380.0, 520.0] {
             window.setContentSize(NSSize(width: width, height: 520))
             try await Task.sleep(for: .milliseconds(250))
             controller.view.layoutSubtreeIfNeeded()

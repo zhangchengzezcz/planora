@@ -5,7 +5,6 @@ import SwiftUI
 struct TaskDetailView: View {
     @Bindable var store: PlanoraStore
     @Bindable var task: PlanoraTask
-    var usesUnifiedMacToolbar = false
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -49,6 +48,10 @@ struct TaskDetailView: View {
                     deleteButton
                 }
             }
+            #if os(macOS)
+            .frame(maxWidth: 860)
+            .frame(maxWidth: .infinity, alignment: .top)
+            #endif
             .padding(.top, 12)
             .padding(.bottom, 32)
         }
@@ -64,7 +67,7 @@ struct TaskDetailView: View {
             }
         }
         .toolbar {
-            if !task.isDeleted && !usesUnifiedMacToolbar {
+            if !task.isDeleted {
                 ToolbarItem(placement: pinToolbarPlacement) {
                 Button {
                     task.isPinned.toggle()
@@ -76,7 +79,6 @@ struct TaskDetailView: View {
                     )
                 }
                 }
-                if !usesUnifiedMacToolbar {
                 ToolbarItem(placement: .primaryAction) {
                 #if os(macOS)
                 Button(String(localized: "Edit")) { isShowingEditor = true }
@@ -89,15 +91,9 @@ struct TaskDetailView: View {
                 }
                 #endif
                 }
-                }
             }
         }
         #if os(macOS)
-        .onReceive(NotificationCenter.default.publisher(for: .planoraEditTask)) { notification in
-            guard usesUnifiedMacToolbar, !task.isDeleted,
-                  notification.object as? UUID == task.id else { return }
-            isShowingEditor = true
-        }
         .sheet(item: $presentedCourse) { course in
             NavigationStack {
                 ManageBacCourseDetailView(store: store, course: course)

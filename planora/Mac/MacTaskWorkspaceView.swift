@@ -14,7 +14,7 @@ struct MacTaskWorkspaceView: View {
     @State private var tableSelection = Set<PlanoraTask.ID>()
     @State private var isShowingBulkActions = false
     @State private var isShowingImport = false
-    @State private var detailTask: PlanoraTask?
+    @State private var detailTaskID: PlanoraTask.ID?
     @State private var taskPendingCompletion: PlanoraTask?
 
     private var subjects: [String] {
@@ -51,12 +51,25 @@ struct MacTaskWorkspaceView: View {
         }
     }
 
-    private var selectedTask: PlanoraTask? {
-        guard let selection else { return nil }
-        return tasks.first { $0.id == selection }
+    var body: some View {
+        NavigationStack {
+            workspace
+                .navigationDestination(item: $detailTaskID) { id in
+                    if let task = tasks.first(where: { $0.id == id }) {
+                        TaskDetailView(store: store, task: task)
+                    } else {
+                        ContentUnavailableView(String(localized: "No Tasks Yet"), systemImage: "checklist")
+                    }
+                }
+                .onChange(of: detailTaskID) { _, id in
+                    // Clear the external route after Back so the same pinned or
+                    // menu-bar task can be opened again without changing selection.
+                    if id == nil { selection = nil }
+                }
+        }
     }
 
-    var body: some View {
+    @ViewBuilder private var workspace: some View {
         let visibleTasks = filteredTasks
 
         VStack(spacing: 0) {
@@ -126,7 +139,7 @@ struct MacTaskWorkspaceView: View {
                 .contextMenu(forSelectionType: PlanoraTask.ID.self) { ids in
                     if let id = ids.first, let task = tasks.first(where: { $0.id == id }) {
                         Button(String(localized: "Task Details"), systemImage: "doc.text") {
-                            detailTask = task
+                            detailTaskID = task.id
                         }
                         if task.isDeleted {
                             Button(String(localized: "Restore Task"), systemImage: "arrow.uturn.backward") {
@@ -151,7 +164,7 @@ struct MacTaskWorkspaceView: View {
                     }
                 } primaryAction: { ids in
                     if ids.count == 1, let id = ids.first {
-                        detailTask = tasks.first { $0.id == id }
+                        detailTaskID = id
                     }
                 }
                 .frame(minWidth: 0, maxWidth: .infinity)
@@ -160,22 +173,11 @@ struct MacTaskWorkspaceView: View {
         .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(nsColor: .windowBackgroundColor))
         .taskCompletionConfirmation(task: $taskPendingCompletion)
-        .sheet(item: $detailTask) { task in
-            NavigationStack {
-                TaskDetailView(store: store, task: task)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button(String(localized: "Done")) { detailTask = nil }
-                        }
-                    }
-            }
-            .frame(minWidth: 380, idealWidth: 700, minHeight: 420, idealHeight: 720)
-        }
-        .onChange(of: tableSelection) { _, ids in
-            selection = ids.count == 1 ? ids.first : nil
-        }
         .onChange(of: selection) { _, id in
-            guard let id else { return }
+            guard let id else {
+                detailTaskID = nil
+                return
+            }
             if let task = tasks.first(where: { $0.id == id }),
                !filteredTasks.contains(where: { $0.id == id }) {
                 source = .all
@@ -184,9 +186,13 @@ struct MacTaskWorkspaceView: View {
             }
             let desired = Set([id])
             if tableSelection != desired { tableSelection = desired }
+            detailTaskID = id
         }
         .onAppear {
-            if let selection { tableSelection = [selection] }
+            if let selection, tableSelection.isEmpty {
+                tableSelection = [selection]
+                detailTaskID = selection
+            }
         }
         .sheet(isPresented: $isShowingBulkActions) {
             BulkTaskActionsView(
@@ -199,18 +205,6 @@ struct MacTaskWorkspaceView: View {
                 }
             )
             .frame(minWidth: 520, idealWidth: 600, minHeight: 500, idealHeight: 620)
-        }
-        .inspector(isPresented: Binding(
-            get: { selectedTask != nil },
-            set: { if !$0 { selection = nil } }
-        )) {
-            if let selectedTask {
-                NavigationStack {
-                    TaskDetailView(store: store, task: selectedTask, usesUnifiedMacToolbar: true)
-                        .id(selectedTask.id)
-                }
-                .inspectorColumnWidth(min: 300, ideal: 360, max: 520)
-            }
         }
     }
 
