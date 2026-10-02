@@ -16,6 +16,17 @@ struct TaskDetailView: View {
     @State private var isShowingIncompleteSubtasksConfirmation = false
     @State private var operationError: String?
     @State private var presentedCourse: PlanoraCourse?
+    #if os(macOS)
+    @Environment(\.macUnifiedTaskToolbar) private var macUnifiedTaskToolbar
+    #endif
+
+    private var ownsTaskToolbar: Bool {
+        #if os(macOS)
+        !macUnifiedTaskToolbar
+        #else
+        true
+        #endif
+    }
 
     private var pinToolbarPlacement: ToolbarItemPlacement {
         #if os(macOS)
@@ -67,7 +78,7 @@ struct TaskDetailView: View {
             }
         }
         .toolbar {
-            if !task.isDeleted {
+            if !task.isDeleted && ownsTaskToolbar {
                 ToolbarItem(placement: pinToolbarPlacement) {
                 Button {
                     task.isPinned.toggle()
@@ -94,6 +105,7 @@ struct TaskDetailView: View {
             }
         }
         #if os(macOS)
+        .preference(key: MacActiveTaskPreference.self, value: task.id)
         .sheet(item: $presentedCourse) { course in
             NavigationStack {
                 ManageBacCourseDetailView(store: store, course: course)
@@ -808,7 +820,7 @@ private struct DetailRow: View {
     }
 }
 
-private struct EditTaskView: View {
+struct EditTaskView: View {
     @Bindable var store: PlanoraStore
     @Bindable var task: PlanoraTask
 

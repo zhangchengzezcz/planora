@@ -7,6 +7,34 @@ import XCTest
 
 @MainActor
 final class MacTaskLayoutTests: XCTestCase {
+    func testFullPageDetailPublishesTaskForUnifiedToolbar() async throws {
+        let container = try ModelContainer(for: Schema(PlanoraPersistence.models),
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let store = PlanoraStore(storage: .preview, loadSavedProfile: false)
+        let task = PlanoraTask(title: "Full page toolbar", subject: "Physics", type: .assignment,
+            deadline: nil, hasDeadline: false, progressState: .percentage(0), notes: "", isCompleted: false)
+        container.mainContext.insert(task)
+        try container.mainContext.save()
+        let published = expectation(description: "Detail publishes its task to the main toolbar")
+        published.assertForOverFulfill = false
+        let controller = NSHostingController(rootView: NavigationStack {
+            TaskDetailView(store: store, task: task)
+                .environment(\.macUnifiedTaskToolbar, true)
+        }
+        .onPreferenceChange(MacActiveTaskPreference.self) { id in
+            if id == task.id { published.fulfill() }
+        }
+        .modelContainer(container))
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1180, height: 760),
+            styleMask: [.titled, .resizable], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
+        window.contentViewController = controller
+        window.orderFront(nil)
+        defer { window.close() }
+        await fulfillment(of: [published], timeout: 3)
+        XCTAssertTrue(window.sheets.isEmpty)
+    }
+
     func testMainWindowTaskSelectionRendersToolbarWithoutCrashing() async throws {
         let container = try ModelContainer(for: Schema(PlanoraPersistence.models),
             configurations: ModelConfiguration(isStoredInMemoryOnly: true))

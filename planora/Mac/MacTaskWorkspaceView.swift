@@ -172,6 +172,8 @@ struct MacTaskWorkspaceView: View {
         }
         .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(nsColor: .windowBackgroundColor))
+        .preference(key: MacActiveTaskPreference.self,
+                    value: tableSelection.count == 1 ? tableSelection.first : nil)
         .taskCompletionConfirmation(task: $taskPendingCompletion)
         .onChange(of: selection) { _, id in
             guard let id else {

@@ -11,6 +11,24 @@ enum MacTaskToolbarQuery {
     static let editableTasks = #Predicate<PlanoraTask> { $0.deletedDate == nil }
 }
 
+struct MacActiveTaskPreference: PreferenceKey {
+    static let defaultValue: UUID? = nil
+    static func reduce(value: inout UUID?, nextValue: () -> UUID?) {
+        if let next = nextValue() { value = next }
+    }
+}
+
+private struct MacUnifiedTaskToolbarKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    var macUnifiedTaskToolbar: Bool {
+        get { self[MacUnifiedTaskToolbarKey.self] }
+        set { self[MacUnifiedTaskToolbarKey.self] = newValue }
+    }
+}
+
 struct MacMainView: View {
     @Bindable var store: PlanoraStore
     @Environment(\.modelContext) private var modelContext
@@ -20,6 +38,9 @@ struct MacMainView: View {
     @State private var searchText = ""
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var syncFlow: ManageBacFlow?
+    @State private var activeTaskID: UUID?
+    @State private var editingTask: PlanoraTask?
+    @Query(filter: MacTaskToolbarQuery.editableTasks) private var editableTasks: [PlanoraTask]
     @Query(filter: #Predicate<PlanoraMessage> { $0.isUnread }) private var unreadMessages: [PlanoraMessage]
 
     init(store: PlanoraStore, initialTaskID: PlanoraTask.ID? = nil) {
@@ -44,7 +65,9 @@ struct MacMainView: View {
                 .navigationTitle((selection ?? .home).title)
         }
         .navigationSplitViewStyle(.balanced)
+        .environment(\.macUnifiedTaskToolbar, true)
         .windowToolbarFullScreenVisibility(.visible)
+        .onPreferenceChange(MacActiveTaskPreference.self) { activeTaskID = $0 }
         .onChange(of: searchText) { _, value in
             if !value.isEmpty {
                 selectedTaskID = nil
@@ -77,8 +100,39 @@ struct MacMainView: View {
                 }
                 .help(String(localized: "Profile"))
                 .accessibilityLabel(String(localized: "Profile"))
+                if let task = activeToolbarTask {
+                    Button { editingTask = task } label: {
+                        Image(systemName: "square.and.pencil")
+                            .frame(width: 24, height: 32)
+                            .fixedSize()
+                    }
+                    .help(String(localized: "Edit"))
+                    .accessibilityLabel(String(localized: "Edit"))
+                }
             }
             .sharedBackgroundVisibility(.visible)
+            if let task = activeToolbarTask {
+                ToolbarItem(placement: .principal) {
+                    Button {
+                        task.isPinned.toggle()
+                        PlanoraTaskPersistence.saveAndSynchronize(task, in: modelContext)
+                    } label: {
+                        Label(task.isPinned ? String(localized: "Unpin Task") : String(localized: "Pin Task"),
+                              systemImage: task.isPinned ? "pin.slash" : "pin")
+                    }
+                }
+            }
+        }
+        .sheet(item: $editingTask) { task in
+            NavigationStack {
+                EditTaskView(store: store, task: task)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(String(localized: "Cancel")) { editingTask = nil }
+                        }
+                    }
+            }
+            .frame(minWidth: 380, idealWidth: 640, minHeight: 420, idealHeight: 720)
         }
         .sheet(isPresented: $isShowingCreateFlow) {
             NavigationStack {
@@ -129,6 +183,11 @@ struct MacMainView: View {
                 onComplete: { _ in syncFlow = nil }, onCancel: { syncFlow = nil })
                 .frame(minWidth: 700, idealWidth: 760, minHeight: 600, idealHeight: 700)
         }
+    }
+
+    private var activeToolbarTask: PlanoraTask? {
+        guard let activeTaskID else { return nil }
+        return editableTasks.first { $0.id == activeTaskID }
     }
 
     private func acceptPendingSync() {
