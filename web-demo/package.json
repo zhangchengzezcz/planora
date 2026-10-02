@@ -9,7 +9,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --ignore-pattern out --ignore-pattern .next"
+    "lint": "eslint . --ignore-pattern out --ignore-pattern .next",
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

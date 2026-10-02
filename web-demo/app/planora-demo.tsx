@@ -65,6 +65,7 @@ import {
   type DemoLocale,
 } from "./planora-copy";
 import { AttendanceSummary, WorkspaceScreen, useDemoWorkspace, workspaceText, type WorkspacePage } from "./workspace-demo";
+import { markDemoDates, refreshDemoDates } from "./demo-dates";
 
 type Tab = "home" | "tasks" | "search" | "profile";
 type TaskType =
@@ -106,6 +107,7 @@ interface PlanoraItem {
   priority: Priority;
   deadline?: string;
   plannedDate?: string;
+  demoDates?: { deadline?: string; plannedDate?: string };
   progressKind: "percentage" | "stage";
   progress: number;
   stage: string;
@@ -249,10 +251,16 @@ function localISO(date: Date) {
 }
 
 function offsetISO(offset: number) {
-  return localISO(new Date(Date.now() + offset * dayMs));
+  const date = new Date();
+  date.setDate(date.getDate() + offset);
+  return localISO(date);
 }
 
 function seedTasks(curriculum: Curriculum = "igcse"): PlanoraItem[] {
+  return markDemoDates(seedTaskTemplates(curriculum));
+}
+
+function seedTaskTemplates(curriculum: Curriculum): PlanoraItem[] {
   if (curriculum === "igcse") {
     return [
       {
@@ -506,6 +514,21 @@ export function PlanoraDemo() {
   function openWorkspace(page: WorkspacePage, course?: string) { setScreen({ kind: "workspace", page, course }); }
 
   useEffect(() => {
+    if (!hydrated) return;
+    const refresh = () => {
+      if (document.visibilityState === "visible") {
+        setTasks(previous => refreshDemoDates(previous, seedTasks(curriculum)));
+      }
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [hydrated, curriculum]);
+
+  useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       try {
         const savedTasks = window.localStorage.getItem(STORAGE_TASKS);
@@ -516,9 +539,14 @@ export function PlanoraDemo() {
         const savedCurriculum = window.localStorage.getItem(
           STORAGE_CURRICULUM,
         ) as Curriculum | null;
+        const currentCurriculum = savedCurriculum === "ib" ? "ib" : "igcse";
+        const freshTasks = seedTasks(currentCurriculum);
+        setTasks(freshTasks);
         if (savedTasks) {
           const parsed = JSON.parse(savedTasks);
-          if (Array.isArray(parsed) && parsed.every(validDemoTask)) setTasks(parsed);
+          if (Array.isArray(parsed) && parsed.every(validDemoTask)) {
+            setTasks(refreshDemoDates(parsed, freshTasks));
+          }
         }
         setName(window.localStorage.getItem("planora.demo.name.v1") ?? "Mitty");
         if (savedSettings)
@@ -674,7 +702,7 @@ export function PlanoraDemo() {
             <p className="eyebrow">
               {copy(locale, "IB · IGCSE 学习规划")}
             </p>
-            <h1>Planora 1.8.5</h1>
+            <h1>Planora</h1>
             <p>
               {copy(
                 locale,
@@ -2510,7 +2538,12 @@ function TaskDetailScreen({
       ) : (
         <>
           <section className="detail-list">
-            <button className="course-link" onClick={onOpenCourse}><BookOpen size={20}/><span>{workspaceText(locale, "课程")}</span><strong>{task.subject}</strong><ChevronRight size={16}/></button>
+            <button type="button" className="course-link" onClick={onOpenCourse}>
+              <BookOpen size={20}/>
+              <span>{workspaceText(locale, "课程")}</span>
+              <strong>{task.subject}</strong>
+              <ChevronRight size={16}/>
+            </button>
             <DetailLine icon={LayoutGrid} title={t("类型")} value={t(meta.title)} />
             <DetailLine
               icon={CalendarDays}
