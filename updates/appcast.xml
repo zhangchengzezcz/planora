@@ -9,6 +9,40 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.8.7</title>
+            <pubDate>Fri, 02 Oct 2026 08:56:53 +0800</pubDate>
+            <sparkle:version>40</sparkle:version>
+            <sparkle:shortVersionString>1.8.7</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.7
+
+## 中文
+
+- 撤掉 Mac 根视图遗留的全局玻璃按钮样式，保留原有页面材质与颜色。
+- 通知与头像恢复原生工具栏按钮组，头像固定为 24 点、按钮内容固定为 32 点，避免挤压；使用系统反馈，不叠加手绘阴影。
+- 出勤无数据时居中显示；空任务页的筛选栏固定在顶部。
+- 状态选项完整显示英文、中文与日文标题；macOS 27 按每个标题的实际宽度排列，避免整条切换栏过宽。
+- 保留原生横向拖动和玻璃切换行为。
+
+## English
+
+- Remove the remaining root-level Mac glass button style while preserving existing page materials and colors.
+- Restore native notification/profile toolbar grouping with fixed avatar and content dimensions. Use system feedback, without custom shadows.
+- Center the attendance empty state and keep filters at the top of an empty task workspace.
+- Fit complete localized status labels. On macOS 27, size each text segment individually to avoid excessive spacing.
+- Preserve native horizontal tracking and glass transitions.
+
+## Verification
+
+- Focused Mac control/layout regression tests and production Mac/Vlog builds.
+- iOS simulator build passed for the shared attendance layout.
+- Static toolbar grouping was observed in the running isolated app; the user reported that the appearance was restored. Automated click verification was interrupted by the UI tool connection, so dynamic press feedback is not claimed as fully verified.
+- This Mac distribution uses ad-hoc signing and is not Apple-notarized.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.7/Planora-1.8.7-macOS.zip" length="7125993" type="application/octet-stream" sparkle:edSignature="gvfw1Qv0WlzGNlbuFWkoYU6JfWEFACWMw8gk5SxyARmdDA60dBm66itTbsd+Ua7GQ27WPziCU9QVMgG0c5yABQ=="/>
+        </item>
+        <item>
             <title>1.8.6</title>
             <pubDate>Thu, 01 Oct 2026 18:21:57 +0800</pubDate>
             <sparkle:version>39</sparkle:version>
@@ -65,47 +99,6 @@ Mac 安装包使用临时签名，未经过 Apple 公证。
 The Mac package is ad-hoc signed, not Apple-notarized.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.5/Planora-1.8.5-macOS.zip" length="7112274" type="application/octet-stream" sparkle:edSignature="rzPJZ/Wvv1VpTbImFhWX5MgyE9JYWalyFRe4hw4FJXk009QJhHjZrzgOUMqzL9yC14CjFfdFlmgpe8yKeEBGDQ=="/>
-        </item>
-        <item>
-            <title>1.8.4</title>
-            <pubDate>Thu, 01 Oct 2026 16:13:57 +0800</pubDate>
-            <sparkle:version>37</sparkle:version>
-            <sparkle:shortVersionString>1.8.4</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.4
-
-## 中文
-
-- 普通操作统一采用系统玻璃按钮，主要按钮和选择项去掉高饱和蓝色渐变。任务页操作按钮、课程体系选择、学习进度类型与同步模式复用玻璃组件。
-- 菜单栏图标使用原始图标中八条任务栏的形状、圆角和斜度，不带背景；系统自动处理深浅色。
-- 菜单栏同步打开主窗口的同步流程，不再嵌入第二套界面。失败时重试位于顶部取消旁边。
-- 第一次关闭最后一个主窗口时可选择后台运行或退出，后续在设置中修改。后台模式隐藏 Dock 图标，菜单栏保留；重新打开主窗口恢复普通应用模式。后台模式仍有进程运行。
-- 完整同步默认更新消息与课表，也可分别关闭；基础课程与任务继续读取。同步不使用本地网页缓存。
-- 修复不含 Monday 的三天课表视图漏读。完整读到的日期范围会清理已被远端移除的课程记录，课表展示不再混用不同周的星期。
-- 课程来源内容铺满可用宽度。任务检查器中的课程按钮改为打开课程详情窗口，单击选中任务也可跳转。
-- 增加 `docs/MAC_GLASS_CONTROLS.md`，记录原生横向玻璃控件、版本兼容和验证规则。文档不作为 Release 附件。
-- 网页演示更新主要手机流程，新增课程、成绩三种视图、出勤、消息、同步模拟与撤销、帮助搜索及任务 JSON 备份。教师使用匿名示例，移除旧任务确认圆圈。
-
-验证：45 项 ManageBac 集成回归与 12 项定向测试均通过，正式版 Mac、iOS 模拟器及 Vlog Mac 构建通过。真实账户端到端课表同步、首次关闭选择和最终按钮视觉仍需用户验证。
-Mac 安装包为临时签名，未经过 Apple 公证。
-
-## English
-
-- Standard actions use system glass buttons with restrained colors. Removed saturated blue gradients from primary actions and selection chips. Task actions, curriculum menus, progress types and sync modes share glass components.
-- The menu bar symbol follows the eight original task bars, including their corners and tilt, without a background. System template rendering adapts to light/dark appearance.
-- Menu bar sync opens the main-window sync flow instead of embedding a separate UI. Retry is next to Cancel at the top when sync fails.
-- Closing the last main window asks whether to keep running or quit. The preference is editable in Settings. Background mode hides the Dock icon and retains the menu bar; reopening the main window restores regular app mode. A background process still runs.
-- Full sync reads messages and the timetable by default, with individual opt-out switches. Core courses and tasks remain included. Sync bypasses the local web cache.
-- Fixed three-day timetables that do not include Monday. Fully read date ranges reconcile removed lessons, and the timetable no longer mixes weekdays from different source weeks.
-- Course-source content fills the available width. Course links in the task inspector open course details, including after single-click task selection.
-- Added `docs/MAC_GLASS_CONTROLS.md` with native glass implementation and verification guidance. Documentation is not a Release attachment.
-- Updated the browser demo with core mobile flows: courses, three grade views, attendance, messages, simulated sync/undo, searchable help and demo task JSON backups. Teachers are anonymous samples; obsolete task completion circles are removed.
-
-Validation: 45 ManageBac integration regressions and 12 focused tests passed. Production Mac, iOS simulator and Vlog Mac builds passed. Real-account end-to-end timetable sync, first-close behavior and final button visuals still need user verification.
-The Mac package is ad-hoc signed, not Apple-notarized.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.4/Planora-1.8.4-macOS.zip" length="6468062" type="application/octet-stream" sparkle:edSignature="8CPgGjB1/jEz5ifbmAW2eE9elY8YqJI73vtLFaUWFhR0cBtzZ0q0jQqf3r4+nrjp6HW/oGYoek7w9VqjFkdFCQ=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -198,6 +191,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: 4+jD0EMljHoPuBy11PPsoKCUwsGmzDYg6ffVJdVNkN0Hbj1z2jWgmd7/MS7cFNquxzJD1bxiiDOWsp+1nYb9Aw==
-length: 17020
+edSignature: Ob1pAi/nvOX787/cHPqscb5Ho+5JTKMHg32la7jRhB92K8caJ7H6ysZajF+4MdSAY+sQhtUzceviPj3wsrNCDg==
+length: 14798
 -->
