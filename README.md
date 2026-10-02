@@ -1,6 +1,16 @@
 # Planora
 
-## Planora 1.8.11
+## 交互式演示 / Interactive Demo
+
+[打开 Planora 交互式网页演示 / Open the interactive web demo](https://zhangchengzezcz.github.io/planora/)
+
+[![Planora interactive demo](https://zhangchengzezcz.github.io/planora/og.png)](https://zhangchengzezcz.github.io/planora/)
+
+网页演示覆盖主要手机流程：任务、课程与成绩三种视图、时间表、最近七天出勤、消息、同步演示与撤销、帮助搜索和任务备份。手机使用全屏界面。数据只保存在当前浏览器，同步为示例模拟，不连接学校账号；网页材质不等于 Apple 原生 Liquid Glass，也不用于展示 Mac 最新的原生顶栏。
+
+The browser demo covers the main mobile flows: tasks, courses and three grade views, timetable, last-seven-day attendance, messages, simulated sync/undo, help search and task backups. Mobile uses a full-screen interface. Data stays in this browser; sync is a sample simulation without a school account. Web materials are not native Apple Liquid Glass, and the demo does not represent the latest native Mac toolbar.
+
+## Planora 1.8.13
 
 ### 中文
 
@@ -50,6 +60,8 @@ The menu bar uses a transparent task-bar template icon. Tasks due within 24 hour
 
 1.8.13 修复 Mac 单选任务的编辑入口，并统一首页与任务整页详情的顶栏：消息、头像、图标编辑在右侧共框，置顶独立居中。保留 1.8.12 的整页导航与居中阅读宽度，双击进入详情，不恢复任务副栏。
 
+1.8.13 restores editing for a single selected Mac task and unifies full-page task detail toolbars: Messages, Profile and icon-only Edit share the right-hand native group, with Pin centered separately. Keep 1.8.12 full-page navigation and centered reading width; double-click opens details without an inspector.
+
 1.8.11 修复菜单栏打开任务时窗口闪烁和桌面来回切换。任务页右侧共框显示消息、头像和选中任务的编辑入口，置顶独立居中；移除重复的详情按钮，保留双击打开。
 
 1.8.11 fixes menu-bar task window activation flicker. Selected tasks show Edit alongside notifications and profile in the native right-hand toolbar group, with Pin centered separately. The redundant detail button is removed; double-click details remain available.
@@ -84,10 +96,12 @@ The menu bar uses a transparent task-bar template icon. Tasks due within 24 hour
 
 ## 当前版本 / Current Version
 
-- Version: **1.8.11** (build **44**)
+- Version: **1.8.13** (build **46**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle
+- Mac task interaction: single-click to select, double-click for full-page details; Edit is available for one selected task and in details
+- Mac distribution: ad-hoc signed, not Apple-notarized; updating does not require a data reset or reimport
 
 ### 1.8 同步与菜单栏 / Sync and Menu Bar
 
@@ -100,16 +114,6 @@ Quick sync refreshes global task lists, the current notification page and this w
 Full sync retains the complete scan for initial connection, history and course verification. Unscanned existing units remain intact.
 Automatic sync runs only while active, at most every 15 minutes, with a full refresh every 24 hours. Continuous network activity is not promised while closed or without an active window.
 The Mac menu-bar template icon follows system colors. On first close, choose background mode or quitting; change this in Settings. Background mode hides the Dock icon and retains pending tasks, manual sync and reopening through the menu bar. Choose Quit Planora to exit. Login startup is not enabled automatically.
-
-## 交互式演示 / Interactive Demo
-
-[打开 Planora 交互式网页演示 / Open the interactive web demo](https://zhangchengzezcz.github.io/planora/)
-
-网页演示现已更新到 1.8.4 的主要手机流程：任务、课程与成绩三种视图、时间表、最近七天出勤、消息、同步演示与撤销、帮助搜索和任务备份。手机使用全屏界面。数据只保存在当前浏览器，同步为示例模拟，不连接学校账号；网页材质不等于 Apple 原生 Liquid Glass。
-
-The browser demo now covers the main 1.8.4 mobile flows: tasks, courses and three grade views, timetable, last-seven-day attendance, messages, simulated sync/undo, help search and task backups. Mobile uses a full-screen interface. Data stays in this browser; sync is a sample simulation without a school account. Web materials are not native Apple Liquid Glass.
-
-[![Planora interactive demo](https://zhangchengzezcz.github.io/planora/og.png)](https://zhangchengzezcz.github.io/planora/)
 
 ## 功能范围 / Scope
 
@@ -142,7 +146,7 @@ The browser demo now covers the main 1.8.4 mobile flows: tasks, courses and thre
 - iPhone 与 iPad 保留系统导航控件；成绩显示模式使用原生 Segmented Control
 - 英文、简体中文与日文 String Catalog 完整本地化
 - macOS 26+ 原生侧栏工作区，可访问首页、今日、本周、任务、课程、出勤和消息
-- Mac 使用系统工具栏搜索、系统任务表格、详情检查器与独立设置窗口
+- Mac 使用侧栏搜索、系统任务表格、整页任务详情与独立设置窗口；单击选择任务，双击进入详情，单选和详情均可编辑
 - Mac 个人页支持仅保存在本机的自定义头像，并可随时恢复为姓名缩写
 - Mac 支持 `⌘N` 新建任务与 `⌘F` 搜索，隐藏工具栏后可通过系统命令重新显示
 - Xcode 文件系统同步目录自动管理源码归属，不再依赖手工维护的 Sources 文件列表
@@ -154,7 +158,7 @@ The browser demo now covers the main 1.8.4 mobile flows: tasks, courses and thre
 - Mac 应用内通过 Sparkle 检查和安装更新；iPhone 与 iPad 不包含该更新器
 - Exam 与 Revision 任务支持关联 Topic、考试范围、目标成绩及 Past Paper 目标与完成量
 - JSON v9 备份完整保留 Topic、Assessment 与考试复习规划，并支持安全去重、覆盖和新副本导入
-- 本地 UserDefaults 保存学习空间与显示偏好，SwiftData 保存任务
+- 本地 `LearningProfile.json` 保存学习空间，UserDefaults 保存显示偏好，SwiftData 保存学习数据
 
 ### English
 
@@ -185,7 +189,7 @@ The browser demo now covers the main 1.8.4 mobile flows: tasks, courses and thre
 - System navigation controls on iPhone and iPad, with a native Segmented Control for grade display modes
 - Complete String Catalog localization in English, Simplified Chinese, and Japanese
 - A native macOS 26+ sidebar workspace for Home, Today, This Week, Tasks, Courses, Attendance, and Messages
-- System toolbar search, a native task table, a task inspector, and a dedicated Settings window on Mac
+- Sidebar search, a native task table, full-page task details, and a dedicated Settings window on Mac; single-click selects, double-click opens details, and both single selection and details support editing
 - Mac keyboard shortcuts for New Task (`⌘N`) and Search (`⌘F`), with the system command available to restore a hidden toolbar
 - Xcode file-system-synchronized folders manage source membership automatically instead of a manually maintained Sources list
 - Shared models, state, storage, and feature logic with lightweight platform-native presentation shells for iPhone and Mac
@@ -196,7 +200,7 @@ The browser demo now covers the main 1.8.4 mobile flows: tasks, courses and thre
 - Sparkle-based in-app updates on Mac only; iPhone and iPad do not include this updater
 - Topic links, exam scope, target score, and Past Paper goals for Exam and Revision tasks
 - JSON v9 backup support for topics, assessments, and exam planning with safe skip, overwrite, and import-as-new strategies
-- Local UserDefaults persistence for profile and display preferences, plus SwiftData task storage
+- Local `LearningProfile.json` persistence for the learning profile, UserDefaults for display preferences, and SwiftData for learning data
 
 ## 项目结构 / Project Structure
 
