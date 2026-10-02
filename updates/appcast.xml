@@ -9,6 +9,39 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.8.9</title>
+            <pubDate>Fri, 02 Oct 2026 11:46:12 +0800</pubDate>
+            <sparkle:version>42</sparkle:version>
+            <sparkle:shortVersionString>1.8.9</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.9
+
+## 中文
+
+- 菜单栏打开任务或同步时，等应用激活且主窗口成为活动窗口后再接收路由；不再重复设置相同的激活策略，不使用固定延时。
+- 菜单栏任务逐条显示优先级，自动升高时沿用自动优先级文案；底部时间明确标为“上次同步”。
+- 任务检查器的置顶按钮独立居中；编辑并入主窗口的通知/头像按钮组。单独任务窗口仍保留自己的编辑入口。
+- 任务页同步、详情及操作按钮使用一块局部玻璃板，增加与状态切换栏之间的间距。没有设置全局玻璃按钮样式。
+- Vlog 本地版本保留开发者编辑入口的可见性规则；不发布 Vlog。
+
+## English
+
+- Defer menu-bar task/sync routes until the app is active and the main window is key. Avoid redundant activation-policy changes; do not add fixed delays.
+- Show each task's priority and label the footer timestamp as Last Sync.
+- Center the inspector pin and group Edit with notification/profile controls. Standalone task details retain their own editing entry.
+- Apply a local glass surface to workspace sync/detail/action controls with additional separation from the status picker.
+- Preserve Vlog developer-edit visibility rules; Vlog is not distributed.
+
+## Verification
+
+- Task-route and task-layout regression tests; production Mac/iOS and local Vlog builds.
+- The supplied recording path was no longer present, so the reported flashing frames could not be inspected. Activation sequencing is corrected in code, but elimination of the observed flicker needs confirmation from the recording or the installed build.
+- This Mac distribution is ad-hoc signed, not Apple-notarized.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.9/Planora-1.8.9-macOS.zip" length="7148367" type="application/octet-stream" sparkle:edSignature="O05028cYntS26Tmw2hucSIBg0uZsITdjFAou6fn3eHg2fO6GLvt2FaM7CQfZpN36ztH0q7ydlwbRZVSschCGCw=="/>
+        </item>
+        <item>
             <title>1.8.8</title>
             <pubDate>Fri, 02 Oct 2026 10:58:57 +0800</pubDate>
             <sparkle:version>41</sparkle:version>
@@ -75,35 +108,6 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
 - This Mac distribution uses ad-hoc signing and is not Apple-notarized.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.7/Planora-1.8.7-macOS.zip" length="7125993" type="application/octet-stream" sparkle:edSignature="gvfw1Qv0WlzGNlbuFWkoYU6JfWEFACWMw8gk5SxyARmdDA60dBm66itTbsd+Ua7GQ27WPziCU9QVMgG0c5yABQ=="/>
-        </item>
-        <item>
-            <title>1.8.6</title>
-            <pubDate>Thu, 01 Oct 2026 18:21:57 +0800</pubDate>
-            <sparkle:version>39</sparkle:version>
-            <sparkle:shortVersionString>1.8.6</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.6
-
-## 中文
-
-- 紧急恢复 Mac 原有 UI：普通按钮、课程与来源选择、设置、同步和撤销操作恢复 1.8.3 的材质与颜色。
-- 原本有玻璃的主按钮恢复原有色彩、渐变与阴影；原本无玻璃的选择项不再强加玻璃。
-- 保留已确认的横向模式切换及系统拖动效果、正常顶栏、同步恢复、课表更新、课程跳转和新版启动页。
-- iPhone/iPad 不进行此次样式回退。Vlog 项目同步本地修复，不包含在正式发行资产中。
-
-Mac 安装包使用临时签名，未经过 Apple 公证。
-
-## English
-
-- Urgently restore the original Mac UI materials and colors for ordinary buttons, course/source selections, settings, sync and undo actions.
-- Restore existing glass buttons' original colors, gradients and shadows; remove newly imposed glass from non-glass selections.
-- Preserve approved horizontal controls and native dragging, the toolbar, sync recovery, timetable updates, course navigation and refreshed onboarding.
-- iPhone/iPad styling is unchanged. The Vlog project receives the local fix but is not included in release assets.
-
-The Mac package is ad-hoc signed, not Apple-notarized.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.6/Planora-1.8.6-macOS.zip" length="7115841" type="application/octet-stream" sparkle:edSignature="o5XUspryLCRMcuMsnSfVGHMlkMqMWkOAvIftcSHt2Uq8co/OFCkeWcPeziNMiowzNynjVKYL0HgZ6Q3O/LTgBQ=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -196,6 +200,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: 4tkXoI71agZul6au9nKup7sDDysnWvRyuF/g/NCp/iTgC4hnvUBRDvzfLW/3kC3XmB2SftQAj95+Cx+O3paTAQ==
-length: 15021
+edSignature: pINrRnZFh1N9DHEwen/wm2t8a2yaZMFcwpMDWbmTXHYXuhdIjB1j5kLVPPLeZjIK1HuzyLbBJlMAIh7KIkKuDw==
+length: 15533
 -->
