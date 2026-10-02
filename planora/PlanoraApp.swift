@@ -15,7 +15,11 @@ struct PlanoraApp: App {
     private func storedContent<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         switch persistence {
         case .success(let container):
+            #if os(macOS)
+            content().modelContainer(container)
+            #else
             content().buttonStyle(.glass).modelContainer(container)
+            #endif
         case .failure(let error):
             ContentUnavailableView {
                 Label("Unable to Open Local Data", systemImage: "externaldrive.badge.exclamationmark")

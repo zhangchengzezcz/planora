@@ -51,18 +51,23 @@ struct MacMainView: View {
                                 Circle().fill(.red).frame(width: 6, height: 6).offset(x: 3, y: -3)
                             }
                         }
+                        .frame(width: 32, height: 32)
+                        .fixedSize()
+                        .contentShape(Rectangle())
                 }
                 .help(String(localized: "Messages"))
                 .accessibilityLabel(String(localized: "Messages"))
                 .accessibilityValue(Text(unreadMessages.count, format: .number))
                 Button { selection = .profile } label: {
                     ProfileAvatarView(name: store.userName, size: 24)
-                        .padding(2)
+                        .frame(width: 32, height: 32)
+                        .fixedSize()
                         .contentShape(Circle())
                 }
                 .help(String(localized: "Profile"))
                 .accessibilityLabel(String(localized: "Profile"))
             }
+            .sharedBackgroundVisibility(.visible)
         }
         .sheet(isPresented: $isShowingCreateFlow) {
             NavigationStack {

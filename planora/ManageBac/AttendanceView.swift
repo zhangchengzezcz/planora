@@ -95,12 +95,14 @@ struct AttendanceView: View {
     var body: some View {
         let lessonsForWeek = filtered
         let lessonsByTitle = Dictionary(grouping: lessonsForWeek, by: \.title)
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                if events.isEmpty && connection?.attendanceOverview == nil {
-                    ContentUnavailableView(String(localized: "No Attendance Records"), systemImage: "person.badge.clock",
-                        description: Text(String(localized: "Sync ManageBac to read classroom attendance.")))
-                } else {
+        Group {
+            if events.isEmpty && connection?.attendanceOverview == nil {
+                ContentUnavailableView(String(localized: "No Attendance Records"), systemImage: "person.badge.clock",
+                    description: Text(String(localized: "Sync ManageBac to read classroom attendance.")))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
                     AttendanceMetrics(events: lessonsForWeek, overview: matchingOverview)
                     HStack {
                         Text(String(localized: "Class Attendance")).font(.title2.bold())
@@ -135,10 +137,11 @@ struct AttendanceView: View {
                             Text(syncDate, format: .dateTime.month().day().hour().minute())
                         }.font(.caption).foregroundStyle(.secondary)
                     }
+                    }
+                    .padding(24)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            .padding(24)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle(String(localized: "Attendance"))
         .onReceive(NotificationCenter.default.publisher(for: .manageBacConnectionDidChange)) { _ in

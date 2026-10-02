@@ -64,14 +64,17 @@ struct MacTaskWorkspaceView: View {
             Divider()
 
             if visibleTasks.isEmpty {
-                if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    ContentUnavailableView(
-                        String(localized: "No Tasks Yet"),
-                        systemImage: "checklist"
-                    )
-                } else {
-                    ContentUnavailableView.search(text: searchText)
+                Group {
+                    if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        ContentUnavailableView(
+                            String(localized: "No Tasks Yet"),
+                            systemImage: "checklist"
+                        )
+                    } else {
+                        ContentUnavailableView.search(text: searchText)
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 Table(visibleTasks, selection: $tableSelection) {
                     TableColumn(String(localized: "Task")) { task in
@@ -154,7 +157,7 @@ struct MacTaskWorkspaceView: View {
                 .frame(minWidth: 0, maxWidth: .infinity)
             }
         }
-        .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(nsColor: .windowBackgroundColor))
         .taskCompletionConfirmation(task: $taskPendingCompletion)
         .sheet(item: $detailTask) { task in
@@ -230,12 +233,13 @@ struct MacTaskWorkspaceView: View {
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: 10) {
                     MacLiquidGlassStatusPicker(selection: $status)
-                        .frame(width: 328, height: 38)
                     taskActions
                 }
                 VStack(alignment: .leading, spacing: 8) {
-                    MacLiquidGlassStatusPicker(selection: $status)
-                        .frame(height: 38)
+                    ScrollView(.horizontal) {
+                        MacLiquidGlassStatusPicker(selection: $status)
+                    }
+                    .frame(height: 42)
                     taskActions
                 }
             }

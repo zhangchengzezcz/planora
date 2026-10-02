@@ -6,6 +6,9 @@
 - `PlanoraSegmentedPicker` uses it on Mac and keeps the native segmented Picker on iOS/iPadOS.
 - `PlanoraChoicePicker` preserves the standard Picker on Mac; it is not a horizontal mode switch.
 - 只对横向模式切换应用本文的玻璃方案。普通按钮、菜单、选择项和页面必须保留原有材质与颜色：原本无玻璃的不添加玻璃，原本有玻璃的不重设 tint、渐变或阴影。不得把 `.buttonStyle(.glass)` 扩散到所有控件。
+- 禁止在 Mac 的 App 根视图、窗口根视图或 `storedContent` 上设置全局 `.buttonStyle(.glass)`；它会沿环境传播，覆盖顶栏和所有未显式设定样式的按钮。顶栏由系统原生工具栏管理，不添加单个按钮的玻璃外壳。
+- 通知与头像使用原生 `ToolbarItemGroup` 和系统共框；按钮内容为 32 点，头像为 24 点，尺寸不可被压缩。不要改成一个普通 HStack 工具栏项，不要手绘按下阴影。
+- 文字选项按完整本地化标题测量。macOS 27 使用各自宽度和 `segmentDistribution = .fit`，不要给整组固定 328 点，也不要把所有短标题扩成最长标题的宽度。图标模式维持原有尺寸。
 
 ## macOS 27
 

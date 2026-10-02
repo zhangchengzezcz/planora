@@ -6,6 +6,19 @@ import XCTest
 
 @MainActor
 final class MacGlassControlTests: XCTestCase {
+    func testTextSegmentsFitCompleteLocalizedLabels() {
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize(for: .large), weight: .semibold)
+        for labels in [["In Progress", "Completed", "Archived", "Recently Deleted"],
+                       ["进行中", "已完成", "已归档", "最近删除"],
+                       ["進行中", "完了", "アーカイブ済み", "最近削除した項目"]] {
+            let width = MacModePickerGeometry.segmentWidth(labels: labels, showsLabels: true)
+            for label in labels {
+                XCTAssertGreaterThanOrEqual(width, ceil((label as NSString).size(withAttributes: [.font: font]).width) + 32)
+            }
+        }
+        XCTAssertEqual(MacModePickerGeometry.segmentWidth(labels: ["Recently Deleted"], showsLabels: false), 52)
+    }
+
     func testDragSelectionIsBoundedAndRejectsInvalidGeometry() {
         XCTAssertEqual(MacModePickerGeometry.index(at: -100, width: 156, count: 3), 0)
         XCTAssertEqual(MacModePickerGeometry.index(at: 52, width: 156, count: 3), 1)
@@ -14,6 +27,13 @@ final class MacGlassControlTests: XCTestCase {
         XCTAssertNil(MacModePickerGeometry.index(at: .nan, width: 156, count: 3))
         XCTAssertNil(MacModePickerGeometry.index(at: 50, width: 0, count: 3))
         XCTAssertNil(MacModePickerGeometry.index(at: 50, width: 156, count: 0))
+    }
+
+    func testNativeTextSegmentsDoNotPadEveryItemToTheLongestLabel() {
+        let labels = ["In Progress", "Completed", "Archived", "Recently Deleted"]
+        let width = MacModePickerGeometry.totalWidth(labels: labels, showsLabels: true)
+        XCTAssertLessThan(width, CGFloat(labels.count) * MacModePickerGeometry.segmentWidth(labels: labels, showsLabels: true))
+        XCTAssertEqual(MacModePickerGeometry.totalWidth(labels: labels, showsLabels: false), 208)
     }
 
     func testPickerHasStableSizeAndUsesNativeTabsOnMacOS27() throws {

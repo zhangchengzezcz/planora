@@ -15,7 +15,7 @@ struct MacModePicker<Value: Hashable>: View {
             MacNativeModePicker(selection: $selection, values: values, title: title,
                 label: label, symbol: symbol, showsLabels: showsLabels)
                 .controlSize(.large)
-                .frame(width: CGFloat(values.count) * (showsLabels ? 82 : 52), height: 38)
+                .frame(width: MacModePickerGeometry.totalWidth(labels: values.map(label), showsLabels: showsLabels), height: 38)
         } else {
             MacGlassModePicker(selection: $selection, values: values, title: title,
                 label: label, symbol: symbol, showsLabels: showsLabels)
@@ -42,7 +42,7 @@ struct MacNativeModePicker<Value: Hashable>: NSViewRepresentable {
         control.borderShape = .capsule
         control.segmentStyle = .automatic
         control.trackingMode = .selectOne
-        control.segmentDistribution = .fillEqually
+        control.segmentDistribution = .fit
         control.target = context.coordinator
         control.action = #selector(Coordinator.selectionChanged(_:))
         configure(control)
@@ -62,7 +62,7 @@ struct MacNativeModePicker<Value: Hashable>: NSViewRepresentable {
             control.setImage(showsLabels ? nil : NSImage(systemSymbolName: symbol(value),
                 accessibilityDescription: caption), forSegment: index)
             control.setToolTip(caption, forSegment: index)
-            control.setWidth(showsLabels ? 82 : 52, forSegment: index)
+            control.setWidth(MacModePickerGeometry.segmentWidth(labels: [caption], showsLabels: showsLabels), forSegment: index)
         }
         let index = values.firstIndex(of: selection) ?? -1
         // Leave native tracking and material transitions untouched on unrelated view updates.
@@ -97,7 +97,7 @@ private struct MacGlassModePicker<Value: Hashable>: View {
     @State private var isSettling = false
     @State private var hasAppeared = false
 
-    private var width: CGFloat { CGFloat(values.count) * (showsLabels ? 82 : 52) }
+    private var width: CGFloat { CGFloat(values.count) * MacModePickerGeometry.segmentWidth(labels: values.map(label), showsLabels: showsLabels) }
     private var selectedIndex: Int { values.firstIndex(of: selection) ?? 0 }
     private var isGlassActive: Bool { pointerX != nil || isSettling }
 
@@ -223,6 +223,17 @@ private struct MacGlassModePicker<Value: Hashable>: View {
 }
 
 enum MacModePickerGeometry {
+    static func totalWidth(labels: [String], showsLabels: Bool) -> CGFloat {
+        labels.reduce(0) { $0 + segmentWidth(labels: [$1], showsLabels: showsLabels) }
+    }
+
+    static func segmentWidth(labels: [String], showsLabels: Bool) -> CGFloat {
+        guard showsLabels else { return 52 }
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize(for: .large), weight: .semibold)
+        let widest = labels.map { ($0 as NSString).size(withAttributes: [.font: font]).width }.max() ?? 0
+        return max(82, ceil(widest) + 32)
+    }
+
     static func index(at x: CGFloat, width: CGFloat, count: Int) -> Int? {
         guard count > 0, width > 0, width.isFinite, x.isFinite else { return nil }
         let boundedX = min(max(0, x), width)
