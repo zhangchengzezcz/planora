@@ -9,6 +9,33 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.8.10</title>
+            <pubDate>Fri, 02 Oct 2026 12:08:46 +0800</pubDate>
+            <sparkle:version>43</sparkle:version>
+            <sparkle:shortVersionString>1.8.10</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.10
+
+## Critical Fix
+
+- Fixes the 1.8.9 Mac crash when selecting a task. The toolbar query now filters on the persisted `deletedDate` field instead of the computed `isDeleted` property.
+- Adds database regression coverage for active, deleted and restored tasks using the exact toolbar predicate.
+- No task data migration, deletion or reset is required. Existing 1.8.9 installations can update in place.
+- The separately reported menu-bar window flashing is still under investigation. This release does not claim to resolve it.
+
+## 严重问题修复
+
+- 修复 1.8.9 在 Mac 单击任务时崩溃：顶栏查询改用数据库存储字段 `deletedDate`，不再查询计算属性 `isDeleted`。
+- 为同一顶栏查询补上正常、删除及恢复任务的数据库回归测试。
+- 不需要清除数据、重新导入或迁移。已安装 1.8.9 的用户可以直接更新。
+- 菜单栏打开窗口的闪烁问题仍在排查，本版不宣称已解决。
+
+This Mac distribution is ad-hoc signed and is not Apple-notarized.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.10/Planora-1.8.10-macOS.zip" length="7160861" type="application/octet-stream" sparkle:edSignature="68+3ajSjVr2WyqSP+bjT5cwlXlgJCrMjREIVt1DMkkWg5qSeSYKFrhHOx513Gw8QfQANAfl9ZdBcoMonn8kiDg=="/>
+        </item>
+        <item>
             <title>1.8.9</title>
             <pubDate>Fri, 02 Oct 2026 11:46:12 +0800</pubDate>
             <sparkle:version>42</sparkle:version>
@@ -74,40 +101,6 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
 - This Mac distribution is ad-hoc signed, not Apple-notarized.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.8/Planora-1.8.8-macOS.zip" length="7136378" type="application/octet-stream" sparkle:edSignature="uXmDLZOZErF03pm0dXPQ4kZa7y5N1J1YBkr6KK+zvL8pumSPUWzXYymdqhPpkuHMpw2P/YUaRIaYEjSvUPDTAg=="/>
-        </item>
-        <item>
-            <title>1.8.7</title>
-            <pubDate>Fri, 02 Oct 2026 08:56:53 +0800</pubDate>
-            <sparkle:version>40</sparkle:version>
-            <sparkle:shortVersionString>1.8.7</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.7
-
-## 中文
-
-- 撤掉 Mac 根视图遗留的全局玻璃按钮样式，保留原有页面材质与颜色。
-- 通知与头像恢复原生工具栏按钮组，头像固定为 24 点、按钮内容固定为 32 点，避免挤压；使用系统反馈，不叠加手绘阴影。
-- 出勤无数据时居中显示；空任务页的筛选栏固定在顶部。
-- 状态选项完整显示英文、中文与日文标题；macOS 27 按每个标题的实际宽度排列，避免整条切换栏过宽。
-- 保留原生横向拖动和玻璃切换行为。
-
-## English
-
-- Remove the remaining root-level Mac glass button style while preserving existing page materials and colors.
-- Restore native notification/profile toolbar grouping with fixed avatar and content dimensions. Use system feedback, without custom shadows.
-- Center the attendance empty state and keep filters at the top of an empty task workspace.
-- Fit complete localized status labels. On macOS 27, size each text segment individually to avoid excessive spacing.
-- Preserve native horizontal tracking and glass transitions.
-
-## Verification
-
-- Focused Mac control/layout regression tests and production Mac/Vlog builds.
-- iOS simulator build passed for the shared attendance layout.
-- Static toolbar grouping was observed in the running isolated app; the user reported that the appearance was restored. Automated click verification was interrupted by the UI tool connection, so dynamic press feedback is not claimed as fully verified.
-- This Mac distribution uses ad-hoc signing and is not Apple-notarized.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.7/Planora-1.8.7-macOS.zip" length="7125993" type="application/octet-stream" sparkle:edSignature="gvfw1Qv0WlzGNlbuFWkoYU6JfWEFACWMw8gk5SxyARmdDA60dBm66itTbsd+Ua7GQ27WPziCU9QVMgG0c5yABQ=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -200,6 +193,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: pINrRnZFh1N9DHEwen/wm2t8a2yaZMFcwpMDWbmTXHYXuhdIjB1j5kLVPPLeZjIK1HuzyLbBJlMAIh7KIkKuDw==
-length: 15533
+edSignature: H+mCoaybuPcSOe4am2qbprH61eC3OgiJTZS2VJjqO15mByhfyTCk6E712uIkzybcxDhQQQxC1LBwkvAKGLmYBw==
+length: 15002
 -->
