@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://zhangchengzezcz.github.io/planora/"),
   title: "Planora 交互式演示",
   description:
-    "体验 Planora 1.8.5：任务、课程、成绩图表、时间表、出勤、消息、同步与帮助中心。",
+    "体验 Planora：任务、课程、成绩图表、时间表、出勤、消息、同步与帮助中心。",
   icons: {
     icon: "https://zhangchengzezcz.github.io/planora/icon.png",
   },
