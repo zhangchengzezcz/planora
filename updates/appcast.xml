@@ -9,6 +9,40 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
         <description>Stable Planora updates for macOS.</description>
         <language>en</language>
         <item>
+            <title>1.8.8</title>
+            <pubDate>Fri, 02 Oct 2026 10:58:57 +0800</pubDate>
+            <sparkle:version>41</sparkle:version>
+            <sparkle:shortVersionString>1.8.8</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.8
+
+## 中文
+
+- Mac 菜单栏点击任务会打开对应任务检查器，不再只打开主页。
+- 主窗口使用系统单窗口场景，重复点击任务、同步或打开应用不再生成主窗口副本。
+- 从菜单栏打开任务时，清除搜索与不匹配的任务来源/状态筛选。
+- 菜单栏透明模板图标按实际任务条轮廓放大，保留系统深浅色适配。
+- 弹出列表保留标题、学科和截止时间；增加高优先级小旗标与逾期时间强调，不改变存储的手动优先级。
+
+## English
+
+- Open the matching task inspector from the Mac menu bar instead of opening Home.
+- Reuse the system single main-window scene for repeated task, sync and app-open actions.
+- Clear search and incompatible task filters when opening a task.
+- Fit the background-free template icon to its visible task-bar artwork while retaining system appearance adaptation.
+- Add high-priority flags and overdue-date emphasis without changing stored manual priorities.
+
+## Verification
+
+- Task-route identity, one-time consumption, latest-request replacement and template-icon coverage tests passed.
+- Mac task-inspector resizing tests passed; production Mac and local Vlog builds checked.
+- Single-window reuse follows SwiftUI's public Window scene behavior. Full menu-bar click/reopen behavior still needs user verification on the installed update.
+- This Mac distribution is ad-hoc signed, not Apple-notarized.
+]]></description>
+            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.8/Planora-1.8.8-macOS.zip" length="7136378" type="application/octet-stream" sparkle:edSignature="uXmDLZOZErF03pm0dXPQ4kZa7y5N1J1YBkr6KK+zvL8pumSPUWzXYymdqhPpkuHMpw2P/YUaRIaYEjSvUPDTAg=="/>
+        </item>
+        <item>
             <title>1.8.7</title>
             <pubDate>Fri, 02 Oct 2026 08:56:53 +0800</pubDate>
             <sparkle:version>40</sparkle:version>
@@ -70,35 +104,6 @@ Mac 安装包使用临时签名，未经过 Apple 公证。
 The Mac package is ad-hoc signed, not Apple-notarized.
 ]]></description>
             <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.6/Planora-1.8.6-macOS.zip" length="7115841" type="application/octet-stream" sparkle:edSignature="o5XUspryLCRMcuMsnSfVGHMlkMqMWkOAvIftcSHt2Uq8co/OFCkeWcPeziNMiowzNynjVKYL0HgZ6Q3O/LTgBQ=="/>
-        </item>
-        <item>
-            <title>1.8.5</title>
-            <pubDate>Thu, 01 Oct 2026 16:56:40 +0800</pubDate>
-            <sparkle:version>38</sparkle:version>
-            <sparkle:shortVersionString>1.8.5</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Planora 1.8.5
-
-## 中文
-
-- 首次启动与引导使用当前 Icon Composer 图标的真实浅色、深色渲染，替换旧 P 字母标识。
-- 冷白与石墨灰背景、克制的蓝绿强调色，柔和的显现与过渡，不增加已完成引导用户的启动等待。
-- 介绍页更新为任务计划、课程成绩及最近七天出勤和消息；可滚动内容与底部开始按钮适配小屏及大字体。
-- 网页演示同步更新图标、深浅色与首次启动设计。原有 Entrance Film 源码保持不变。
-
-Mac 安装包使用临时签名，未经过 Apple 公证。
-
-## English
-
-- First-launch welcome and introduction now use actual light/dark renders of the current Icon Composer artwork instead of the old P mark.
-- Cool-white and graphite surfaces, restrained blue-green accents and gentle transitions. Returning users still open Home directly.
-- The introduction now covers task planning, courses/grades and recent attendance/messages. Scrollable content and a bottom action accommodate small screens and larger text.
-- The browser demo matches the updated artwork, appearances and first-launch design. Existing Entrance Film source is unchanged.
-
-The Mac package is ad-hoc signed, not Apple-notarized.
-]]></description>
-            <enclosure url="https://github.com/zhangchengzezcz/planora/releases/download/1.8.5/Planora-1.8.5-macOS.zip" length="7112274" type="application/octet-stream" sparkle:edSignature="rzPJZ/Wvv1VpTbImFhWX5MgyE9JYWalyFRe4hw4FJXk009QJhHjZrzgOUMqzL9yC14CjFfdFlmgpe8yKeEBGDQ=="/>
         </item>
         <item>
             <title>1.7.8</title>
@@ -191,6 +196,6 @@ The Mac app is ad-hoc signed, without Apple Developer ID signing or notarization
     </channel>
 </rss>
 <!-- sparkle-signatures:
-edSignature: Ob1pAi/nvOX787/cHPqscb5Ho+5JTKMHg32la7jRhB92K8caJ7H6ysZajF+4MdSAY+sQhtUzceviPj3wsrNCDg==
-length: 14798
+edSignature: 4tkXoI71agZul6au9nKup7sDDysnWvRyuF/g/NCp/iTgC4hnvUBRDvzfLW/3kC3XmB2SftQAj95+Cx+O3paTAQ==
+length: 15021
 -->
