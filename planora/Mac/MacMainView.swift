@@ -68,7 +68,7 @@ struct MacMainView: View {
                                 Circle().fill(.red).frame(width: 6, height: 6).offset(x: 3, y: -3)
                             }
                         }
-                        .frame(width: 32, height: 32)
+                        .frame(width: 24, height: 32)
                         .fixedSize()
                         .contentShape(Rectangle())
                 }
@@ -77,7 +77,7 @@ struct MacMainView: View {
                 .accessibilityValue(Text(unreadMessages.count, format: .number))
                 Button { selection = .profile } label: {
                     ProfileAvatarView(name: store.userName, size: 24)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 24, height: 32)
                         .fixedSize()
                         .contentShape(Circle())
                 }
@@ -88,7 +88,7 @@ struct MacMainView: View {
                         NotificationCenter.default.post(name: .planoraEditTask, object: task.id)
                     } label: {
                         Image(systemName: "square.and.pencil")
-                            .frame(width: 32, height: 32)
+                            .frame(width: 24, height: 32)
                             .fixedSize()
                     }
                     .help(String(localized: "Edit"))
