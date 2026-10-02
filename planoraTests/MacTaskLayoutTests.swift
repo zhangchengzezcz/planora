@@ -7,6 +7,33 @@ import XCTest
 
 @MainActor
 final class MacTaskLayoutTests: XCTestCase {
+    func testMainWindowTaskSelectionRendersToolbarWithoutCrashing() async throws {
+        let container = try ModelContainer(for: Schema(PlanoraPersistence.models),
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let store = PlanoraStore(storage: .preview, loadSavedProfile: false)
+        let tasks = (0..<3).map { index in
+            PlanoraTask(title: "Task \(index)", subject: "Physics", type: .assignment,
+                deadline: nil, hasDeadline: false, progressState: .percentage(0), notes: "", isCompleted: false)
+        }
+        tasks.forEach(container.mainContext.insert)
+        try container.mainContext.save()
+        let controller = NSHostingController(rootView: MacMainView(store: store, initialTaskID: tasks[0].id)
+            .modelContainer(container).id(tasks[0].id))
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1180, height: 760),
+            styleMask: [.titled, .resizable], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
+        window.contentViewController = controller
+        window.orderFront(nil)
+        defer { window.close() }
+        for task in tasks {
+            controller.rootView = MacMainView(store: store, initialTaskID: task.id)
+                .modelContainer(container).id(task.id)
+            try await Task.sleep(for: .milliseconds(250))
+            controller.view.layoutSubtreeIfNeeded()
+            XCTAssertEqual(try container.mainContext.fetchCount(FetchDescriptor<PlanoraTask>()), 3)
+        }
+    }
+
     func testTaskWorkspaceWithInspectorCanShrink() async throws {
         let container = try ModelContainer(for: Schema(PlanoraPersistence.models), configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         let task = PlanoraTask(title: "Workspace layout", subject: "Physics", type: .assignment,

@@ -1,10 +1,33 @@
 #if os(macOS)
 import AppKit
+import SwiftData
 import XCTest
 @testable import planora
 
 @MainActor
 final class MacMenuBarTests: XCTestCase {
+    func testToolbarTaskQueryUsesPersistedDeletionField() throws {
+        let container = try ModelContainer(for: Schema(PlanoraPersistence.models),
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = container.mainContext
+        let active = PlanoraTask(title: "Active", subject: "Physics", type: .assignment,
+            deadline: nil, hasDeadline: false, progressState: .percentage(0), notes: "", isCompleted: false)
+        let deleted = PlanoraTask(title: "Deleted", subject: "Physics", type: .assignment,
+            deadline: nil, hasDeadline: false, progressState: .percentage(0), notes: "", isCompleted: false)
+        deleted.deletedDate = Date()
+        context.insert(active)
+        context.insert(deleted)
+        try context.save()
+        let descriptor = FetchDescriptor<PlanoraTask>(predicate: MacTaskToolbarQuery.editableTasks)
+        XCTAssertEqual(try context.fetch(descriptor).map(\.id), [active.id])
+        active.deletedDate = Date()
+        try context.save()
+        XCTAssertTrue(try context.fetch(descriptor).isEmpty)
+        deleted.deletedDate = nil
+        try context.save()
+        XCTAssertEqual(try context.fetch(descriptor).map(\.id), [deleted.id])
+    }
+
     override func tearDown() {
         _ = MacTaskRoute.takePendingTask()
         super.tearDown()

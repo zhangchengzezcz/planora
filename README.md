@@ -1,6 +1,6 @@
 # Planora
 
-## Planora 1.8.9
+## Planora 1.8.10
 
 ### 中文
 
@@ -46,7 +46,11 @@ Version 1.7.13 fixes failed-save handling and rolling recurrence, clarifies sync
 
 The menu bar uses a transparent task-bar template icon. Tasks due within 24 hours or overdue display automatic high priority without overwriting manual settings. Course rows in task details open the associated course.
 
-**下载 / Download:** [Planora 1.8.9 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.9) · [更新说明 / Release notes](updates/1.8.9.md)
+**下载 / Download:** [Planora 1.8.10 for Mac](https://github.com/zhangchengzezcz/planora/releases/tag/1.8.10) · [更新说明 / Release notes](updates/1.8.10.md)
+
+1.8.10 紧急修复 1.8.9 Mac 单击任务时的数据库查询崩溃。无需清除或重新导入数据，请直接更新。
+
+1.8.10 fixes the critical task-selection database query crash in 1.8.9 on Mac. Update in place; no data reset or reimport is required.
 
 1.8.9 调整菜单栏打开任务的激活时序，避免在后台提前切换顶栏；显示每项任务的优先级，并为同步时间添加说明。任务检查器置顶按钮独立居中，编辑并入通知/头像组；任务页三个操作按钮使用局部玻璃板，保留其他页面样式。
 
@@ -74,7 +78,7 @@ The menu bar uses a transparent task-bar template icon. Tasks due within 24 hour
 
 ## 当前版本 / Current Version
 
-- Version: **1.8.9** (build **42**)
+- Version: **1.8.10** (build **43**)
 - Platforms: **iOS / iPadOS 26+**, **macOS 26+**
 - Built with SwiftUI, SwiftData, and platform-native navigation
 - Mac update channel: Sparkle; iPhone and iPad do not use Sparkle

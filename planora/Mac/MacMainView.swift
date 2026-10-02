@@ -6,6 +6,11 @@ import AppKit
 import PhotosUI
 import UniformTypeIdentifiers
 
+enum MacTaskToolbarQuery {
+    // Database predicates must reference persisted fields, not computed model properties.
+    static let editableTasks = #Predicate<PlanoraTask> { $0.deletedDate == nil }
+}
+
 struct MacMainView: View {
     @Bindable var store: PlanoraStore
     @Environment(\.modelContext) private var modelContext
@@ -16,7 +21,13 @@ struct MacMainView: View {
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var syncFlow: ManageBacFlow?
     @Query(filter: #Predicate<PlanoraMessage> { $0.isUnread }) private var unreadMessages: [PlanoraMessage]
-    @Query(filter: #Predicate<PlanoraTask> { !$0.isDeleted }) private var editableTasks: [PlanoraTask]
+    @Query(filter: MacTaskToolbarQuery.editableTasks) private var editableTasks: [PlanoraTask]
+
+    init(store: PlanoraStore, initialTaskID: PlanoraTask.ID? = nil) {
+        self.store = store
+        _selectedTaskID = State(initialValue: initialTaskID)
+        _selection = State(initialValue: initialTaskID == nil ? .home : .tasks)
+    }
 
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
