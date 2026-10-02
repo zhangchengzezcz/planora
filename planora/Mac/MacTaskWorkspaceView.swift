@@ -206,7 +206,7 @@ struct MacTaskWorkspaceView: View {
         )) {
             if let selectedTask {
                 NavigationStack {
-                    TaskDetailView(store: store, task: selectedTask)
+                    TaskDetailView(store: store, task: selectedTask, usesUnifiedMacToolbar: true)
                         .id(selectedTask.id)
                 }
                 .inspectorColumnWidth(min: 300, ideal: 360, max: 520)
@@ -240,7 +240,7 @@ struct MacTaskWorkspaceView: View {
             }
 
             ViewThatFits(in: .horizontal) {
-                HStack(spacing: 10) {
+                HStack(spacing: 16) {
                     MacLiquidGlassStatusPicker(selection: $status)
                     taskActions
                 }
@@ -276,6 +276,11 @@ struct MacTaskWorkspaceView: View {
             }
         }
         .labelStyle(.iconOnly)
+        .buttonStyle(.borderless)
+        .controlSize(.large)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .glassEffect(.regular, in: .capsule)
         .sheet(isPresented: $isShowingImport) {
             NavigationStack {
                 ManageBacSettingsView(store: store) { isShowingImport = false }

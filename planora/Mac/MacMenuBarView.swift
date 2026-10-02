@@ -77,6 +77,9 @@ struct MacMenuBarView: View {
                                             .foregroundStyle(Color.planoraAmber)
                                             .help(task.priorityDisplayTitle)
                                     }
+                                    Text(task.priorityDisplayTitle)
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
                                 }
                                 HStack {
                                     Text(task.subject).lineLimit(1)
@@ -111,7 +114,11 @@ struct MacMenuBarView: View {
                     }
                     HStack {
                         if let date = connection?.lastSyncDate {
-                            Text(date, format: .dateTime.hour().minute()).foregroundStyle(.secondary)
+                            HStack(spacing: 4) {
+                                Text(String(localized: "Last Sync"))
+                                Text(date, format: .dateTime.hour().minute())
+                            }
+                            .foregroundStyle(.secondary)
                         }
                         Spacer()
                         Button("Quit Planora") { NSApp.terminate(nil) }
@@ -127,7 +134,9 @@ struct MacMenuBarView: View {
     }
 
     private func showMainWindow() {
-        NSApp.setActivationPolicy(.regular)
+        if NSApp.activationPolicy() != .regular {
+            NSApp.setActivationPolicy(.regular)
+        }
         openWindow(id: "main")
         NSApp.activate(ignoringOtherApps: true)
     }

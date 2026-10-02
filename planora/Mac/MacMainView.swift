@@ -16,6 +16,7 @@ struct MacMainView: View {
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var syncFlow: ManageBacFlow?
     @Query(filter: #Predicate<PlanoraMessage> { $0.isUnread }) private var unreadMessages: [PlanoraMessage]
+    @Query(filter: #Predicate<PlanoraTask> { !$0.isDeleted }) private var editableTasks: [PlanoraTask]
 
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
@@ -42,6 +43,12 @@ struct MacMainView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+                if selection == .tasks, let selectedTaskID,
+                   editableTasks.contains(where: { $0.id == selectedTaskID }) {
+                    Button(String(localized: "Edit")) {
+                        NotificationCenter.default.post(name: .planoraEditTask, object: selectedTaskID)
+                    }
+                }
                 Button {
                     selection = .messages
                 } label: {
@@ -99,6 +106,14 @@ struct MacMainView: View {
         .background { ManageBacAutomaticSyncHost(store: store) }
         .onAppear(perform: acceptPendingSync)
         .onAppear(perform: acceptPendingTask)
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            acceptPendingSync()
+            acceptPendingTask()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: MacMainWindowLifecycle.didBecomeKey)) { _ in
+            acceptPendingSync()
+            acceptPendingTask()
+        }
         .onReceive(NotificationCenter.default.publisher(for: MacTaskRoute.notification)) { _ in
             acceptPendingTask()
         }
@@ -113,13 +128,13 @@ struct MacMainView: View {
     }
 
     private func acceptPendingSync() {
-        guard let pending = MacSyncRoute.pending else { return }
+        guard MacMainWindowLifecycle.canPresentMainContent, let pending = MacSyncRoute.pending else { return }
         syncFlow = pending
         MacSyncRoute.pending = nil
     }
 
     private func acceptPendingTask() {
-        guard let taskID = MacTaskRoute.takePendingTask() else { return }
+        guard MacMainWindowLifecycle.canPresentMainContent, let taskID = MacTaskRoute.takePendingTask() else { return }
         searchText = ""
         selection = .tasks
         selectedTaskID = taskID

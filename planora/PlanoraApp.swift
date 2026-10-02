@@ -80,5 +80,6 @@ struct PlanoraApp: App {
 #if os(macOS)
 extension Notification.Name {
     static let planoraCreateTask = Notification.Name("planora.create-task")
+    static let planoraEditTask = Notification.Name("planora.edit-task")
 }
 #endif

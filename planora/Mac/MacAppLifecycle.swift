@@ -19,11 +19,18 @@ enum MacCloseBehavior: String, CaseIterable, Identifiable {
 @MainActor
 struct MacMainWindowLifecycle: NSViewRepresentable {
     static var isTerminating = false
+    static let didBecomeKey = Notification.Name("planora.main-window-did-become-key")
+    static var canPresentMainContent: Bool {
+        NSApp.isActive && WindowObserver.hasKeyMainWindow
+    }
     func makeNSView(context: Context) -> WindowObserver { WindowObserver() }
     func updateNSView(_ view: WindowObserver, context: Context) {}
 
     final class WindowObserver: NSView {
         private static let mainWindows = NSHashTable<NSWindow>.weakObjects()
+        static var hasKeyMainWindow: Bool {
+            mainWindows.allObjects.contains(where: { $0.isKeyWindow })
+        }
         private var observers: [NSObjectProtocol] = []
         private weak var observedWindow: NSWindow?
         override func viewDidMoveToWindow() {
@@ -36,7 +43,12 @@ struct MacMainWindowLifecycle: NSViewRepresentable {
             observers.append(NotificationCenter.default.addObserver(
                 forName: NSWindow.didBecomeKeyNotification, object: window, queue: .main
             ) { _ in
-                MainActor.assumeIsolated { NSApp.setActivationPolicy(.regular) }
+                MainActor.assumeIsolated {
+                    if NSApp.activationPolicy() != .regular {
+                        NSApp.setActivationPolicy(.regular)
+                    }
+                    NotificationCenter.default.post(name: MacMainWindowLifecycle.didBecomeKey, object: nil)
+                }
             })
             observers.append(NotificationCenter.default.addObserver(
                 forName: NSWindow.willCloseNotification, object: window, queue: .main
